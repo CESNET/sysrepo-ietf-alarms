@@ -21,7 +21,7 @@ This daemon takes care of the rest:
 - [libyang-cpp](https://github.com/CESNET/libyang-cpp) - C++ bindings for *libyang*
 - [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - C++ bindings for *sysrepo*
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
-- CMake 3.22+
+- CMake 3.19+
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - [`doctest`](https://github.com/doctest/doctest) for unit testing
 
