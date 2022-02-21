@@ -1,0 +1,28 @@
+module alarms-test {
+    namespace "urn:alarms-test";
+    prefix test-al;
+
+    import ietf-alarms {
+        prefix al;
+    }
+
+    identity base-alarm {
+        base al:alarm-type-id;
+    }
+
+    identity alarm-1 {
+        base base-alarm;
+    }
+
+    identity alarm-2 {
+        base base-alarm;
+    }
+
+    identity alarm-2-1 {
+        base alarm-2;
+    }
+
+    identity alarm-2-2 {
+        base alarm-2;
+    }
+}
