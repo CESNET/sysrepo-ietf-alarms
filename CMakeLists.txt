@@ -31,19 +31,32 @@ include(GNUInstallDirs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 
-set(YANG_SRCS "")
+set(YANG_SRCS
+    yang/ietf-alarms.yang
+    yang/sysrepo-ietf-alarms.yang
+    )
 
 # Targets
 # - utils
 add_library(alarms-utils STATIC
+    src/utils/libyang.cpp
+    src/utils/libyang.h
     src/utils/log.h
     src/utils/log-fwd.h
     src/utils/log-init.cpp
     src/utils/log-init.h
     src/utils/string.cpp
     src/utils/string.h
+    src/utils/sysrepo.cpp
+    src/utils/sysrepo.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO)
+
+add_library(alarms STATIC
+    src/alarms/Daemon.cpp
+    src/alarms/Daemon.h
+    )
+target_link_libraries(alarms PUBLIC alarms-utils PRIVATE PkgConfig::LIBYANG)
 
 # Testing
 include(CTest)
@@ -62,6 +75,8 @@ if(BUILD_TESTING)
 
     add_library(Testing STATIC
         tests/test_log_setup.h
+        tests/test_alarm_helpers.cpp
+        tests/test_alarm_helpers.h
         tests/test_sysrepo_helpers.cpp
         tests/test_sysrepo_helpers.h
         )
@@ -70,6 +85,10 @@ if(BUILD_TESTING)
 
     find_program(SYSREPOCTL sysrepoctl)
     find_program(SYSREPOCFG sysrepocfg)
+
+    set(YANG_TEST_SRCS
+        tests/yang/alarms-test.yang
+        )
 
     function(ietfalarms_test name)
         add_executable(test-${name} ${CMAKE_SOURCE_DIR}/tests/${name}.cpp)
@@ -110,12 +129,20 @@ if(BUILD_TESTING)
         endif()
     endfunction()
 
+    set(fixture-alarms_testing
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
+        )
+    ietfalarms_test(alarm_publish fixture-alarms_testing)
+    target_link_libraries(test-alarm_publish alarms)
+
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
         message(FATAL_ERROR "Cannot find libyang's yanglint")
     endif()
-    foreach(yang_file ${YANG_SRCS})
-        add_test(NAME yang-tree:${yang_file} COMMAND ${YANGLINT_PATH} -f tree ${CMAKE_CURRENT_SOURCE_DIR}/${yang_file})
+    foreach(yang_file ${YANG_SRCS} ${YANG_TEST_SRCS})
+        add_test(NAME yang-tree:${yang_file} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/yang COMMAND ${YANGLINT_PATH} -f tree ${CMAKE_CURRENT_SOURCE_DIR}/${yang_file})
     endforeach()
 endif()
 
