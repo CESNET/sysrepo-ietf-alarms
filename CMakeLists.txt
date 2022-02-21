@@ -31,19 +31,33 @@ include(GNUInstallDirs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 
-set(YANG_SRCS "")
+set(YANG_SRCS
+    yang/alarms-test.yang
+    yang/ietf-alarms.yang
+    yang/sysrepo-ietf-alarms.yang
+    )
 
 # Targets
 # - utils
 add_library(alarms-utils STATIC
+    src/utils/libyang.cpp
+    src/utils/libyang.h
     src/utils/log.h
     src/utils/log-fwd.h
     src/utils/log-init.cpp
     src/utils/log-init.h
     src/utils/string.cpp
     src/utils/string.h
+    src/utils/sysrepo.cpp
+    src/utils/sysrepo.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO)
+
+add_library(alarms STATIC
+    src/alarms/Daemon.cpp
+    src/alarms/Daemon.h
+    )
+target_link_libraries(alarms PRIVATE PkgConfig::LIBYANG)
 
 # Testing
 include(CTest)
@@ -109,6 +123,14 @@ if(BUILD_TESTING)
 
         endif()
     endfunction()
+
+    set(fixture-alarms_testing
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/alarms-test.yang
+        )
+    ietfalarms_test(alarm_publish fixture-alarms_testing)
+    target_link_libraries(test-alarm_publish alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
