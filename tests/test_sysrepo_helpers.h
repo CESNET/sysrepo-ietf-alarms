@@ -16,3 +16,12 @@ std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session sessio
 std::map<std::string, std::string> dataFromSysrepo(sysrepo::Session session, const std::string& xpath, sysrepo::Datastore datastore);
 std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, const std::string& rpcPath, std::map<std::string, std::string> input);
 void copyStartupDatastore(const std::string& module);
+
+#define TEST_INIT_SESSION std::make_unique<sysrepo::Session>(sysrepo::Connection{}.sessionStart())
+
+#define TEST_SYSREPO_CLIENT_INIT(SESSION_NAME) \
+    auto SESSION_NAME = TEST_INIT_SESSION;
+
+#define TEST_SYSREPO_CLIENT_DISCONNECT_AND_RESTORE(SESSION_NAME) \
+    SESSION_NAME.reset();                                        \
+    SESSION_NAME = TEST_INIT_SESSION;
