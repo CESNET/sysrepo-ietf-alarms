@@ -11,6 +11,7 @@
 #include <spdlog/sinks/ansicolor_sink.h>
 #include "utils/log-init.h"
 #include "utils/log.h"
+#include "utils/sysrepo.h"
 
 #define IMPL_TEST_INIT_LOGS_1                                                       \
     spdlog::drop_all();                                                             \
