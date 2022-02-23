@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <sysrepo-cpp/Session.hpp>
 
@@ -13,5 +14,7 @@ namespace alarms::utils {
 
 void initLogsSysrepo();
 void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision);
+
+void valuesToYang(::sysrepo::Session session, const std::map<std::string, std::string>& values, std::optional<libyang::DataNode>& parent);
 
 }
