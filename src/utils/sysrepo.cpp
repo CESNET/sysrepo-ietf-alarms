@@ -57,4 +57,17 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+void valuesToYang(::sysrepo::Session session, const std::map<std::string, std::string>& values, std::optional<libyang::DataNode>& parent)
+{
+    auto log = spdlog::get("main");
+    for (const auto& [propertyName, value] : values) {
+        log->trace("Processing node update {} -> {}", propertyName, value);
+        if (!parent) {
+            parent = session.getContext().newPath(propertyName.c_str(), value.c_str(), libyang::CreationOptions::Update);
+        } else {
+            parent->newPath(propertyName.c_str(), value.c_str(), libyang::CreationOptions::Update);
+        }
+    }
+}
+
 }

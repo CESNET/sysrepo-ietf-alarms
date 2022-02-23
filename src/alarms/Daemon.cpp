@@ -62,17 +62,20 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
         return sysrepo::ErrorCode::Ok;
     }
 
-    m_session.setItem(alarmNodePath.c_str(), nullptr);
-    m_session.setItem((alarmNodePath + "/is-cleared").c_str(), is_cleared ? "true" : "false");
+    std::map<std::string, std::string> res;
+    res[alarmNodePath + "/is-cleared"] = is_cleared ? "true" : "false";
 
     if (!is_cleared) {
-        m_session.setItem((alarmNodePath + "/perceived-severity").c_str(), severity.c_str());
+        res[alarmNodePath + "/perceived-severity"] = severity;
     }
 
     if (auto node = input.findPath("alarm-text")) {
-        m_session.setItem((alarmNodePath + "/alarm-text").c_str(), std::string(node.value().asTerm().valueStr()).c_str());
+        res[alarmNodePath + "/alarm-text"] = node.value().asTerm().valueStr();
     }
 
+    std::optional<libyang::DataNode> edit = m_session.getData("/ietf-alarms:alarms");
+    utils::valuesToYang(m_session, res, edit);
+    m_session.editBatch(*edit, sysrepo::DefaultOperation::Merge);
     m_session.applyChanges();
 
     return sysrepo::ErrorCode::Ok;
