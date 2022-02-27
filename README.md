@@ -24,6 +24,7 @@ This daemon takes care of the rest:
 - CMake 3.19+
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - [`spdlog`](https://github.com/gabime/spdlog)
+- [`date`](https://github.com/HowardHinnant/date) for time zones handling
 - [`doctest`](https://github.com/doctest/doctest) for unit testing
 - [`trompeloeil`](https://github.com/rollbear/trompeloeil) for unit testing
 
