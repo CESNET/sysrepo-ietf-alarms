@@ -24,6 +24,7 @@ This daemon takes care of the rest:
 - CMake 3.19+
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - [`doctest`](https://github.com/doctest/doctest) for unit testing
+- [`date`](https://github.com/HowardHinnant/date) for time zones handling
 
 ## Contributing
 The development is being done on Gerrit [here](https://gerrit.cesnet.cz/q/project:CzechLight/sysrepo-ietf-alarms).
