@@ -11,6 +11,8 @@
 #include <map>
 #include <sstream>
 #include <trompeloeil.hpp>
+#include <variant>
+#include "test_time_interval.h"
 
 namespace doctest {
 
@@ -22,6 +24,22 @@ struct StringMaker<std::map<std::string, std::string>> {
         os << "{" << std::endl;
         for (const auto& [key, value] : map) {
             os << "  \"" << key << "\": \"" << value << "\"," << std::endl;
+        }
+        os << "}";
+        return os.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<std::map<std::string, std::variant<std::string, AnyTimeBetween>>> {
+    static String convert(const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& map)
+    {
+        std::ostringstream os;
+        os << "{" << std::endl;
+        for (const auto& [key, value] : map) {
+            os << "  \"" << key << "\": \"";
+            std::visit([&os](auto&& arg) { os << arg; }, value);
+            os << "\"," << std::endl;
         }
         os << "}";
         return os.str().c_str();
