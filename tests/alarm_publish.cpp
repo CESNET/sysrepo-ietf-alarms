@@ -4,10 +4,14 @@
 #include "test_alarm_helpers.h"
 #include "test_log_setup.h"
 #include "test_sysrepo_helpers.h"
+#include "test_time_interval.h"
+
+using namespace std::chrono_literals;
 
 namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto expectedTimeDegreeOfFreedom = 300ms;
 }
 
 TEST_CASE("Basic alarm publishing and updating")
@@ -23,7 +27,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Create a single alarm by cli1")
     {
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", PARAMS(P("alarm-text", "Hey, I'm overheating.")));
+        CLIENT_ALARM_RPC(time, cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", PARAMS(P("alarm-text", "Hey, I'm overheating.")));
 
         SECTION("cli1 disconnection does not delete data")
         {
@@ -31,7 +35,7 @@ TEST_CASE("Basic alarm publishing and updating")
             cli1Conn.reset();
         }
 
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
@@ -40,6 +44,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", EXPECT_TIME_INTERVAL(time)},
                     {"/control", ""},
                 });
 
@@ -54,8 +59,8 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Create two alarms, one per each of the two clients")
     {
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", PARAMS(P("alarm-text", "Hey, I'm overheating.")));
-        CLIENT_ALARM_RPC(cli2Sess, "alarms-test:alarm-2-1", "", "psu-1", "major", PARAMS(P("alarm-text", "More juice pls.")));
+        CLIENT_ALARM_RPC(time1, cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", PARAMS(P("alarm-text", "Hey, I'm overheating.")));
+        CLIENT_ALARM_RPC(time2, cli2Sess, "alarms-test:alarm-2-1", "", "psu-1", "major", PARAMS(P("alarm-text", "More juice pls.")));
 
         SECTION("Disconnection of any client does not delete any data")
         {
@@ -72,7 +77,7 @@ TEST_CASE("Basic alarm publishing and updating")
             }
         }
 
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
@@ -81,6 +86,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", EXPECT_TIME_INTERVAL(time1)},
 
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -89,14 +95,15 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/perceived-severity", "major"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-text", "More juice pls."},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time2)},
                     {"/control", ""},
                 });
     }
 
     SECTION("Client sets alarm, disconnects, then connects again and clears the alarm")
     {
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "major", {});
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        CLIENT_ALARM_RPC(time1, cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "major", {});
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -104,6 +111,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/resource", "psu-1"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
@@ -111,8 +119,8 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("Clears the alarm")
         {
-            CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "cleared", {});
-            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+            CLIENT_ALARM_RPC(time2, cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "cleared", {});
+            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']", ""},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -120,13 +128,14 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/resource", "psu-1"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/is-cleared", "true"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
+                        {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                         {"/control", ""},
                     });
 
             SECTION("Sets the alarm back")
             {
-                CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "major", {});
-                REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+                CLIENT_ALARM_RPC(time3, cli1Sess, "alarms-test:alarm-2-1", "disconnected", "psu-1", "major", {});
+                REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                             {"/alarm-list", ""},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']", ""},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -134,6 +143,7 @@ TEST_CASE("Basic alarm publishing and updating")
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/resource", "psu-1"},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/is-cleared", "false"},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
+                            {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                             {"/control", ""},
                         });
             }
@@ -141,8 +151,8 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("Clears a non-existent alarm -> no-op")
         {
-            CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", {});
-            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+            CLIENT_ALARM_RPC(time2, cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", {});
+            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']", ""},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -150,6 +160,7 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/resource", "psu-1"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/is-cleared", "false"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
+                        {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                         {"/control", ""},
                     });
         }
@@ -157,9 +168,9 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Update state")
     {
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "indeterminate", {});
+        CLIENT_ALARM_RPC(time1, cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "indeterminate", {});
 
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -167,11 +178,12 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/resource", "psu-1"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/perceived-severity", "indeterminate"},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "minor", PARAMS(P("alarm-text", "No worries.")));
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        CLIENT_ALARM_RPC(time2, cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "minor", PARAMS(P("alarm-text", "No worries.")));
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -180,11 +192,12 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/perceived-severity", "minor"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "critical", PARAMS());
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        CLIENT_ALARM_RPC(time3, cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "critical", PARAMS());
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -193,11 +206,12 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/is-cleared", "false"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/perceived-severity", "critical"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
-        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "cleared", PARAMS());
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+        CLIENT_ALARM_RPC(time4, cli1Sess, "alarms-test:alarm-2-1", "qual", "psu-1", "cleared", PARAMS());
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                     {"/alarm-list", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -206,6 +220,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/is-cleared", "true"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/perceived-severity", "critical"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
     }

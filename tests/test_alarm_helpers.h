@@ -21,5 +21,10 @@ std::map<std::string, std::string> createAlarmNode(const std::string& id, const 
         __VA_ARGS__ \
     }
 
-#define CLIENT_ALARM_RPC(sess, id, qualifier, resource, severity, ...) \
-    rpcFromSysrepo(*sess, rpcPrefix, createAlarmNode(id, qualifier, resource, severity, __VA_ARGS__));
+#define CLIENT_ALARM_RPC(time, sess, id, qualifier, resource, severity, ...)        \
+    std::chrono::time_point<std::chrono::system_clock> time;                        \
+    {                                                                               \
+        auto inp = createAlarmNode(id, qualifier, resource, severity, __VA_ARGS__); \
+        time = std::chrono::system_clock::now();                                    \
+        rpcFromSysrepo(*sess, rpcPrefix, inp);                                      \
+    }
