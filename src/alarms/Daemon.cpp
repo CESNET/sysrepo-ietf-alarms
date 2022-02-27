@@ -2,6 +2,7 @@
 #include "Daemon.h"
 #include "utils/libyang.h"
 #include "utils/sysrepo.h"
+#include "utils/time.h"
 
 using namespace std::string_literals;
 
@@ -53,15 +54,20 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
     const auto& alarmKey = getKey(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
+    const auto now = std::chrono::system_clock::now();
 
     const auto alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.m_alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.m_alarmTypeQualifier + "'][resource='" + alarmKey.m_resource + "']";
 
+    auto alarmExists = activeAlarmExist(m_session, alarmNodePath);
+    std::map<std::string, std::string> res;
+
     // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
-    if (auto exists = activeAlarmExist(m_session, alarmNodePath); !exists && is_cleared) {
+    if (!alarmExists && is_cleared) {
         return sysrepo::ErrorCode::Ok;
+    } else if (!alarmExists) {
+        res[alarmNodePath + "/time-created"] = utils::yangTimeFormat(now);
     }
 
-    std::map<std::string, std::string> res;
     res[alarmNodePath + "/is-cleared"] = is_cleared ? "true" : "false";
 
     if (!is_cleared) {
