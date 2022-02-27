@@ -23,6 +23,7 @@ option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${D
 
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(date REQUIRED)
 
 pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.0.0 IMPORTED_TARGET sysrepo)
 pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.0.0 IMPORTED_TARGET libyang)
@@ -50,8 +51,10 @@ add_library(alarms-utils STATIC
     src/utils/string.h
     src/utils/sysrepo.cpp
     src/utils/sysrepo.h
+    src/utils/time.cpp
+    src/utils/time.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO date::date)
 
 add_library(alarms STATIC
     src/alarms/Daemon.cpp
@@ -125,6 +128,8 @@ if(BUILD_TESTING)
 
         endif()
     endfunction()
+
+    ietfalarms_test(time)
 
     set(fixture-alarms_testing
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
