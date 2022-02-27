@@ -6,6 +6,12 @@
         state: present
       become: true
 
+    - name: install data-devel
+      package:
+        name: date-devel
+        state: present
+      become: true
+
     - name: disable SSSD
       package:
         name: sssd-client
