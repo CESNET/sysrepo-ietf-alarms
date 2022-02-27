@@ -81,6 +81,8 @@ if(BUILD_TESTING)
         tests/test_log_setup.h
         tests/test_sysrepo_helpers.cpp
         tests/test_sysrepo_helpers.h
+        tests/test_time_interval.cpp
+        tests/test_time_interval.h
         )
     target_link_libraries(Testing PRIVATE spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO alarms-utils)
     target_include_directories(Testing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
