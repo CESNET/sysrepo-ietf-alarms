@@ -3,6 +3,7 @@
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
+#include "utils/time.h"
 
 using namespace std::string_literals;
 
@@ -70,19 +71,22 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const auto& alarmKey = getKey(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
+    const auto now = std::chrono::system_clock::now();
 
     try {
         const auto alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
         m_log->trace("Alarm node: {}", alarmNodePath);
 
-        // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
-        if (auto exists = activeAlarmExist(m_session, alarmNodePath); !exists && is_cleared) {
-            return sysrepo::ErrorCode::Ok;
-        }
-
         auto edit = m_session.getContext().newPath(alarmNodePath.c_str(), nullptr, libyang::CreationOptions::Update);
-
         edit.newPath((alarmNodePath + "/is-cleared").c_str(), is_cleared ? "true" : "false", libyang::CreationOptions::Update);
+
+        auto alarmExists = activeAlarmExist(m_session, alarmNodePath);
+        if (!alarmExists && is_cleared) {
+            // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
+            return sysrepo::ErrorCode::Ok;
+        } else if (!alarmExists) {
+            edit.newPath((alarmNodePath + "/time-created").c_str(), utils::yangTimeFormat(now).c_str());
+        }
 
         if (!is_cleared) {
             edit.newPath((alarmNodePath + "/perceived-severity").c_str(), severity.c_str(), libyang::CreationOptions::Update);
