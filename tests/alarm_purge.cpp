@@ -14,7 +14,6 @@ namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto expectedTimeDegreeOfFreedom = 300ms;
-
 }
 
 TEST_CASE("Basic alarm publishing and updating")
@@ -130,6 +129,69 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list", ""},
                         {"/control", ""},
                     });
+        }
+    }
+
+    SECTION("Purge by clearance status and severity")
+    {
+        SECTION("below")
+        {
+            SECTION("below warning")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/below", "warning")));
+            }
+            SECTION("below indeterminate")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/below", "indeterminate")));
+            }
+            SECTION("below major")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "any", PARAMS(P("severity/below", "major")));
+            }
+            SECTION("below critical")
+            {
+                CLIENT_PURGE_RPC(userSess, 2, "any", PARAMS(P("severity/below", "critical")));
+            }
+        }
+
+        SECTION("is")
+        {
+            SECTION("is warning")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "any", PARAMS(P("severity/is", "warning")));
+            }
+            SECTION("is indeterminate")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/is", "indeterminate")));
+            }
+            SECTION("is major")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "any", PARAMS(P("severity/is", "major")));
+            }
+            SECTION("is critical")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/is", "critical")));
+            }
+        }
+
+        SECTION("above")
+        {
+            SECTION("above warning")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "any", PARAMS(P("severity/above", "warning")));
+            }
+            SECTION("above indeterminate")
+            {
+                CLIENT_PURGE_RPC(userSess, 2, "any", PARAMS(P("severity/above", "indeterminate")));
+            }
+            SECTION("above major")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/above", "major")));
+            }
+            SECTION("above critical")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/above", "critical")));
+            }
         }
     }
 }
