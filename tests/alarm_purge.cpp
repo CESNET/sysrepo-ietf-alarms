@@ -14,7 +14,6 @@ namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto expectedTimeDegreeOfFreedom = 300ms;
-
 }
 
 TEST_CASE("Basic alarm publishing and updating")
@@ -55,7 +54,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/control", ""},
             });
 
-    CLIENT_PURGE_RPC(userSess, 0, "cleared");
+    CLIENT_PURGE_RPC(userSess, 0, "cleared", {});
     REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                 {"/alarm-list", ""},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']", ""},
@@ -111,7 +110,7 @@ TEST_CASE("Basic alarm publishing and updating")
     {
         SECTION("purge cleared")
         {
-            CLIENT_PURGE_RPC(userSess, 1, "cleared")
+            CLIENT_PURGE_RPC(userSess, 1, "cleared", {})
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
@@ -129,7 +128,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
             SECTION("follow by purge all")
             {
-                CLIENT_PURGE_RPC(userSess, 1, "any");
+                CLIENT_PURGE_RPC(userSess, 1, "any", {});
                 REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                             {"/alarm-list", ""},
                             {"/control", ""},
@@ -139,7 +138,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("purge not cleared")
         {
-            CLIENT_PURGE_RPC(userSess, 1, "not-cleared");
+            CLIENT_PURGE_RPC(userSess, 1, "not-cleared", {});
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']", ""},
@@ -158,11 +157,65 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("purge all")
         {
-            CLIENT_PURGE_RPC(userSess, 2, "any");
+            CLIENT_PURGE_RPC(userSess, 2, "any", {});
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/control", ""},
                     });
+        }
+    }
+
+    SECTION("Purge by clearance status and severity")
+    {
+        SECTION("below")
+        {
+            SECTION("below warning/indeterminate/major")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "warning"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "indeterminate"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/below", "major"}}));
+                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/below", "major"}}));
+            }
+            SECTION("below critical")
+            {
+                CLIENT_PURGE_RPC(userSess, 2, "any", ({{"severity/below", "critical"}}));
+            }
+            SECTION("below critical and cleared")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/below", "critical"}}));
+            }
+        }
+
+        SECTION("is")
+        {
+            SECTION("is indeterminate/critical/warning")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "indeterminate"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "critical"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/is", "warning"}}));
+                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/is", "warning"}}));
+            }
+            SECTION("is major")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/is", "major"}}));
+                CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"severity/is", "major"}}));
+            }
+        }
+
+        SECTION("above")
+        {
+            SECTION("above critical/major/warning")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "critical"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "major"}}));
+                CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/above", "warning"}}));
+                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "warning"}}));
+            }
+            SECTION("above indeterminate")
+            {
+                CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/above", "indeterminate"}}));
+                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "indeterminate"}}));
+            }
         }
     }
 }
