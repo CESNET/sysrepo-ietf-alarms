@@ -42,16 +42,15 @@ AlarmKey getKey(const libyang::DataNode& node)
         alarms::utils::childValue(node, "resource")};
 }
 
-/** @brief Checks whether node specified by xpath exists in the tree */
-bool activeAlarmExist(sysrepo::Session& session, const std::string& path)
+/** @brief Returns node specified by xpath in the tree */
+std::optional<libyang::DataNode> activeAlarmExist(sysrepo::Session& session, const std::string& path)
 {
     if (auto data = session.getData(path.c_str())) {
-        return static_cast<bool>(data->findPath(path.c_str()));
+        return data->findPath(path.c_str());
     }
-    return false;
+    return std::nullopt;
 }
 }
-
 
 namespace alarms {
 
@@ -76,17 +75,20 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     try {
         const auto alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
         m_log->trace("Alarm node: {}", alarmNodePath);
+        const auto existingAlarmNode = activeAlarmExist(m_session, alarmNodePath);
 
-        // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
         auto edit = m_session.getContext().newPath(alarmNodePath.c_str(), nullptr, libyang::CreationOptions::Update);
-        edit.newPath((alarmNodePath + "/is-cleared").c_str(), is_cleared ? "true" : "false", libyang::CreationOptions::Update);
 
-        auto alarmExists = activeAlarmExist(m_session, alarmNodePath);
-        if (!alarmExists && is_cleared) {
+        if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
             // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
             return sysrepo::ErrorCode::Ok;
-        } else if (!alarmExists) {
+        } else if (!existingAlarmNode) {
             edit.newPath((alarmNodePath + "/time-created").c_str(), utils::yangTimeFormat(now).c_str());
+        }
+
+        edit.newPath((alarmNodePath + "/is-cleared").c_str(), is_cleared ? "true" : "false", libyang::CreationOptions::Update);
+        if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
+            edit.newPath((alarmNodePath + "/last-raised").c_str(), utils::yangTimeFormat(now).c_str());
         }
 
         if (!is_cleared) {
@@ -106,5 +108,4 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         return sysrepo::ErrorCode::InvalidArgument;
     }
 }
-
 }
