@@ -57,4 +57,25 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+void removeNodes(::sysrepo::Session session, const std::vector<std::string>& removePaths, std::optional<libyang::DataNode>& parent)
+{
+    auto log = spdlog::get("main");
+    auto netconf = session.getContext().getModuleImplemented("ietf-netconf");
+
+    for (const auto& propertyName : removePaths) {
+        log->trace("Processing node deletion {}", propertyName);
+
+        if (!parent) {
+            parent = session.getContext().newPath(propertyName.c_str(), nullptr, libyang::CreationOptions::Update);
+        } else {
+            parent->newPath(propertyName.c_str(), nullptr, libyang::CreationOptions::Update);
+        }
+
+        auto deletion = parent->findPath(propertyName.c_str());
+        if (!deletion) {
+            throw std::logic_error{"Cannot find XPath " + propertyName + " for deletion in libyang's new_path() output"};
+        }
+        deletion->newMeta(*netconf, "operation", "remove");
+    }
+}
 }
