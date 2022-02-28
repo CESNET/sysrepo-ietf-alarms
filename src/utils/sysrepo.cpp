@@ -1,9 +1,12 @@
 /*
- * Copyright (C) 2016-2021 CESNET, https://photonics.cesnet.cz/
+ * Copyright (C) 2020, 2022 CESNET, https://photonics.cesnet.cz/
  *
  * Written by Jan Kundrát <jan.kundrat@cesnet.cz>
+ * Written by Tomáš Pecka <tomas.pecka@cesnet.cz>
  */
 
+#include <sysrepo-cpp/Connection.hpp>
+#include <sysrepo-cpp/Session.hpp>
 #include "sysrepo.h"
 #include "utils/log.h"
 
@@ -57,4 +60,13 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector<std::string>& removePaths)
+{
+    auto log = spdlog::get("main");
+
+    for (const auto& path : removePaths) {
+        log->trace("Processing node removal from operational DS: {}", path);
+        connection.discardOperationalChanges(path.c_str());
+    }
+}
 }
