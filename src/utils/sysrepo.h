@@ -15,6 +15,6 @@ namespace alarms::utils {
 void initLogsSysrepo();
 void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision);
 
-void valuesToYang(::sysrepo::Session session, const std::map<std::string, std::string>& values, std::optional<libyang::DataNode>& parent);
+void valuesToYang(::sysrepo::Session session, const std::map<std::string, std::string>& values, const std::vector<std::string>& removePaths, std::optional<libyang::DataNode>& parent);
 
 }
