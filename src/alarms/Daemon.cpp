@@ -23,18 +23,17 @@ AlarmKey getKey(const libyang::DataNode& node)
         alarms::utils::childValue(node, "resource")};
 }
 
-bool activeAlarmExist(sysrepo::Session& session, const std::string& path)
+std::optional<libyang::DataNode> alarmExists(sysrepo::Session& session, const std::string& path)
 {
     if (auto rootNode = session.getData("/ietf-alarms:alarms")) {
         for (const auto& node : rootNode->findXPath(path.c_str())) {
-            if (alarms::utils::childValue(node, "is-cleared") == "false") {
-                return true;
-            }
+            return node;
         }
     }
 
-    return false;
+    return std::nullopt;
 }
+
 }
 
 
@@ -59,17 +58,20 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
 
     const auto alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.m_alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.m_alarmTypeQualifier + "'][resource='" + alarmKey.m_resource + "']";
 
-    auto alarmExists = activeAlarmExist(m_session, alarmNodePath);
+    const auto existingAlarmNode = alarmExists(m_session, alarmNodePath);
     std::map<std::string, std::string> res;
 
     // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
-    if (!alarmExists && is_cleared) {
+    if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
         return sysrepo::ErrorCode::Ok;
-    } else if (!alarmExists) {
+    } else if (!existingAlarmNode) {
         res[alarmNodePath + "/time-created"] = utils::yangTimeFormat(now);
     }
 
     res[alarmNodePath + "/is-cleared"] = is_cleared ? "true" : "false";
+    if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
+        res[alarmNodePath + "/last-raised"] = utils::yangTimeFormat(now);
+    }
 
     if (!is_cleared) {
         res[alarmNodePath + "/perceived-severity"] = severity;
@@ -86,5 +88,4 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
 
     return sysrepo::ErrorCode::Ok;
 }
-
 }
