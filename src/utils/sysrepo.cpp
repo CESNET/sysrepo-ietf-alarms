@@ -57,4 +57,23 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+void removeNodes(::sysrepo::Session session, const std::vector<std::string>& removePaths, std::optional<libyang::DataNode>& parent)
+{
+    auto log = spdlog::get("main");
+    auto netconf = session.getContext().getModuleImplemented("ietf-netconf");
+
+    for (const auto& propertyName : removePaths) {
+        log->trace("Processing node deletion {}", propertyName);
+
+        std::optional<libyang::DataNode> deletion;
+        if (!parent) {
+            auto createdNodes = session.getContext().newPath2(propertyName.c_str(), nullptr, libyang::CreationOptions::Update);
+            deletion = createdNodes.createdNode;
+            parent = createdNodes.createdParent;
+        } else {
+            deletion = parent->newPath2(propertyName.c_str(), nullptr, libyang::CreationOptions::Update).createdNode;
+        }
+        deletion->newMeta(*netconf, "operation", "remove");
+    }
+}
 }
