@@ -15,6 +15,7 @@
 std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session session, const std::string& xpath);
 std::map<std::string, std::string> dataFromSysrepo(sysrepo::Session session, const std::string& xpath, sysrepo::Datastore datastore);
 std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, const std::string& rpcPath, std::map<std::string, std::string> input);
+std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, const std::string& path, sysrepo::Datastore datastore);
 void copyStartupDatastore(const std::string& module);
 
 #define TEST_INIT_SESSION std::make_unique<sysrepo::Session>(sysrepo::Connection{}.sessionStart())

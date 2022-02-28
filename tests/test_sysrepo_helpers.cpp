@@ -12,6 +12,7 @@
 #include <sysrepo-cpp/Enum.hpp>
 #include <sysrepo-cpp/Session.hpp>
 #include "test_log_setup.h"
+#include "test_sysrepo_helpers.h"
 #include "utils/string.h"
 
 using namespace std::chrono_literals;
@@ -63,6 +64,27 @@ std::map<std::string, std::string> dataFromSysrepo(sysrepo::Session session, con
     session.switchDatastore(datastore);
     auto res = dataFromSysrepo(session, xpath);
     session.switchDatastore(oldDatastore);
+    return res;
+}
+
+/** @short Returns xPaths of list instances from the list specified by path */
+std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, const std::string& path, sysrepo::Datastore datastore)
+{
+    auto oldDs = session.activeDatastore();
+    session.switchDatastore(datastore);
+
+    auto lists = session.getData(path.c_str());
+
+    session.switchDatastore(oldDs);
+
+    if (!lists) {
+        return {};
+    }
+
+    std::vector<std::string> res;
+    for (const auto& instance : lists->findXPath(path.c_str())) {
+        res.emplace_back(instance.path());
+    }
     return res;
 }
 
