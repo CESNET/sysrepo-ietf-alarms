@@ -1,5 +1,6 @@
 #include <string>
 #include "Daemon.h"
+#include "PurgeFilter.h"
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
@@ -9,6 +10,7 @@ using namespace std::string_literals;
 
 namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 
 /** @brief Escapes key with the other type of quotes than found in the string.
  *
@@ -78,6 +80,7 @@ Daemon::Daemon()
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     m_rpcSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
+    m_rpcSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
 }
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
@@ -127,5 +130,29 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         rpcSession.setErrorMessage(e.what());
         return sysrepo::ErrorCode::InvalidArgument;
     }
+}
+
+sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& input, libyang::DataNode output)
+{
+    PurgeFilter filter(input);
+    std::vector<std::string> toDelete;
+
+    if (auto rootNode = m_session.getData("/ietf-alarms:alarms")) {
+        for (const auto& alarmNode : rootNode->findXPath("/ietf-alarms:alarms/alarm-list/alarm")) {
+            if (filter(alarmNode)) {
+                toDelete.push_back(std::string(alarmNode.path()));
+            }
+        }
+    }
+
+    if (!toDelete.empty()) {
+        std::optional<libyang::DataNode> edit;
+        utils::removeNodes(m_session, toDelete, edit);
+        m_session.editBatch(*edit, sysrepo::DefaultOperation::Merge);
+        m_session.applyChanges();
+    }
+
+    output.newPath((purgeRpcPrefix + "/purged-alarms"s).c_str(), std::to_string(toDelete.size()).c_str(), libyang::CreationOptions::Output);
+    return sysrepo::ErrorCode::Ok;
 }
 }
