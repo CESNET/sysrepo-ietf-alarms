@@ -59,8 +59,10 @@ target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgCon
 add_library(alarms STATIC
     src/alarms/Daemon.cpp
     src/alarms/Daemon.h
+    src/alarms/PurgeFilter.cpp
+    src/alarms/PurgeFilter.h
     )
-target_link_libraries(alarms PRIVATE PkgConfig::LIBYANG)
+target_link_libraries(alarms PRIVATE PkgConfig::LIBYANG PUBLIC alarms-utils)
 
 # Testing
 include(CTest)
@@ -138,6 +140,14 @@ if(BUILD_TESTING)
         )
     ietfalarms_test(alarm_publish fixture-alarms_testing)
     target_link_libraries(test-alarm_publish alarms)
+
+    set(fixture-alarms_testing2
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/alarms-test.yang
+        )
+    ietfalarms_test(purge_alarms fixture-alarms_testing2)
+    target_link_libraries(test-purge_alarms alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
