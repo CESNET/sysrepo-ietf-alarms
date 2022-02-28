@@ -28,10 +28,14 @@ std::map<std::string, std::string> createAlarmNode(const std::string& id, const 
     return res;
 }
 
-std::map<std::string, std::string> createPurgeNode(const std::string& alarmClearanceStatus)
+std::map<std::string, std::string> createPurgeNode(const std::string& alarmClearanceStatus, const std::optional<std::pair<std::string, std::string>>& severity)
 {
     std::map<std::string, std::string> res;
     res["alarm-clearance-status"] = alarmClearanceStatus;
+
+    if (severity) {
+        res["severity/" + severity->first] = severity->second;
+    }
 
     return res;
 }
@@ -53,8 +57,9 @@ std::map<std::string, std::string> createPurgeNode(const std::string& alarmClear
         rpcFromSysrepo(*sess, rpcPrefix, in);                                 \
     }
 
-#define CLI_PURGE(sess, clearance, expectedPurgedNodes) \
-    REQUIRE(rpcFromSysrepo(*sess, prugeRpcPrefix, createPurgeNode(clearance)) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(expectedPurgedNodes)}});
+#define SEVERITY_NONE std::nullopt
+#define CLI_PURGE(sess, clearance, severity, expectedPurgedNodes) \
+    REQUIRE(rpcFromSysrepo(*sess, prugeRpcPrefix, createPurgeNode(clearance, severity)) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(expectedPurgedNodes)}});
 
 #define EXPECT_TIME_INTERVAL(point) AnyTimeBetween(point, point + 300ms)
 
@@ -119,7 +124,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("purge cleared")
         {
-            CLI_PURGE(userSess, "cleared", 1);
+            CLI_PURGE(userSess, "cleared", SEVERITY_NONE, 1);
 
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
@@ -136,7 +141,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
             SECTION("follow by purge all")
             {
-                CLI_PURGE(userSess, "any", 1);
+                CLI_PURGE(userSess, "any", SEVERITY_NONE, 1);
 
                 REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                             {"/alarm-list", ""},
@@ -147,7 +152,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("purge not cleared")
         {
-            CLI_PURGE(userSess, "not-cleared", 1);
+            CLI_PURGE(userSess, "not-cleared", SEVERITY_NONE, 1);
 
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
@@ -165,12 +170,142 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("purge all")
         {
-            CLI_PURGE(userSess, "any", 2);
+            CLI_PURGE(userSess, "any", SEVERITY_NONE, 2);
 
             REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
                         {"/alarm-list", ""},
                         {"/control", ""},
                     });
+        }
+    }
+
+    SECTION("Purge by clearance status and severity")
+    {
+        CLI_UPSERT_ALARM(time1, cli1Sess, "alarms-test:alarm-1", "", "edfa", "warning", ALARM_TEXT_NONE);
+        CLI_UPSERT_ALARM(time2, cli1Sess, "alarms-test:alarm-2", "", "edfa", "major", ALARM_TEXT_NONE);
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
+                    {"/alarm-list", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/perceived-severity", "warning"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/perceived-severity", "major"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time2)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/last-raised", EXPECT_TIME_INTERVAL(time2)},
+                    {"/control", ""},
+                });
+
+        CLI_UPSERT_ALARM(time3, cli1Sess, "alarms-test:alarm-1", "", "edfa", "cleared", ALARM_TEXT_NONE);
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::variant<std::string, AnyTimeBetween>>{
+                    {"/alarm-list", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/is-cleared", "true"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/perceived-severity", "warning"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/perceived-severity", "major"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time2)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/last-raised", EXPECT_TIME_INTERVAL(time2)},
+                    {"/control", ""},
+                });
+
+        SECTION("below")
+        {
+            SECTION("below warning")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("below", "warning"), 0);
+            }
+            SECTION("below indeterminate")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("below", "indeterminate"), 0);
+            }
+            SECTION("below major")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("below", "major"), 1);
+            }
+            SECTION("below critical")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("below", "critical"), 2);
+            }
+        }
+
+        SECTION("above")
+        {
+            SECTION("above warning")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "warning"), 1);
+            }
+            SECTION("above indeterminate")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "indeterminate"), 2);
+            }
+            SECTION("above major")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "major"), 0);
+            }
+            SECTION("above critical")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "critical"), 0);
+            }
+        }
+
+        SECTION("is")
+        {
+            SECTION("is warning")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("is", "warning"), 1);
+            }
+            SECTION("is indeterminate")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("is", "indeterminate"), 0);
+            }
+            SECTION("is major")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("is", "major"), 1);
+            }
+            SECTION("is critical")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("is", "critical"), 0);
+            }
+        }
+
+        SECTION("above")
+        {
+            SECTION("above warning")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "warning"), 1);
+            }
+            SECTION("above indeterminate")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "indeterminate"), 2);
+            }
+            SECTION("above major")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "major"), 0);
+            }
+            SECTION("above critical")
+            {
+                CLI_PURGE(userSess, "any", std::make_pair("above", "critical"), 0);
+            }
         }
     }
 }
