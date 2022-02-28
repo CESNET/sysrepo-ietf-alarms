@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3686f3e1_fefd6bf0",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 15
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-02-28T12:00:28Z",
+      "side": 1,
+      "message": "this is probably not needed anymore",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 7
+      },
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c2758dd_0dad011f",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 15
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-02-28T12:00:28Z",
+      "side": 1,
+      "message": "is this a valid CMake variable name?",
+      "range": {
+        "startLine": 26,
+        "startChar": 21,
+        "endLine": 26,
+        "endChar": 47
+      },
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c0acb3e0_2423fb65",
+        "filename": "README.md",
+        "patchSetId": 15
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-02-28T12:00:28Z",
+      "side": 1,
+      "message": "let\u0027s use the version we have elsewhere",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "96fbb438_c4cf4e96",
+        "filename": "src/utils/log.h",
+        "patchSetId": 15
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-02-28T12:00:28Z",
+      "side": 1,
+      "message": "what is this for (or \"where is this taken from\" :) )",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
