@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "ac349450_8cf09697",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 15
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-02-28T17:01:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3686f3e1_fefd6bf0",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 7
+      },
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3c2758dd_0dad011f",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-02-28T12:00:28Z",
       "side": 1,
       "message": "is this a valid CMake variable name?",
+      "range": {
+        "startLine": 26,
+        "startChar": 21,
+        "endLine": 26,
+        "endChar": 47
+      },
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "38355fe6_bc291102",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 15
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-02-28T17:01:19Z",
+      "side": 1,
+      "message": "I\u0027d say it is. As per https://cmake.org/cmake/help/latest/manual/cmake-language.7.html this is an unquoted_element which is a sequence of\n any character except whitespace or one of \u0027()#\"\\\u0027\n\nBut I will change that to SYSREPO_IETF_ALARMS_VERSION which is probably something expected.",
+      "parentUuid": "3c2758dd_0dad011f",
       "range": {
         "startLine": 26,
         "startChar": 21,
@@ -66,6 +114,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "4269516b_b94097db",
+        "filename": "README.md",
+        "patchSetId": 15
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-02-28T17:01:19Z",
+      "side": 1,
+      "message": "CI says we are running on CMake 3.19 and other projects use 3.19 as well.\n\n 2022-02-16 21:53:22.997844 | w | CMake Error at CMakeLists.txt:2 (cmake_minimum_required):\n 2022-02-16 21:53:22.997861 | w |   CMake 3.22 or higher is required.  You are running version 3.19.7\n\nhttps://object-store.cloud.muni.cz/swift/v1/ci-logs-public/21/5521/4/check/f34-gcc-cover/18fd333/job-output.txt",
+      "parentUuid": "c0acb3e0_2423fb65",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "96fbb438_c4cf4e96",
         "filename": "src/utils/log.h",
         "patchSetId": 15
@@ -77,6 +143,24 @@
       "writtenOn": "2022-02-28T12:00:28Z",
       "side": 1,
       "message": "what is this for (or \"where is this taken from\" :) )",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c09d729c_909625d6",
+        "filename": "src/utils/log.h",
+        "patchSetId": 15
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-02-28T17:01:19Z",
+      "side": 1,
+      "message": "I just copied that from cla-sysrepo (and velia) without any thoughts.\nRemoved.",
+      "parentUuid": "96fbb438_c4cf4e96",
       "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
