@@ -10,6 +10,7 @@
 #include <string>
 
 std::map<std::string, std::string> createAlarmNode(const std::string& id, const std::string& qualifier, const std::string& resource, const std::string& severity, std::map<std::string, std::string> props);
+std::map<std::string, std::string> createPurgeNode(const std::string& alarmClearanceStatus, std::map<std::string, std::string> props);
 
 #define P(k, v) \
     {           \
@@ -27,4 +28,10 @@ std::map<std::string, std::string> createAlarmNode(const std::string& id, const 
         auto inp = createAlarmNode(id, qualifier, resource, severity, __VA_ARGS__); \
         time = std::chrono::system_clock::now();                                    \
         rpcFromSysrepo(*sess, rpcPrefix, inp);                                      \
+    }
+
+#define CLIENT_PURGE_RPC(sess, expectedPurgedAlarms, clearanceStatus, ...)                                                                                   \
+    {                                                                                                                                                        \
+        auto inp = createPurgeNode(clearanceStatus, __VA_ARGS__);                                                                                            \
+        REQUIRE(rpcFromSysrepo(*sess, purgeRpcPrefix, inp) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(expectedPurgedAlarms)}}); \
     }
