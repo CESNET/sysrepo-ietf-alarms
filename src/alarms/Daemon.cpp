@@ -88,7 +88,7 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
     }
 
     std::optional<libyang::DataNode> edit = m_session.getData("/ietf-alarms:alarms");
-    utils::valuesToYang(m_session, res, edit);
+    utils::valuesToYang(m_session, res, {}, edit);
     m_session.editBatch(*edit, sysrepo::DefaultOperation::Merge);
     m_session.applyChanges();
 
