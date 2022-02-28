@@ -15,3 +15,9 @@ std::map<std::string, std::string> createAlarmNode(const std::string& id, const 
     props["severity"] = severity;
     return props;
 }
+
+std::map<std::string, std::string> createPurgeNode(const std::string& alarmClearanceStatus, std::map<std::string, std::string> props)
+{
+    props["alarm-clearance-status"] = alarmClearanceStatus;
+    return props;
+}

@@ -14,6 +14,7 @@ private:
     std::optional<sysrepo::Subscription> m_rpcSub;
 
     sysrepo::ErrorCode rpcHandler(const libyang::DataNode& input);
+    sysrepo::ErrorCode purgeRpcHandler(const libyang::DataNode& input, libyang::DataNode output);
 };
 
 }
