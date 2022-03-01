@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93151a3b_00209ff7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T17:21:41Z",
+      "side": 1,
+      "message": "This will need changes if you agree with my suggestion to use libyang data nodes instead of a std::map abstraction. The real content is good from my PoV.",
+      "revId": "27537514cf77c9cc86a87f390a51a474267d7f6e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
