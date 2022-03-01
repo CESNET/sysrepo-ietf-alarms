@@ -50,6 +50,21 @@ std::optional<libyang::DataNode> activeAlarmExist(sysrepo::Session& session, con
     }
     return std::nullopt;
 }
+
+bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& newNode, const char* leafName)
+{
+    bool oldLeafExists = oldNode && oldNode->findPath(leafName);
+    bool newLeafExists = newNode.findPath(leafName).has_value();
+
+    // leaf was deleted or created
+    if (oldLeafExists != newLeafExists) {
+        return true;
+    } else if (!oldLeafExists && !newLeafExists) {
+        return false;
+    } else {
+        return alarms::utils::childValue(*oldNode, leafName) != alarms::utils::childValue(newNode, leafName);
+    }
+}
 }
 
 namespace alarms {
@@ -96,6 +111,11 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         }
 
         edit.newPath((alarmNodePath + "/alarm-text").c_str(), std::string(input.findPath("alarm-text").value().asTerm().valueStr()).c_str(), libyang::CreationOptions::Update);
+
+        const auto& editAlarmNode = edit.findPath(alarmNodePath.c_str());
+        if (valueChanged(existingAlarmNode, *editAlarmNode, "alarm-text") || valueChanged(existingAlarmNode, *editAlarmNode, "is-cleared") || valueChanged(existingAlarmNode, *editAlarmNode, "perceived-severity")) {
+            edit.newPath((alarmNodePath + "/last-changed").c_str(), utils::yangTimeFormat(now).c_str());
+        }
 
         m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
