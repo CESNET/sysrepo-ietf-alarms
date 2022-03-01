@@ -69,16 +69,22 @@ sysrepo::ErrorCode Daemon::rpcHandler(const libyang::DataNode& input)
     }
 
     res[alarmNodePath + "/is-cleared"] = is_cleared ? "true" : "false";
+    if (existingAlarmNode && (res[alarmNodePath + "/is-cleared"] != utils::childValue(*existingAlarmNode, "is-cleared"))) {
+        res[alarmNodePath + "/last-changed"] = utils::yangTimeFormat(now);
+    }
+
     if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
         res[alarmNodePath + "/last-raised"] = utils::yangTimeFormat(now);
     }
 
     if (!is_cleared) {
         res[alarmNodePath + "/perceived-severity"] = severity;
+        res[alarmNodePath + "/last-changed"] = utils::yangTimeFormat(now);
     }
 
     if (auto node = input.findPath("alarm-text")) {
         res[alarmNodePath + "/alarm-text"] = node.value().asTerm().valueStr();
+        res[alarmNodePath + "/last-changed"] = utils::yangTimeFormat(now);
     }
 
     std::optional<libyang::DataNode> edit = m_session.getData("/ietf-alarms:alarms");
