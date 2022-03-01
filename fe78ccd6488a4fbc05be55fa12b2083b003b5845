@@ -16,6 +16,24 @@
       "message": "To be honest I think that there\u0027s little value in trying to isolate the code from libyang like that. In cla-sysrepo, there was a case for making the code work even with no sysrepo around because the code focused on driving some external HW. Here, this is a purposely-built code acting essentially as a sysrepo plugin. Let\u0027s not introduce too many layers of abstraction and just consider using libyang directly.",
       "revId": "fe78ccd6488a4fbc05be55fa12b2083b003b5845",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "684f69c0_f8655d89",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T17:18:52Z",
+      "side": 1,
+      "message": "And looking at https://gerrit.cesnet.cz/c/CzechLight/sysrepo-ietf-alarms/+/5532/3 , it seems clear to me that working on libyang data nodes directly is the way to go.",
+      "parentUuid": "19c9a26f_8cf93dc8",
+      "revId": "fe78ccd6488a4fbc05be55fa12b2083b003b5845",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
