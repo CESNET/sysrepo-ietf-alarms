@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d527404c_31aeeadc",
+        "filename": "src/utils/time.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:30:45Z",
+      "side": 1,
+      "message": "-00:00 is actually an \"unknown time zone\". If it\u0027s known that this is in UTC, please use either \"Z\" or +00:00. https://datatracker.ietf.org/doc/html/rfc6991#page-11",
+      "range": {
+        "startLine": 18,
+        "startChar": 41,
+        "endLine": 18,
+        "endChar": 47
+      },
+      "revId": "c2371eb43150231c1e05c103ef02c864145b171f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b48f0e8b_1527b5b0",
+        "filename": "tests/time.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:30:45Z",
+      "side": 1,
+      "message": "no need for the individual SECTION blocks here",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 5
+      },
+      "revId": "c2371eb43150231c1e05c103ef02c864145b171f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
