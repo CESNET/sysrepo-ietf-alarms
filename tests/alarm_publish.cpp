@@ -46,6 +46,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", EXPECT_TIME_INTERVAL(time)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", EXPECT_TIME_INTERVAL(time)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", EXPECT_TIME_INTERVAL(time)},
                     {"/control", ""},
                 });
 
@@ -89,6 +90,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", EXPECT_TIME_INTERVAL(time1)},
 
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
@@ -99,6 +101,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-text", "More juice pls."},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/time-created", EXPECT_TIME_INTERVAL(time2)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-raised", EXPECT_TIME_INTERVAL(time2)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", EXPECT_TIME_INTERVAL(time2)},
                     {"/control", ""},
                 });
     }
@@ -116,6 +119,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
@@ -134,6 +138,7 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                        {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                         {"/control", ""},
                     });
 
@@ -150,6 +155,7 @@ TEST_CASE("Basic alarm publishing and updating")
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                             {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-raised", EXPECT_TIME_INTERVAL(time2)},
+                            {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-changed", EXPECT_TIME_INTERVAL(time2)},
                             {"/control", ""},
                         });
             }
@@ -168,6 +174,7 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/perceived-severity", "major"},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/time-created", EXPECT_TIME_INTERVAL(time1)},
                         {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                        {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='disconnected']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                         {"/control", ""},
                     });
         }
@@ -187,6 +194,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/perceived-severity", "indeterminate"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
@@ -202,6 +210,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
@@ -217,6 +226,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
 
@@ -232,6 +242,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/alarm-text", "No worries."},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/time-created", EXPECT_TIME_INTERVAL(time1)},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-raised", EXPECT_TIME_INTERVAL(time1)},
+                    {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='qual']/last-changed", EXPECT_TIME_INTERVAL(time1)},
                     {"/control", ""},
                 });
     }
