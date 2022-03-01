@@ -1,6 +1,7 @@
 #include "trompeloeil_doctest.h"
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo_types.h>
+#include <thread>
 #include "alarms/Daemon.h"
 #include "test_alarm_helpers.h"
 #include "test_log_setup.h"
@@ -192,6 +193,39 @@ TEST_CASE("Basic alarm publishing and updating")
             {
                 CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("severity/above", "critical")));
             }
+        }
+    }
+
+    SECTION("Purge by clearance status and age")
+    {
+        SECTION("Seconds")
+        {
+            std::this_thread::sleep_for(1500ms);
+            SECTION("")
+            {
+                CLIENT_PURGE_RPC(userSess, 2, "any", PARAMS(P("older-than/seconds", "0")));
+            }
+            SECTION("")
+            {
+                CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("older-than/seconds", "5")));
+            }
+        }
+
+        SECTION("Minutes")
+        {
+            CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("older-than/minutes", "1")));
+        }
+        SECTION("Hours")
+        {
+            CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("older-than/hours", "1")));
+        }
+        SECTION("Days")
+        {
+            CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("older-than/days", "1")));
+        }
+        SECTION("Weeks")
+        {
+            CLIENT_PURGE_RPC(userSess, 0, "any", PARAMS(P("older-than/weeks", "1")));
         }
     }
 }
