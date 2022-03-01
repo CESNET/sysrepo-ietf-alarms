@@ -1,0 +1,308 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "db4d4437_5cf9e268",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "the other two models should be installed into the target system, but this one is for testing only. Can you please move that to tests/yang/?",
+      "range": {
+        "startLine": 35,
+        "startChar": 4,
+        "endLine": 35,
+        "endChar": 25
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "687b7ecb_e6959e7d",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "nit: it\u0027s a struct with public members, so I would prefer to remove the `m_` prefix which suggests that it\u0027s a private member",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 27
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a6d15cb9_4f911b3e",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "Rather than fetching a list of all alarms, is it possible to only request one?\n\nAlso, this function needs docs -- what XPaths are accepted, and what happens when the caller requests some nonsense. Currently it will result in a silent \"nope, not active\", which is probably OK, but it doesn\u0027t hurt to spell this out.",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 68
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ec92d03_3a895010",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "I think this one requires some escaping, doesn\u0027t it? What if the resource is a leafref such as /ietf-interfaces:interface[name\u003d\u0027eth0\u0027]?",
+      "range": {
+        "startLine": 58,
+        "startChar": 194,
+        "endLine": 58,
+        "endChar": 213
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c15495fb_f405f8d4",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "doesn\u0027t sysrepo auto-create this tree node upon creating the first non-key leaf automatically?",
+      "range": {
+        "startLine": 65,
+        "startChar": 4,
+        "endLine": 65,
+        "endChar": 54
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3deaf754_5ef7b636",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "I would prefer preparing a subtree via libyang and then pushing that via a single sysrepo API call, but this looks correct as well. We can always profile the performance later on.",
+      "range": {
+        "startLine": 65,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 5
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c20b75e9_d0721dbd",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "nit: my personal preference is for a naming \"what does it do\" instead of \"when is it invoked\", so here I would prefer \"submitAlarm\" or something like that",
+      "range": {
+        "startLine": 16,
+        "startChar": 23,
+        "endLine": 16,
+        "endChar": 33
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29513b85_a92ea646",
+        "filename": "src/utils/libyang.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "please add docs: \"Extract text value of a leaf which is a child of the given parent\"",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cb88474f_96ebd6ee",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "I am a bot confused by the variadic macro. What\u0027s wrong with:\n \nCLIENT_ALARM_RPC(client1, \"alarms-test:alarm-1\", \"high\", \"edfa\", \"warning\", {{\"alarm-text\", \"Hey, I\u0027m on fire\"}})?\n\nAlso, do you actually need to make the alarm-text optional like that, *and* do you plan to pass extra data in addition to alarm-text in future?",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "74653a75_89f8d793",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "This doesn\u0027t have to be a separate SECTION; separate SECTIONs are useful for testing several different scenarios which share a common setup code. Here you can just as well write that as a single, linear test flow:\n\n- set up your connection\n- push the alarm\n- check that it\u0027s there\n- disconnect the originating session\n- check that it\u0027s still there\n- kill the daemon\n- check that the alarm is gone\n\nSame for the SECTION(\"demon disconnection deletes data\").",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 32,
+        "endChar": 9
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f4aaca89_016ee6de",
+        "filename": "tests/test_log_setup.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "this file is not modified, is this change really needed?",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8de805a0_7c1b2d71",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "Does the code actually need access to that connection? It looks to me that it\u0027s only ever used for obtaining a session, and if there\u0027s an explicit connection, it means that you need extra macros for freeing both of them at once. If you change this to:\n auto SESSION \u003d std::optional\u003csysrepo::Session\u003e{sysrepo::Connection\u003e{}.sessionStart()};\n\n...you won\u0027t need TEST_SYSREPO_CLIENT_DISCONNECT and maybe also not TEST_SYSREPO_CLIENT_DISCONNECT_AND_RESTORE_SP.",
+      "range": {
+        "startLine": 20,
+        "startChar": 36,
+        "endLine": 20,
+        "endChar": 40
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7834ff79_aa2cf9f8",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "what does \"SP\" stand for?",
+      "range": {
+        "startLine": 20,
+        "startChar": 8,
+        "endLine": 20,
+        "endChar": 35
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "42a817f0_a5949db2",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T16:24:16Z",
+      "side": 1,
+      "message": "Please consider using CAPITALS for macro parameters, that makes the code more readable IMHO (at least it yells at me \"hey, it\u0027s a macro, it might do something else than you expect it to do\")",
+      "range": {
+        "startLine": 20,
+        "startChar": 36,
+        "endLine": 20,
+        "endChar": 46
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
