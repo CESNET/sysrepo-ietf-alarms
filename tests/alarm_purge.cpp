@@ -1,6 +1,7 @@
 #include "trompeloeil_doctest.h"
 #include <sysrepo-cpp/Connection.hpp>
 #include <sysrepo_types.h>
+#include <thread>
 #include "alarms/Daemon.h"
 #include "test_alarm_helpers.h"
 #include "test_log_setup.h"
@@ -145,5 +146,37 @@ TEST_CASE("Basic alarm publishing and updating")
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
             }
         }
+    }
+
+    SECTION("Purge by clearance status and age")
+    {
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/minutes", "1"}}));
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/hours", "1"}}));
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/days", "1"}}));
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/weeks", "1"}}));
+
+        std::this_thread::sleep_for(1.5s); // let some time pass by so we can effectively use seconds filter
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "30"}}));
+        CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}}));
+        REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
+                    "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+                });
+        CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "0"}}));
+        REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "0"}}));
+    }
+
+    SECTION("Purge by clearance status, severity, and age")
+    {
+        CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"older-than/seconds", "30"}, {"severity/above", "indeterminate"}}));
+
+        std::this_thread::sleep_for(1.5s); // let some time pass by so we can effectively use seconds filter
+        CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
+        REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
+                    "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+                });
+        CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
+        CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "1"}, {"severity/is", "major"}}));
+        REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
     }
 }
