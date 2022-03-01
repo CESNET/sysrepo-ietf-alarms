@@ -130,6 +130,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "167ce7c4_ae6072be",
+        "filename": "README.md",
+        "patchSetId": 15
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T15:56:56Z",
+      "side": 1,
+      "message": "oops, you\u0027re right, sorry, I don\u0027t know what I was checking before.",
+      "parentUuid": "4269516b_b94097db",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "96fbb438_c4cf4e96",
@@ -161,6 +179,24 @@
       "side": 1,
       "message": "I just copied that from cla-sysrepo (and velia) without any thoughts.\nRemoved.",
       "parentUuid": "96fbb438_c4cf4e96",
+      "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d95741c2_258a47b6",
+        "filename": "src/utils/log.h",
+        "patchSetId": 15
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-01T15:56:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c09d729c_909625d6",
       "revId": "32d3bc62d7a5297dc139ff0bf8d2fa7e78e966e9",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
