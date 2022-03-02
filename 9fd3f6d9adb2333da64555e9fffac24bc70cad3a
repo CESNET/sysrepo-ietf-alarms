@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "b531a2a9_64ff5cc0",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "db4d4437_5cf9e268",
+      "range": {
+        "startLine": 35,
+        "startChar": 4,
+        "endLine": 35,
+        "endChar": 25
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "687b7ecb_e6959e7d",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-03-01T16:24:16Z",
       "side": 1,
       "message": "nit: it\u0027s a struct with public members, so I would prefer to remove the `m_` prefix which suggests that it\u0027s a private member",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 27
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "14555af7_69055007",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Changed. However, as far as I know, the \u0027m_\u0027 prefix stands (in hungarian notation) for struct/class member, not for *private* struct/class member.",
+      "parentUuid": "687b7ecb_e6959e7d",
       "range": {
         "startLine": 12,
         "startChar": 0,
@@ -118,6 +166,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "f8f7716f_8e36f466",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "True. Done.",
+      "parentUuid": "c15495fb_f405f8d4",
+      "range": {
+        "startLine": 65,
+        "startChar": 4,
+        "endLine": 65,
+        "endChar": 54
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "3deaf754_5ef7b636",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 4
@@ -162,6 +234,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "79432c73_843ab034",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c20b75e9_d0721dbd",
+      "range": {
+        "startLine": 16,
+        "startChar": 23,
+        "endLine": 16,
+        "endChar": 33
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "29513b85_a92ea646",
@@ -179,6 +275,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "dffc9946_5fdf7586",
+        "filename": "src/utils/libyang.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "29513b85_a92ea646",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "cb88474f_96ebd6ee",
@@ -192,6 +306,24 @@
       "writtenOn": "2022-03-01T16:24:16Z",
       "side": 1,
       "message": "I am a bot confused by the variadic macro. What\u0027s wrong with:\n \nCLIENT_ALARM_RPC(client1, \"alarms-test:alarm-1\", \"high\", \"edfa\", \"warning\", {{\"alarm-text\", \"Hey, I\u0027m on fire\"}})?\n\nAlso, do you actually need to make the alarm-text optional like that, *and* do you plan to pass extra data in addition to alarm-text in future?",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "714a72a0_b0e5c153",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "C macro preprocessor works on tokens. It respect parentheses but not braces (curly brackets), so the code\n {{\"alarm-text\", \"Hey, I\u0027m on fire\"}}\n\nis from the point of preprocessor viewed as\n ARG1: {{\"alarm-text\"\n ARG2: \"Hey, I\u0027m on fire\"}}\n\n\u003e [C++11: 16.3/11]: The sequence of preprocessing tokens bounded by the outside-most matching parentheses forms the list of arguments for the function-like macro. The individual arguments within the list are separated by comma preprocessing tokens, but comma preprocessing tokens between matching inner parentheses do not separate arguments. (...)",
+      "parentUuid": "cb88474f_96ebd6ee",
       "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -219,6 +351,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4e173801_5c21d048",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "74653a75_89f8d793",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 32,
+        "endChar": 9
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f4aaca89_016ee6de",
@@ -232,6 +388,24 @@
       "writtenOn": "2022-03-01T16:24:16Z",
       "side": 1,
       "message": "this file is not modified, is this change really needed?",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7e346479_fbcffba3",
+        "filename": "tests/test_log_setup.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "That should have been in the prev. commit. Rebasing...",
+      "parentUuid": "f4aaca89_016ee6de",
       "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -300,6 +474,78 @@
         "startChar": 36,
         "endLine": 20,
         "endChar": 46
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "afb6890a_8b9c96be",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Good point, done.",
+      "parentUuid": "8de805a0_7c1b2d71",
+      "range": {
+        "startLine": 20,
+        "startChar": 36,
+        "endLine": 20,
+        "endChar": 40
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ab46f2d9_13d592bc",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "42a817f0_a5949db2",
+      "range": {
+        "startLine": 20,
+        "startChar": 36,
+        "endLine": 20,
+        "endChar": 46
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e17cf9e4_7e45f8a8",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:23:09Z",
+      "side": 1,
+      "message": "It stood for shared_pointer.",
+      "parentUuid": "7834ff79_aa2cf9f8",
+      "range": {
+        "startLine": 20,
+        "startChar": 8,
+        "endLine": 20,
+        "endChar": 35
       },
       "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
