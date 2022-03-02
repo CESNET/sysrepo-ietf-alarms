@@ -120,6 +120,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a2fe94f3_6ca51245",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-02T09:36:35Z",
+      "side": 1,
+      "message": "This actually fetches just one, doesn\u0027t it? I admit that the code seems like it fetches all, but the for-loop is there only because rootNode-\u003efindXPath returns a set.\nI will try to redesign that (and add docs)",
+      "parentUuid": "a6d15cb9_4f911b3e",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 68
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "4ec92d03_3a895010",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 4
