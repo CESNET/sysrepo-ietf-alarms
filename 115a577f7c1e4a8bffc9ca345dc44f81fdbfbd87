@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7a6d0fc8_79e3292a",
+        "filename": "ci/pre.yaml",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-07T22:51:06Z",
+      "side": 1,
+      "message": "typo: `date-devel`",
+      "range": {
+        "startLine": 9,
+        "startChar": 20,
+        "endLine": 9,
+        "endChar": 30
+      },
+      "revId": "115a577f7c1e4a8bffc9ca345dc44f81fdbfbd87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7e772319_3a6c7d23",
+        "filename": "src/utils/time.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-07T22:51:06Z",
+      "side": 1,
+      "message": "I think this deserves a comment clarifying why the time is in UTC. Apparently (as per https://stackoverflow.com/a/39274464/2245623), the std::chrono::system_clock is \"Unix time\" (no surprise there) which is \"close to UTC\". That came as a surprise to me because I would have thought that this thing returns \"local time\".",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 1
+      },
+      "revId": "115a577f7c1e4a8bffc9ca345dc44f81fdbfbd87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
