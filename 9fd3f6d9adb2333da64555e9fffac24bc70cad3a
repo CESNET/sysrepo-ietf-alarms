@@ -550,6 +550,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "06f9b332_5e39ffe1",
+        "filename": "tests/test_log_setup.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-07T11:59:15Z",
+      "side": 1,
+      "message": "I see no change between PS4 and PS6, are you sure it was made?\n\n(and now PS10, too)",
+      "parentUuid": "7e346479_fbcffba3",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8de805a0_7c1b2d71",
         "filename": "tests/test_sysrepo_helpers.h",
         "patchSetId": 4
