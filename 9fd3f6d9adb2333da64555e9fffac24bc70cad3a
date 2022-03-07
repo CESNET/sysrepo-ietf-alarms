@@ -214,6 +214,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "a25df5b5_f4891d32",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T08:49:26Z",
+      "side": 1,
+      "message": "I have put it back when refactoring for libyang subtrees. I somehow have to create the first node from session and this looks like the easy way.",
+      "parentUuid": "f8f7716f_8e36f466",
+      "range": {
+        "startLine": 65,
+        "startChar": 4,
+        "endLine": 65,
+        "endChar": 54
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "3deaf754_5ef7b636",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 4
@@ -225,6 +249,30 @@
       "writtenOn": "2022-03-01T16:24:16Z",
       "side": 1,
       "message": "I would prefer preparing a subtree via libyang and then pushing that via a single sysrepo API call, but this looks correct as well. We can always profile the performance later on.",
+      "range": {
+        "startLine": 65,
+        "startChar": 0,
+        "endLine": 74,
+        "endChar": 5
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f7cb1466_91ebfcf9",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T08:49:26Z",
+      "side": 1,
+      "message": "OK, Done.",
+      "parentUuid": "3deaf754_5ef7b636",
       "range": {
         "startLine": 65,
         "startChar": 0,
