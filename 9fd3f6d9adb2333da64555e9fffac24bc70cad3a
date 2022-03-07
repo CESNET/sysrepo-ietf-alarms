@@ -584,6 +584,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3c4a3897_a2108d94",
+        "filename": "tests/test_log_setup.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-07T21:45:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "548c8c83_f4158f52",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8de805a0_7c1b2d71",
