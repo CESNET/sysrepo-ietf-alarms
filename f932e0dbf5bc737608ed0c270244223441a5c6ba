@@ -26,6 +26,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "065df566_83025070",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T13:02:56Z",
+      "side": 1,
+      "message": "I have implemented the check; if it throws the RPC returns with error.",
+      "parentUuid": "a39b8141_62fd686d",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 5
+      },
+      "revId": "f932e0dbf5bc737608ed0c270244223441a5c6ba",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "bc8a6279_dae3fe4e",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 10
@@ -37,6 +61,24 @@
       "writtenOn": "2022-03-07T11:59:15Z",
       "side": 1,
       "message": "this is always true because it\u0027s a mandatory input node",
+      "revId": "f932e0dbf5bc737608ed0c270244223441a5c6ba",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cf481b6b_fabc5421",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T13:02:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bc8a6279_dae3fe4e",
       "revId": "f932e0dbf5bc737608ed0c270244223441a5c6ba",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },

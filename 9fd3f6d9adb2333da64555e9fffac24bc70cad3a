@@ -568,6 +568,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "548c8c83_f4158f52",
+        "filename": "tests/test_log_setup.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T13:02:56Z",
+      "side": 1,
+      "message": "Strange. But if you look at diff between Base and PS10, you will see the changes. Perhaps it is confused that I have moved some of the changes back and forth?\n\nBasically I deleted sysrepo stuff in this file from previous commit and moved it into this file.",
+      "parentUuid": "06f9b332_5e39ffe1",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8de805a0_7c1b2d71",
         "filename": "tests/test_sysrepo_helpers.h",
         "patchSetId": 4
