@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "449f77d3_88551033",
+        "filename": "src/utils/time.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T13:17:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d527404c_31aeeadc",
+      "range": {
+        "startLine": 18,
+        "startChar": 41,
+        "endLine": 18,
+        "endChar": 47
+      },
+      "revId": "c2371eb43150231c1e05c103ef02c864145b171f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "b48f0e8b_1527b5b0",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-03-01T16:30:45Z",
       "side": 1,
       "message": "no need for the individual SECTION blocks here",
+      "range": {
+        "startLine": 14,
+        "startChar": 0,
+        "endLine": 28,
+        "endChar": 5
+      },
+      "revId": "c2371eb43150231c1e05c103ef02c864145b171f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9287531f_3f10a713",
+        "filename": "tests/time.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T13:17:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b48f0e8b_1527b5b0",
       "range": {
         "startLine": 14,
         "startChar": 0,
