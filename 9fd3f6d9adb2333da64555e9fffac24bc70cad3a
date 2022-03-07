@@ -189,6 +189,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "56384979_bbfef354",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T10:26:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4ec92d03_3a895010",
+      "range": {
+        "startLine": 58,
+        "startChar": 194,
+        "endLine": 58,
+        "endChar": 213
+      },
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c15495fb_f405f8d4",
@@ -420,6 +444,24 @@
       "side": 1,
       "message": "C macro preprocessor works on tokens. It respect parentheses but not braces (curly brackets), so the code\n {{\"alarm-text\", \"Hey, I\u0027m on fire\"}}\n\nis from the point of preprocessor viewed as\n ARG1: {{\"alarm-text\"\n ARG2: \"Hey, I\u0027m on fire\"}}\n\n\u003e [C++11: 16.3/11]: The sequence of preprocessing tokens bounded by the outside-most matching parentheses forms the list of arguments for the function-like macro. The individual arguments within the list are separated by comma preprocessing tokens, but comma preprocessing tokens between matching inner parentheses do not separate arguments. (...)",
       "parentUuid": "cb88474f_96ebd6ee",
+      "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "811f3786_86a09c3e",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-07T10:26:27Z",
+      "side": 1,
+      "message": "Based on our discussion today, I\u0027m removing support for optional parameters and \"alarm-text\" must be always specified\"",
+      "parentUuid": "714a72a0_b0e5c153",
       "revId": "9fd3f6d9adb2333da64555e9fffac24bc70cad3a",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
