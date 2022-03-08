@@ -23,7 +23,9 @@ This daemon takes care of the rest:
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
 - CMake 3.19+
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- [`spdlog`](https://github.com/gabime/spdlog)
 - [`doctest`](https://github.com/doctest/doctest) for unit testing
+- [`trompeloeil`](https://github.com/rollbear/trompeloeil) for unit testing
 
 ## Contributing
 The development is being done on Gerrit [here](https://gerrit.cesnet.cz/q/project:CzechLight/sysrepo-ietf-alarms).
