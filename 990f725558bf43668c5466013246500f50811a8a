@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01a2020e_5bde3813",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-09T10:32:08Z",
+      "side": 1,
+      "message": "I find it a little hard to follow with identifiers such as time, time1, time5. Since I *think* that the majority of these require only two timestamps, perhaps calling it \"original time\" and \"updated time\" might make the code more easier to read. This might require changing `CLIENT_ALARM_RPC` to \"return\" something (see below), but perhaps that\u0027s not mandatory.",
+      "revId": "990f725558bf43668c5466013246500f50811a8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "936d6166_723b96f8",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-09T10:32:08Z",
+      "side": 1,
+      "message": "If I was writing these, I would have probably make the macro \"return a value\" (via an immediately invoked lambda function pattern); that way you\u0027ll need to use that one extra `auto`, but it would IMHO make the code more readable.",
+      "revId": "990f725558bf43668c5466013246500f50811a8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "580da9c3_b9c3f930",
+        "filename": "tests/test_time_interval.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-09T10:32:08Z",
+      "side": 1,
+      "message": "I think these can be removed, but I don\u0027t really know (and I don\u0027t really care)",
+      "range": {
+        "startLine": 13,
+        "startChar": 14,
+        "endLine": 13,
+        "endChar": 23
+      },
+      "revId": "990f725558bf43668c5466013246500f50811a8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
