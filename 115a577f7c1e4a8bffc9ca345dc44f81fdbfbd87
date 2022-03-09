@@ -3,6 +3,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ae5435ce_0f615b8b",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-09T10:10:36Z",
+      "side": 1,
+      "message": "please add this to the list of required libraries as well (which might need rebasing on top of https://gerrit.cesnet.cz/c/CzechLight/sysrepo-ietf-alarms/+/5544)",
+      "revId": "115a577f7c1e4a8bffc9ca345dc44f81fdbfbd87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "7a6d0fc8_79e3292a",
         "filename": "ci/pre.yaml",
         "patchSetId": 6
