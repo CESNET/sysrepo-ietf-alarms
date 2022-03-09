@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7a9d0e59_fa9a32fd",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-09T12:57:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae5435ce_0f615b8b",
+      "revId": "115a577f7c1e4a8bffc9ca345dc44f81fdbfbd87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7a6d0fc8_79e3292a",
@@ -78,6 +96,30 @@
       "writtenOn": "2022-03-07T22:51:06Z",
       "side": 1,
       "message": "I think this deserves a comment clarifying why the time is in UTC. Apparently (as per https://stackoverflow.com/a/39274464/2245623), the std::chrono::system_clock is \"Unix time\" (no surprise there) which is \"close to UTC\". That came as a surprise to me because I would have thought that this thing returns \"local time\".",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 1
+      },
+      "revId": "115a577f7c1e4a8bffc9ca345dc44f81fdbfbd87",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "44078c4a_6168c527",
+        "filename": "src/utils/time.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-09T12:57:59Z",
+      "side": 1,
+      "message": "I have done a major refactor. Even when standard says that system_clock is UTC I do not rely on that when printing any more.\nThe string-conversion functions now perform an explicit conversion to given timezone. This also enables the functionality of having timezone aware strings for alarms, not only UTC.",
+      "parentUuid": "7e772319_3a6c7d23",
       "range": {
         "startLine": 25,
         "startChar": 0,
