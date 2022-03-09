@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "7a8ba1a7_d9172fa7",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-09T12:57:59Z",
+      "side": 1,
+      "message": "As of now they indeed do require only some of the timepoints. This will change in next commits though.\nHowever, I think I like the idea and I have implemented that.\n\nI was thinking about something like that before but decided not to \"complicate\" the macro. I did not think about immediately invoked lambdas...",
+      "parentUuid": "01a2020e_5bde3813",
+      "revId": "990f725558bf43668c5466013246500f50811a8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "936d6166_723b96f8",
         "filename": "tests/alarm_publish.cpp",
         "patchSetId": 10
@@ -48,6 +66,30 @@
       "writtenOn": "2022-03-09T10:32:08Z",
       "side": 1,
       "message": "I think these can be removed, but I don\u0027t really know (and I don\u0027t really care)",
+      "range": {
+        "startLine": 13,
+        "startChar": 14,
+        "endLine": 13,
+        "endChar": 23
+      },
+      "revId": "990f725558bf43668c5466013246500f50811a8a",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "464d74ea_781c9560",
+        "filename": "tests/test_time_interval.cpp",
+        "patchSetId": 10
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-09T12:57:59Z",
+      "side": 1,
+      "message": "You are probably right. I have changed the qualifiers on the types and removed std::move",
+      "parentUuid": "580da9c3_b9c3f930",
       "range": {
         "startLine": 13,
         "startChar": 14,
