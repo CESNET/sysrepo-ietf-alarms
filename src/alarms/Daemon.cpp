@@ -124,12 +124,34 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
 
+        auto notification = createStatusChangeNotification(alarmNodePath);
+        m_session.sendNotification(notification, sysrepo::Wait::No);
+
         return sysrepo::ErrorCode::Ok;
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());
         rpcSession.setErrorMessage(e.what());
         return sysrepo::ErrorCode::InvalidArgument;
     }
+}
+
+libyang::DataNode Daemon::createStatusChangeNotification(const std::string& alarmNodePath)
+{
+    static const std::string prefix = "/ietf-alarms:alarm-notification";
+    libyang::DataNode alarmNode = activeAlarmExist(m_session, alarmNodePath).value();
+
+    auto notification = m_session.getContext().newPath(prefix + "/resource", utils::childValue(alarmNode, "resource"));
+    notification.newPath(prefix + "/alarm-type-id", utils::childValue(alarmNode, "alarm-type-id"));
+    notification.newPath(prefix + "/time", utils::childValue(alarmNode, "last-changed"));
+    notification.newPath(prefix + "/alarm-text", utils::childValue(alarmNode, "alarm-text"));
+
+    if (auto qualifier = utils::childValue(alarmNode, "alarm-type-qualifier"); !qualifier.empty()) {
+        notification.newPath(prefix + "/alarm-type-qualifier", qualifier);
+    }
+
+    notification.newPath(prefix + "/perceived-severity", utils::childValue(alarmNode, "is-cleared") == "true" ? "cleared" : utils::childValue(alarmNode, "perceived-severity"));
+
+    return notification;
 }
 
 sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyang::DataNode output)
