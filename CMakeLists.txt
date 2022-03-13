@@ -79,12 +79,15 @@ if(BUILD_TESTING)
     target_compile_definitions(DoctestIntegration PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 
     add_library(Testing STATIC
+        tests/events.cpp
+        tests/events.h
         tests/test_log_setup.h
         tests/test_alarm_helpers.h
         tests/test_sysrepo_helpers.cpp
         tests/test_sysrepo_helpers.h
         tests/test_time_interval.cpp
         tests/test_time_interval.h
+        tests/wait-a-bit-longer.cpp
         )
     target_link_libraries(Testing PRIVATE spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO alarms-utils)
     target_include_directories(Testing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
@@ -152,6 +155,14 @@ if(BUILD_TESTING)
         )
     ietfalarms_test(alarm_purge fixture-alarms_testing2)
     target_link_libraries(test-alarm_purge alarms)
+
+    set(fixture-alarms_testing3
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
+        )
+    ietfalarms_test(alarm_notifications fixture-alarms_testing3)
+    target_link_libraries(test-alarm_notifications alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
