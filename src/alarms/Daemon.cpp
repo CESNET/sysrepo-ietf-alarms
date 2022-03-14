@@ -10,7 +10,9 @@ using namespace std::string_literals;
 
 namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto ietfAlarmsModule = "ietf-alarms";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto alarmInventory = "/ietf-alarms:alarms/alarm-inventory";
 const auto control = "/ietf-alarms:alarms/control";
 
 /** @brief Escapes key with the other type of quotes than found in the string.
@@ -114,11 +116,21 @@ Daemon::Daemon()
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
     , m_log(spdlog::get("main"))
 {
-    utils::ensureModuleImplemented(m_session, "ietf-alarms", "2019-09-11");
+    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11");
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     m_rpcSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
     m_rpcSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
+
+    m_inventorySub = m_session.onModuleChange(
+        ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
+            auto notification = m_session.getContext().newPath("/ietf-alarms:alarm-inventory-changed", std::nullopt);
+            m_session.sendNotification(notification, sysrepo::Wait::No);
+            return sysrepo::ErrorCode::Ok;
+        },
+        alarmInventory,
+        0,
+        sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
 }
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
