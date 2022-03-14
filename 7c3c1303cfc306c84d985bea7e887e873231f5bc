@@ -3,6 +3,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "ef3d4a9c_15a18f33",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T19:07:25Z",
+      "side": 1,
+      "message": "perhaps also say that it\u0027s a mandatory leaf while all the others are presence containers (it\u0027s helpful to a reviewer)",
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c9676c1b_9b987e94",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 6
