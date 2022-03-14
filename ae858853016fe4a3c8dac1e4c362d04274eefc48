@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "09f0bb53_78f9a5fe",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T18:40:38Z",
+      "side": 1,
+      "message": "Unfortunately not; the operator bool is marked as explicit.\n\n  sysrepo-ietf-alarms/src/alarms/Daemon.cpp:57:42: error: cannot convert ‘std::optional\u003clibyang::DataNode\u003e’ to ‘bool’ in initialization",
+      "parentUuid": "86eafcfc_1a0ac5de",
+      "range": {
+        "startLine": 57,
+        "startChar": 51,
+        "endLine": 57,
+        "endChar": 63
+      },
+      "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5e681474_9d85eb4d",
@@ -37,6 +61,24 @@
       "writtenOn": "2022-03-14T17:46:54Z",
       "side": 1,
       "message": "nit: extra blank line I guess",
+      "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e934441_dddc37a7",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T18:40:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5e681474_9d85eb4d",
       "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
