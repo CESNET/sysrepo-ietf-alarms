@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "522dd553_16586ca9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ef3d4a9c_15a18f33",
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c9676c1b_9b987e94",
@@ -31,6 +49,30 @@
       "writtenOn": "2022-03-14T18:20:50Z",
       "side": 1,
       "message": "A method called \"do something\" with parameters \"input\" and \"output\" strongly suggests that the \"input\" is that part which somehow provides the data to be filtered. Here it\u0027s the actual filter, and the \"input data\" are read from a different place. I see that you have a PurgeFilter later on, which I like, though. What about \"rpcInput\"?",
+      "range": {
+        "startLine": 135,
+        "startChar": 64,
+        "endLine": 135,
+        "endChar": 69
+      },
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "43a45e01_2aa76e6f",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 135,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c9676c1b_9b987e94",
       "range": {
         "startLine": 135,
         "startChar": 64,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4025f6ba_645415e6",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "Ok why not :-)",
+      "parentUuid": "5ab6601c_ad3c7083",
+      "range": {
+        "startLine": 142,
+        "startChar": 16,
+        "endLine": 142,
+        "endChar": 33
+      },
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d6fede9c_c93bfd30",
@@ -77,6 +143,24 @@
       "writtenOn": "2022-03-14T18:20:50Z",
       "side": 1,
       "message": "I think the test data are rather noisy; what matters in this test is not the actual alarm content, but the XPaths of all alarm list instances. My suggestion is to reuse the listInstances() from netconf-cli (https://github.com/CESNET/netconf-cli/blob/master/src/sysrepo_access.cpp#L206-L231), and then the code might become:\n\n REQUIRE(listInstancesFrom(*userSess, \"/ietf-alarms:alarms\", sysrepo::DataStore::Operational) \u003d\u003d ({\n     {\"/alarm-list/alarm[resource\u003d\u0027edfa\u0027][alarm-type-id\u003d\u0027alarms-test:alarm-1\u0027][alarm-type-qualifier\u003d\u0027\u0027]\"},\n     {\"/alarm-list/alarm[resource\u003d\u0027edfa\u0027][alarm-type-id\u003d\u0027alarms-test:alarm-2\u0027][alarm-type-qualifier\u003d\u0027\u0027]\"},\n }));\n\nGranted, this will not test for stuff like \"did my filter change some content of the alarms, perhaps a timestamp, accidentally\", but I think it\u0027s a good tradeoff for readability of the test code.",
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f0e4c547_cf2d90bc",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "Thanks for the tip, I have implemented that.",
+      "parentUuid": "d6fede9c_c93bfd30",
       "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -98,6 +182,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "67e3af69_75e86448",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "Removed, will be added in future commits. Done.",
+      "parentUuid": "f6b9659c_14a25ef6",
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7395360c_34a86bbf",
@@ -111,6 +213,24 @@
       "writtenOn": "2022-03-14T18:20:50Z",
       "side": 1,
       "message": "since this is the only SECTION in the enclosing block, and likely will remain so, it can be \"lifted\" to the outer SECTION",
+      "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7367f313_d18e79fa",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-14T19:57:58Z",
+      "side": 1,
+      "message": "True. Done.",
+      "parentUuid": "7395360c_34a86bbf",
       "revId": "7c3c1303cfc306c84d985bea7e887e873231f5bc",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
