@@ -23,6 +23,9 @@ void copyStartupDatastore(const std::string& module);
 #define TEST_SYSREPO_CLIENT_INIT(SESSION_NAME) \
     auto SESSION_NAME = TEST_INIT_SESSION;
 
+#define TEST_SYSREPO_CLIENT_DISCONNECT(SESSION_NAME) \
+    SESSION_NAME.reset();
+
 #define TEST_SYSREPO_CLIENT_DISCONNECT_AND_RESTORE(SESSION_NAME) \
-    SESSION_NAME.reset();                                        \
+    TEST_SYSREPO_CLIENT_DISCONNECT(SESSION_NAME)                 \
     SESSION_NAME = TEST_INIT_SESSION;
