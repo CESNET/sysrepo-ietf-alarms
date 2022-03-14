@@ -48,6 +48,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "00fd5880_1638fedc",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T18:55:20Z",
+      "side": 1,
+      "message": "sorry for noise, I guess this is better than `auto x \u003d bool{...}` or the good old `!!`...",
+      "parentUuid": "09f0bb53_78f9a5fe",
+      "range": {
+        "startLine": 57,
+        "startChar": 51,
+        "endLine": 57,
+        "endChar": 63
+      },
+      "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5e681474_9d85eb4d",
