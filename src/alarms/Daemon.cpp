@@ -11,6 +11,7 @@ using namespace std::string_literals;
 namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto controlPrefix = "/ietf-alarms:alarms/control";
 
 /** @brief Escapes key with the other type of quotes than found in the string.
  *
@@ -66,6 +67,42 @@ bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang
     } else {
         return alarms::utils::childValue(*oldNode, leafName) != alarms::utils::childValue(newNode, leafName);
     }
+}
+
+/** @brief Checks if we should notify about changes made based on the values changed and current settings in control container */
+bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& edit)
+{
+    auto oldDatastore = session.activeDatastore();
+    session.switchDatastore(sysrepo::Datastore::Running);
+    auto data = session.getData(controlPrefix);
+    auto notifyStatusChangesNode = data->findPath(controlPrefix + "/notify-status-changes"s);
+    session.switchDatastore(oldDatastore);
+
+    bool raised = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "false" && valueChanged(oldNode, edit, "is-cleared");
+    bool cleared = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "true" && valueChanged(oldNode, edit, "is-cleared");
+
+    auto notifyStatusChangesValue = notifyStatusChangesNode->asTerm().valueStr();
+    if (cleared || notifyStatusChangesValue == "all-state-changes") {
+        return true;
+    }
+
+    if (notifyStatusChangesValue == "raise-and-clear") {
+        return raised || cleared;
+    }
+
+    /* Notifications are sent for status changes equal to or above the specified severity level.
+     * Notifications shall also be sent for state changes that make an alarm less severe than the specified level.
+     */
+
+    auto notifySeverityLevelValue = std::get<libyang::Enum>(data->findPath(controlPrefix + "/notify-severity-level"s)->asTerm().value()).value;
+
+    auto newSeverity = std::get<libyang::Enum>(edit.findPath("perceived-severity")->asTerm().value()).value;
+    if (!oldNode) {
+        return newSeverity >= notifySeverityLevelValue;
+    }
+
+    auto oldSeverity = std::get<libyang::Enum>(oldNode->findPath("perceived-severity")->asTerm().value()).value;
+    return newSeverity >= notifySeverityLevelValue || (oldSeverity >= notifySeverityLevelValue && newSeverity < notifySeverityLevelValue);
 }
 }
 
@@ -124,8 +161,9 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
 
-        auto notification = createStatusChangeNotification(alarmNodePath);
-        m_session.sendNotification(notification, sysrepo::Wait::No);
+        if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
+            m_session.sendNotification(createStatusChangeNotification(alarmNodePath), sysrepo::Wait::No);
+        }
 
         return sysrepo::ErrorCode::Ok;
     } catch (const std::invalid_argument& e) {
