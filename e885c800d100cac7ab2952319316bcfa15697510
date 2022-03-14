@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b46ca9a8_75342050",
+        "filename": "src/alarms/PurgeFilter.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T19:04:33Z",
+      "side": 1,
+      "message": "The YANG schema does not allow more choice values, so turn this into a logic_error, please.",
+      "range": {
+        "startLine": 45,
+        "startChar": 23,
+        "endLine": 45,
+        "endChar": 36
+      },
+      "revId": "e885c800d100cac7ab2952319316bcfa15697510",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
