@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "90a32d32_98bf0694",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T18:00:50Z",
+      "side": 1,
+      "message": "(I see that it\u0027s marked as a WIP, but I wanted to get my early feedback in.)",
+      "revId": "838a86a7f953e222f9bfd220c435bd5fd65038c0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "32b90f2b_05cf5682",
+        "filename": "src/utils/sysrepo.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T18:00:50Z",
+      "side": 1,
+      "message": "This looks not-so-pretty to me, but I think I understand that it\u0027s necessary. The code needs to set the parent in case it was not set before, and then it needs to do something on a node which is either a child of that parent, or the parent itself. We\u0027re in C++, and scoping tends to be annoying in a situation like this. I like that you chose not to repeat yourself with the newMeta(). I think that dereferencing an empty optional is only a bit worse than a logic_error (this is for a situation where we\u0027re basically checking \"did we understand libyang correctly\"). So what about this one?\n \nstd::optional\u003clibyang::DataNode\u003e deletion;\nif (!parent) {\n    deletion \u003d parent \u003d session.getContext().newPath(propertyName.c_str(), nullptr, libyang::CreationOptions::Update);\n} else {\n    deletion \u003d parent-\u003enewPath(propertyName.c_str(), nullptr, libyang::CreationOptions::Update);\n}\ndeletion-\u003enewMeta(*netconf, \"operation\", \"remove\");",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 77,
+        "endChar": 9
+      },
+      "revId": "838a86a7f953e222f9bfd220c435bd5fd65038c0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
