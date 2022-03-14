@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86eafcfc_1a0ac5de",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T17:46:54Z",
+      "side": 1,
+      "message": "isn\u0027t this redundant?",
+      "range": {
+        "startLine": 57,
+        "startChar": 51,
+        "endLine": 57,
+        "endChar": 63
+      },
+      "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5e681474_9d85eb4d",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-14T17:46:54Z",
+      "side": 1,
+      "message": "nit: extra blank line I guess",
+      "revId": "ae858853016fe4a3c8dac1e4c362d04274eefc48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
