@@ -14,20 +14,34 @@ const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto expectedTimeDegreeOfFreedom = 300ms;
 }
 
+#define LIST_LAST_CHANGED_EQUALS_TO(RESOURCE, ID, QUALIFIER) \
+    actualDataFromSysrepo["/alarm-list/last-changed"] == actualDataFromSysrepo["/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/last-changed"]
+
 TEST_CASE("Basic alarm publishing and updating")
 {
     TEST_SYSREPO_INIT_LOGS;
 
     copyStartupDatastore("ietf-alarms");
 
+    auto initTime = std::chrono::system_clock::now();
     auto daemon = std::make_unique<alarms::Daemon>();
     TEST_SYSREPO_CLIENT_INIT(cli1Sess);
     TEST_SYSREPO_CLIENT_INIT(cli2Sess);
     TEST_SYSREPO_CLIENT_INIT(userSess);
 
-    auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
     REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
                 {"/alarm-list", ""},
+                {"/alarm-list/number-of-alarms", "0"},
+                {"/alarm-list/last-changed", SHORTLY_AFTER(initTime)},
+                {"/control", ""},
+            });
+
+    auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
+    std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+    REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                {"/alarm-list", ""},
+                {"/alarm-list/number-of-alarms", "1"},
+                {"/alarm-list/last-changed", SHORTLY_AFTER(origTime)},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -40,13 +54,17 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(origTime)},
                 {"/control", ""},
             });
+    REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
     SECTION("Client and daemon disconnects")
     {
         cli1Sess.reset();
 
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(origTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -59,6 +77,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(origTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
         daemon.reset();
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
@@ -69,8 +88,11 @@ TEST_CASE("Basic alarm publishing and updating")
     SECTION("Another client creates an alarm")
     {
         auto origTime1 = CLIENT_ALARM_RPC(cli2Sess, "alarms-test:alarm-2-1", "", "psu-1", "major", "More juice pls.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "2"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(origTime1)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -81,7 +103,6 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", SHORTLY_AFTER(origTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", SHORTLY_AFTER(origTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(origTime)},
-
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -94,12 +115,16 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", SHORTLY_AFTER(origTime1)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("psu-1", "alarms-test:alarm-2-1", ""));
 
         cli1Sess.reset();
         cli2Sess.reset();
 
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "2"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(origTime1)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -122,6 +147,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", SHORTLY_AFTER(origTime1)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("psu-1", "alarms-test:alarm-2-1", ""));
     }
 
     SECTION("Client disconnects, then connects again and clears the alarm")
@@ -131,8 +157,11 @@ TEST_CASE("Basic alarm publishing and updating")
         SECTION("Clears the alarm that was set before and then sets it back")
         {
             auto clearedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Functioning within normal parameters.");
-            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+            actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+            REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-list", ""},
+                        {"/alarm-list/number-of-alarms", "1"},
+                        {"/alarm-list/last-changed", SHORTLY_AFTER(clearedTime)},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Functioning within normal parameters."},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
@@ -145,10 +174,14 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(clearedTime)},
                         {"/control", ""},
                     });
+            REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
             auto raisedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
-            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+            actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+            REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-list", ""},
+                        {"/alarm-list/number-of-alarms", "1"},
+                        {"/alarm-list/last-changed", SHORTLY_AFTER(raisedTime)},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
@@ -161,13 +194,17 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(raisedTime)},
                         {"/control", ""},
                     });
+            REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
         }
 
         SECTION("Clearing a non-existent alarm results in no-op")
         {
             CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "psu", "cleared", "Functioning within normal parameters.");
-            REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+            actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+            REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-list", ""},
+                        {"/alarm-list/number-of-alarms", "1"},
+                        {"/alarm-list/last-changed", SHORTLY_AFTER(origTime)},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
@@ -180,14 +217,18 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(origTime)},
                         {"/control", ""},
                     });
+            REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
         }
     }
 
     SECTION("Updating state")
     {
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "indeterminate", "Something happen but we don't know what and how serious it is.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(origTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -200,10 +241,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(origTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
         auto changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "minor", "No worries.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -216,10 +261,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
         changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Functioning within normal parameters.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -232,10 +281,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
         auto reraisedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "major", "Hey, I'm overheating.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(reraisedTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -248,10 +301,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(reraisedTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
 
         changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "critical", "Hey, I'm overheating.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -264,14 +321,18 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", SHORTLY_AFTER(changedTime)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("edfa", "alarms-test:alarm-1", "high"));
     }
 
     SECTION("Properly escaped resource string")
     {
         auto origTime1 = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "", "/ietf-interfaces:interface[name='eth1']", "minor", "Link operationally down but administratively up.");
         auto origTime2 = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "/ietf-interfaces:interface[name=\"eth2\"]", "minor", "Link operationally down but administratively up.");
-        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "3"},
+                    {"/alarm-list/last-changed", SHORTLY_AFTER(origTime2)},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -304,6 +365,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/last-changed", SHORTLY_AFTER(origTime2)},
                     {"/control", ""},
                 });
+        REQUIRE(LIST_LAST_CHANGED_EQUALS_TO("/ietf-interfaces:interface[name=\"eth2\"]", "alarms-test:alarm-2-2", ""));
     }
 
     SECTION("Not properly escaped resource string throws")
