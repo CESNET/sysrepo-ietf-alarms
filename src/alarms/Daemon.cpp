@@ -11,6 +11,8 @@ using namespace std::string_literals;
 namespace {
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto ietfAlarmsModule = "ietf-alarms";
+const auto alarmList = "/ietf-alarms:alarms/alarm-list";
+const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto alarmInventory = "/ietf-alarms:alarms/alarm-inventory";
 const auto control = "/ietf-alarms:alarms/control";
@@ -31,6 +33,20 @@ std::string escapeListKey(const std::string& str)
     } else {
         return '\'' + str + '\'';
     }
+}
+
+/** @brief returns number of list instances in the list specified by xPath */
+size_t numberOfListInstances(sysrepo::Session& session, const std::string& xPath)
+{
+    auto data = session.getData(xPath.c_str());
+    return data ? data->findXPath(xPath.c_str()).size() : 0;
+}
+
+void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
+{
+    // number-of-alarms is of type yang:gauge32. If we ever support more than 2^32-1 alarms then we will have to deal with cropping the value.
+    edit.newPath("/ietf-alarms:alarms/alarm-list/number-of-alarms", std::to_string(alarmCount).c_str());
+    edit.newPath("/ietf-alarms:alarms/alarm-list/last-changed", alarms::utils::yangTimeFormat(lastChanged).c_str());
 }
 
 struct AlarmKey {
@@ -131,6 +147,12 @@ Daemon::Daemon()
         alarmInventory,
         0,
         sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
+
+
+    libyang::DataNode edit = m_session.getContext().newPath(alarmList);
+    updateAlarmListStats(edit, 0, std::chrono::system_clock::now());
+    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+    m_session.applyChanges();
 }
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
@@ -179,6 +201,8 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
+
+    updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) + static_cast<int>(static_cast<bool>(editAlarmNode->findPath("time-created"))), now);
     m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
     m_session.applyChanges();
 
@@ -211,6 +235,7 @@ libyang::DataNode Daemon::createStatusChangeNotification(const std::string& alar
 
 sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyang::DataNode output)
 {
+    const auto now = std::chrono::system_clock::now();
     PurgeFilter filter(rpcInput);
     std::vector<std::string> toDelete;
 
@@ -225,6 +250,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyan
     if (!toDelete.empty()) {
         std::optional<libyang::DataNode> edit;
         utils::removeNodes(m_session, toDelete, edit);
+        updateAlarmListStats(*edit, numberOfListInstances(m_session, alarmListInstances) - toDelete.size(), now);
         m_session.editBatch(*edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
     }
