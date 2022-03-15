@@ -22,9 +22,11 @@ public:
 };
 
 bool operator==(const std::string& str, const AnyTimeBetween& ts);
+bool operator==(const std::string& str, const std::variant<std::string, AnyTimeBetween>& v);
 
 bool operator==(const std::map<std::string, std::string>& lhs, const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& rhs);
 
 using PropsWithTimeTest = std::map<std::string, std::variant<std::string, AnyTimeBetween>>;
 
 #define SHORTLY_AFTER(point) AnyTimeBetween(point, point + expectedTimeDegreeOfFreedom)
+#define BEFORE(point) AnyTimeBetween({}, point)
