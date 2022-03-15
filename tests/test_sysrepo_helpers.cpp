@@ -85,6 +85,7 @@ std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, cons
     for (const auto& instance : lists->findXPath(path.c_str())) {
         res.emplace_back(instance.path());
     }
+    std::sort(res.begin(), res.end());
     return res;
 }
 
