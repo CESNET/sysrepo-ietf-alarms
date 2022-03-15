@@ -18,12 +18,17 @@ AnyTimeBetween::AnyTimeBetween(const std::chrono::time_point<std::chrono::system
 bool AnyTimeBetween::operator==(const std::string& str) const
 {
     auto tp = alarms::utils::fromYangTimeFormat(str);
-    return m_start <= tp && tp <= m_end;
+    return m_start <= tp && tp < m_end;
 }
 
 bool operator==(const std::string& str, const AnyTimeBetween& ts)
 {
     return ts == str;
+}
+
+bool operator==(const std::string& str, const std::variant<std::string, AnyTimeBetween>& v)
+{
+    return std::visit([&str](auto&& arg) { return str == arg; }, v);
 }
 
 std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o)
@@ -34,11 +39,6 @@ std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o)
 bool operator==(const std::map<std::string, std::string>& lhs, const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& rhs)
 {
     return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), [](const auto& lhsKv, const auto& rhsKv) {
-        if (lhsKv.first != rhsKv.first) {
-            return false;
-        }
-
-        // call operator== on std::string and the actual type stored in the variant
-        return std::visit([&lhsKv](auto&& arg) { return lhsKv.second == arg; }, rhsKv.second);
+        return lhsKv.first == rhsKv.first && lhsKv.second == rhsKv.second;
     });
 }
