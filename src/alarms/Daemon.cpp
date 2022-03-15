@@ -140,51 +140,54 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
 
+    std::string alarmNodePath;
+
     try {
-        const auto alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
+        alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
         m_log->trace("Alarm node: {}", alarmNodePath);
-        const auto existingAlarmNode = activeAlarmExist(m_session, alarmNodePath);
-
-        auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
-
-        if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
-            // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
-            return sysrepo::ErrorCode::Ok;
-        } else if (!existingAlarmNode) {
-            edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(now));
-        }
-
-        edit.newPath(alarmNodePath + "/is-cleared", is_cleared ? "true" : "false", libyang::CreationOptions::Update);
-        if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
-            edit.newPath(alarmNodePath + "/last-raised", utils::yangTimeFormat(now));
-        }
-
-        if (!is_cleared) {
-            edit.newPath(alarmNodePath + "/perceived-severity", severity, libyang::CreationOptions::Update);
-        }
-
-        edit.newPath(alarmNodePath + "/alarm-text", std::string{input.findPath("alarm-text").value().asTerm().valueStr()}, libyang::CreationOptions::Update);
-
-        const auto& editAlarmNode = edit.findPath(alarmNodePath);
-        if (valueChanged(existingAlarmNode, *editAlarmNode, "alarm-text") || valueChanged(existingAlarmNode, *editAlarmNode, "is-cleared") || valueChanged(existingAlarmNode, *editAlarmNode, "perceived-severity")) {
-            edit.newPath(alarmNodePath + "/last-changed", utils::yangTimeFormat(now));
-        }
-
-        m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
-        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
-        m_session.applyChanges();
-
-        if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
-            auto notification = createStatusChangeNotification(alarmNodePath);
-            m_session.sendNotification(notification, sysrepo::Wait::No);
-        }
-
-        return sysrepo::ErrorCode::Ok;
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());
         rpcSession.setErrorMessage(e.what());
         return sysrepo::ErrorCode::InvalidArgument;
     }
+
+    const auto existingAlarmNode = activeAlarmExist(m_session, alarmNodePath);
+
+    auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
+
+    if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
+        // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
+        return sysrepo::ErrorCode::Ok;
+    } else if (!existingAlarmNode) {
+        edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(now));
+    }
+
+    edit.newPath(alarmNodePath + "/is-cleared", is_cleared ? "true" : "false", libyang::CreationOptions::Update);
+    if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
+        edit.newPath(alarmNodePath + "/last-raised", utils::yangTimeFormat(now));
+    }
+
+    if (!is_cleared) {
+        edit.newPath(alarmNodePath + "/perceived-severity", severity, libyang::CreationOptions::Update);
+    }
+
+    edit.newPath(alarmNodePath + "/alarm-text", std::string{input.findPath("alarm-text").value().asTerm().valueStr()}, libyang::CreationOptions::Update);
+
+    const auto& editAlarmNode = edit.findPath(alarmNodePath);
+    if (valueChanged(existingAlarmNode, *editAlarmNode, "alarm-text") || valueChanged(existingAlarmNode, *editAlarmNode, "is-cleared") || valueChanged(existingAlarmNode, *editAlarmNode, "perceived-severity")) {
+        edit.newPath(alarmNodePath + "/last-changed", utils::yangTimeFormat(now));
+    }
+
+    m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
+    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+    m_session.applyChanges();
+
+    if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
+        auto notification = createStatusChangeNotification(alarmNodePath);
+        m_session.sendNotification(notification, sysrepo::Wait::No);
+    }
+
+    return sysrepo::ErrorCode::Ok;
 }
 
 libyang::DataNode Daemon::createStatusChangeNotification(const std::string& alarmNodePath)
