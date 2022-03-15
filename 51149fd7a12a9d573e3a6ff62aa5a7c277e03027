@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "59ddeea7_1964d38d",
+        "filename": "src/alarms/PurgeFilter.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-15T07:38:00Z",
+      "side": 1,
+      "message": "Oops. Thanks. Done.",
+      "parentUuid": "66e8a137_bd0076a6",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 8
+      },
+      "revId": "51149fd7a12a9d573e3a6ff62aa5a7c277e03027",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d89cd2de_e3ef2490",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-03-14T19:18:35Z",
       "side": 1,
       "message": "logic_error",
+      "range": {
+        "startLine": 79,
+        "startChar": 23,
+        "endLine": 79,
+        "endChar": 36
+      },
+      "revId": "51149fd7a12a9d573e3a6ff62aa5a7c277e03027",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3c7be264_fbceccc5",
+        "filename": "src/alarms/PurgeFilter.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-15T07:38:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d89cd2de_e3ef2490",
       "range": {
         "startLine": 79,
         "startChar": 23,
