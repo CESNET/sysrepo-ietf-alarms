@@ -14,6 +14,15 @@ namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto expectedTimeDegreeOfFreedom = 300ms;
+}
+
+bool includesAll(const std::map<std::string, std::string>& haystack, const PropsWithTimeTest& needles)
+{
+    return std::all_of(needles.begin(), needles.end(), [&haystack](const auto& e) {
+        auto it = haystack.find(e.first);
+        return it != haystack.end() && it->second == e.second;
+    });
 }
 
 TEST_CASE("Basic alarm publishing and updating")
@@ -23,6 +32,7 @@ TEST_CASE("Basic alarm publishing and updating")
     copyStartupDatastore("ietf-alarms");
 
     alarms::Daemon daemon;
+    std::chrono::time_point<std::chrono::system_clock> time;
     TEST_SYSREPO_CLIENT_INIT(cli1Sess);
     TEST_SYSREPO_CLIENT_INIT(cli2Sess);
     TEST_SYSREPO_CLIENT_INIT(userSess);
@@ -34,43 +44,72 @@ TEST_CASE("Basic alarm publishing and updating")
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
             });
 
-    CLIENT_PURGE_RPC(userSess, 0, "cleared", {});
+    time = CLIENT_PURGE_RPC(userSess, 0, "cleared", {});
     REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
             });
+    REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                           {"/last-changed", BEFORE(time)},
+                                                                                                                           {"/number-of-alarms", "2"},
+                                                                                                                       }));
 
-    CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "edfa", "cleared", "A cleared issue");
+    time = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "edfa", "cleared", "A cleared issue");
     REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
             });
+    REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                           {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                           {"/number-of-alarms", "2"},
+                                                                                                                       }));
 
     SECTION("Purge by clearance status")
     {
         SECTION("purge cleared followed by purge all")
         {
-            CLIENT_PURGE_RPC(userSess, 1, "cleared", {});
+            time = CLIENT_PURGE_RPC(userSess, 1, "cleared", {});
             REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                         "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                     });
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                   {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                   {"/number-of-alarms", "1"},
+                                                                                                                               }));
 
-            CLIENT_PURGE_RPC(userSess, 1, "any", {});
+            time = CLIENT_PURGE_RPC(userSess, 1, "any", {});
             REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                   {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                   {"/number-of-alarms", "0"},
+                                                                                                                               }));
+            time = CLIENT_PURGE_RPC(userSess, 0, "any", {});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                   {"/last-changed", BEFORE(time)},
+                                                                                                                                   {"/number-of-alarms", "0"},
+                                                                                                                               }));
         }
 
         SECTION("purge not cleared")
         {
-            CLIENT_PURGE_RPC(userSess, 1, "not-cleared", {});
+            time = CLIENT_PURGE_RPC(userSess, 1, "not-cleared", {});
             REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                         "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                     });
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                   {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                   {"/number-of-alarms", "1"},
+                                                                                                                               }));
         }
 
         SECTION("purge all")
         {
-            CLIENT_PURGE_RPC(userSess, 2, "any", {});
+            time = CLIENT_PURGE_RPC(userSess, 2, "any", {});
             REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                   {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                   {"/number-of-alarms", "0"},
+                                                                                                                               }));
         }
     }
 
@@ -80,25 +119,52 @@ TEST_CASE("Basic alarm publishing and updating")
         {
             SECTION("below warning/indeterminate/major")
             {
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "warning"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "indeterminate"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/below", "major"}}));
-                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/below", "major"}}));
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "warning"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/below", "indeterminate"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/below", "major"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/below", "major"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                         });
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
             }
             SECTION("below critical")
             {
-                CLIENT_PURGE_RPC(userSess, 2, "any", ({{"severity/below", "critical"}}));
+                time = CLIENT_PURGE_RPC(userSess, 2, "any", ({{"severity/below", "critical"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "0"},
+                                                                                                                                   }));
             }
             SECTION("below critical and cleared")
             {
-                CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/below", "critical"}}));
+                time = CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/below", "critical"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                         });
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
             }
         }
 
@@ -106,21 +172,49 @@ TEST_CASE("Basic alarm publishing and updating")
         {
             SECTION("is indeterminate/critical/warning")
             {
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "indeterminate"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "critical"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/is", "warning"}}));
-                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/is", "warning"}}));
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "indeterminate"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/is", "critical"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"severity/is", "warning"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/is", "warning"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                         });
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
             }
             SECTION("is major")
             {
-                CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/is", "major"}}));
-                CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"severity/is", "major"}}));
+                time = CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/is", "major"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"severity/is", "major"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                         });
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
             }
         }
 
@@ -128,55 +222,137 @@ TEST_CASE("Basic alarm publishing and updating")
         {
             SECTION("above critical/major/warning")
             {
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "critical"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "major"}}));
-                CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/above", "warning"}}));
-                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "warning"}}));
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "critical"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"severity/above", "major"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/above", "warning"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", BEFORE(time)},
+                                                                                                                                       {"/number-of-alarms", "2"},
+                                                                                                                                   }));
+
+                time = CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "warning"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                         });
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
             }
             SECTION("above indeterminate")
             {
-                CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/above", "indeterminate"}}));
+                time = CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"severity/above", "indeterminate"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                             "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                         });
-                CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "indeterminate"}}));
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "1"},
+                                                                                                                                   }));
+                time = CLIENT_PURGE_RPC(userSess, 1, "any", ({{"severity/above", "indeterminate"}}));
                 REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+                REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                                       {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                                       {"/number-of-alarms", "0"},
+                                                                                                                                   }));
             }
         }
     }
 
     SECTION("Purge by clearance status and age")
     {
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/minutes", "1"}}));
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/hours", "1"}}));
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/days", "1"}}));
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/weeks", "1"}}));
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/minutes", "1"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
+
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/hours", "1"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
+
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/days", "1"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
+
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/weeks", "1"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
 
         std::this_thread::sleep_for(1.5s); // let some time pass by so we can effectively use seconds filter
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "30"}}));
-        CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}}));
+
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "30"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
+
+        time = CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}}));
         REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                     "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                 });
-        CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "0"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                               {"/number-of-alarms", "1"},
+                                                                                                                           }));
+        time = CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "0"}}));
         REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
-        CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "0"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                               {"/number-of-alarms", "0"},
+                                                                                                                           }));
+        time = CLIENT_PURGE_RPC(userSess, 0, "any", ({{"older-than/seconds", "0"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "0"},
+                                                                                                                           }));
     }
 
     SECTION("Purge by clearance status, severity, and age")
     {
-        CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"older-than/seconds", "30"}, {"severity/above", "indeterminate"}}));
+        time = CLIENT_PURGE_RPC(userSess, 0, "not-cleared", ({{"older-than/seconds", "30"}, {"severity/above", "indeterminate"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "2"},
+                                                                                                                           }));
 
         std::this_thread::sleep_for(1.5s); // let some time pass by so we can effectively use seconds filter
-        CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
+
+        time = CLIENT_PURGE_RPC(userSess, 1, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
         REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{
                     "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
                 });
-        CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
-        CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "1"}, {"severity/is", "major"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                               {"/number-of-alarms", "1"},
+                                                                                                                           }));
+        time = CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"older-than/seconds", "1"}, {"severity/above", "indeterminate"}}));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", BEFORE(time)},
+                                                                                                                               {"/number-of-alarms", "1"},
+                                                                                                                           }));
+
+        time = CLIENT_PURGE_RPC(userSess, 1, "not-cleared", ({{"older-than/seconds", "1"}, {"severity/is", "major"}}));
         REQUIRE(listInstancesFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == std::vector<std::string>{});
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list", sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                               {"/last-changed", SHORTLY_AFTER(time)},
+                                                                                                                               {"/number-of-alarms", "0"},
+                                                                                                                           }));
     }
 }
