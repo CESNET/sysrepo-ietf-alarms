@@ -24,8 +24,10 @@
     }();
 
 #define CLIENT_PURGE_RPC(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS)                                                                    \
-    {                                                                                                                                                                    \
+    [&]() {                                                                                                                                                              \
         auto inp = std::map<std::string, std::string> ADDITIONAL_PARAMS;                                                                                                 \
         inp["alarm-clearance-status"] = CLEARANCE_STATUS;                                                                                                                \
+        auto time = std::chrono::system_clock::now();                                                                                                                    \
         REQUIRE(rpcFromSysrepo(*SESS, purgeRpcPrefix, inp) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(EXPECTED_NUMBER_OF_PURGED_ALARMS)}}); \
-    }
+        return time;                                                                                                                                                     \
+    }()
