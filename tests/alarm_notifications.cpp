@@ -16,7 +16,6 @@ const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmStatusNotification = "/"s + ietfAlarmsModule + ":alarm-notification";
 const auto inventoryNotification = "/"s + ietfAlarmsModule + ":alarm-inventory-changed";
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto expectedTimeDegreeOfFreedom = 300ms;
 }
 
 struct StatusNotifications {
