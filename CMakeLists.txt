@@ -140,27 +140,21 @@ if(BUILD_TESTING)
 
     ietfalarms_test(time)
 
-    set(fixture-alarms_testing
+    set(yangs-for-testing
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
         )
+
+    set(fixture-alarms_testing ${yangs-for-testing})
     ietfalarms_test(alarm_publish fixture-alarms_testing)
     target_link_libraries(test-alarm_publish alarms)
 
-    set(fixture-alarms_testing2
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
-        )
+    set(fixture-alarms_testing2 ${yangs-for-testing})
     ietfalarms_test(alarm_purge fixture-alarms_testing2)
     target_link_libraries(test-alarm_purge alarms)
 
-    set(fixture-alarms_testing3
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
-        )
+    set(fixture-alarms_testing3 ${yangs-for-testing})
     ietfalarms_test(alarm_notifications fixture-alarms_testing3)
     target_link_libraries(test-alarm_notifications alarms)
 
