@@ -20,7 +20,7 @@ struct Key {
     std::string resource;
 
     std::string alarmPath() const;
+    std::string shelvedAlarmPath() const;
     static Key fromNode(const libyang::DataNode& node);
 };
-
 }

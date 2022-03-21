@@ -37,6 +37,8 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/alarm-list/number-of-alarms", "0"},
                 {"/alarm-list/last-changed", initTime},
                 {"/control", ""},
+                {"/control/alarm-shelving", ""},
+                {"/shelved-alarms", ""},
             });
 
     auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
@@ -57,6 +59,8 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
                 {"/control", ""},
+                {"/control/alarm-shelving", ""},
+                {"/shelved-alarms", ""},
             });
     REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -81,12 +85,15 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
         daemon.reset();
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
                 });
     }
 
@@ -120,6 +127,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-raised", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", origTime1},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "psu-1", "alarms-test:alarm-2-1", ""));
 
@@ -153,6 +162,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-raised", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", origTime1},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "psu-1", "alarms-test:alarm-2-1", ""));
     }
@@ -181,6 +192,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", clearedTime},
                         {"/control", ""},
+                        {"/control/alarm-shelving", ""},
+                        {"/shelved-alarms", ""},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -202,6 +215,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", raisedTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", raisedTime},
                         {"/control", ""},
+                        {"/control/alarm-shelving", ""},
+                        {"/shelved-alarms", ""},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
         }
@@ -226,6 +241,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
                         {"/control", ""},
+                        {"/control/alarm-shelving", ""},
+                        {"/shelved-alarms", ""},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
         }
@@ -251,6 +268,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -272,6 +291,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -293,6 +314,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -314,6 +337,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", reraisedTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", reraisedTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -335,6 +360,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", reraisedTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
     }
@@ -380,6 +407,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/last-raised", origTime2},
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/last-changed", origTime2},
                     {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "/ietf-interfaces:interface[name=\"eth2\"]", "alarms-test:alarm-2-2", ""));
     }

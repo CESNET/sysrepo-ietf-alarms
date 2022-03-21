@@ -2,6 +2,7 @@
 #include "Daemon.h"
 #include "Key.h"
 #include "PurgeFilter.h"
+#include "ShelfMatch.h"
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
@@ -91,6 +92,21 @@ bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<liby
     auto oldSeverity = std::get<libyang::Enum>(oldNode->findPath("perceived-severity")->asTerm().value()).value;
     return newSeverity >= notifySeverityLevelValue || (oldSeverity >= notifySeverityLevelValue && newSeverity < notifySeverityLevelValue);
 }
+
+/* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
+std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::Key& key)
+{
+    auto oldDatastore = session.activeDatastore();
+    session.switchDatastore(sysrepo::Datastore::Running);
+
+    std::optional<std::string> shelfName;
+    if (auto data = session.getData("/ietf-alarms:alarms/control/alarm-shelving")) {
+        shelfName = findMatchingShelf(key, data->findXPath("/ietf-alarms:alarms/control/alarm-shelving/shelf"));
+    }
+
+    session.switchDatastore(oldDatastore);
+    return shelfName;
+}
 }
 
 namespace alarms {
@@ -100,7 +116,7 @@ Daemon::Daemon()
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
     , m_log(spdlog::get("main"))
 {
-    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11");
+    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving"});
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     {
@@ -130,10 +146,17 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
 
+    auto matchedShelf = shouldBeShelved(m_session, alarmKey);
     std::string alarmNodePath;
 
+    if (matchedShelf) {
+        alarmNodePath = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
+    } else {
+        alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm";
+    }
+
     try {
-        alarmNodePath = alarmKey.alarmPath();
+        alarmNodePath = matchedShelf ? alarmKey.shelvedAlarmPath() : alarmKey.alarmPath();
         m_log->trace("Alarm node: {}", alarmNodePath);
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());
@@ -148,7 +171,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
         // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
         return sysrepo::ErrorCode::Ok;
-    } else if (!existingAlarmNode) {
+    } else if (!existingAlarmNode && !matchedShelf) {
         edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(now));
     }
 
@@ -170,7 +193,12 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
     m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
 
-    updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) + static_cast<int>(editAlarmNode->findPath("time-created").has_value()), now);
+    if (!matchedShelf) {
+        updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) + static_cast<int>(editAlarmNode->findPath("time-created").has_value()), now);
+    } else {
+        edit.newPath(alarmNodePath + "/shelf-name", matchedShelf);
+    }
+
     m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
     m_session.applyChanges();
 
