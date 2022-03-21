@@ -16,7 +16,6 @@ const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmStatusNotification = "/"s + ietfAlarmsModule + ":alarm-notification";
 const auto inventoryNotification = "/"s + ietfAlarmsModule + ":alarm-inventory-changed";
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto expectedTimeDegreeOfFreedom = 300ms;
 }
 
 #define EXPECT_NOTIFICATION(PROPS) NAMED_REQUIRE_CALL(eventsAlarmStatus, notified(trompeloeil::eq(PROPS))).IN_SEQUENCE(seq1)
@@ -33,12 +32,13 @@ const auto expectedTimeDegreeOfFreedom = 300ms;
             {"alarm-text", TEXT},                                                               \
         };                                                                                      \
                                                                                                 \
+        auto now = std::chrono::system_clock::now();                                            \
         PropsWithTimeTest expectProps = {                                                       \
             {"alarm-type-id", ID},                                                              \
             {"resource", RESOURCE},                                                             \
             {"alarm-text", TEXT},                                                               \
             {"perceived-severity", SEVERITY},                                                   \
-            {"time", SHORTLY_AFTER(std::chrono::system_clock::now())},                          \
+            {"time", AnyTimeBetween{now, now + 300ms}},                                         \
         };                                                                                      \
         if (!std::string(QUALIFIER).empty()) {                                                  \
             expectProps["alarm-type-qualifier"] = QUALIFIER;                                    \
