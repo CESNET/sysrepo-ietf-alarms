@@ -13,5 +13,6 @@ class DataNode;
 }
 
 namespace alarms::utils {
+
 std::string childValue(const libyang::DataNode& node, const std::string& name);
 }
