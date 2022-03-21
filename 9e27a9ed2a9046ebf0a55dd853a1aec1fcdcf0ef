@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b0f54b21_10ce5b4f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-21T22:14:11Z",
+      "side": 1,
+      "message": "This targets the operational DS, right? If so, then pushing something with `netconf:operation\u003d\"remove\"` actually creates an edit/diff node asking sysrepo to \"keep removing a node if it exists\". Since the alarms are owned by the current session, it looks to me that this function should *discard* an appropriate subtree of operational changes, not \"push a removal\".",
+      "revId": "9e27a9ed2a9046ebf0a55dd853a1aec1fcdcf0ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
