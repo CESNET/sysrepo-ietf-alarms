@@ -10,12 +10,12 @@
 #include <string>
 #include <variant>
 
-class AnyTimeBetween {
-    std::chrono::time_point<std::chrono::system_clock> m_start;
-    std::chrono::time_point<std::chrono::system_clock> m_end;
+const auto shortlyAfterDegreeOfFreedom = std::chrono::milliseconds(300);
 
-public:
-    AnyTimeBetween(const std::chrono::time_point<std::chrono::system_clock>& least, const std::chrono::time_point<std::chrono::system_clock>& most);
+struct AnyTimeBetween {
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
+
     bool operator==(const std::string& str) const;
 
     friend std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o);
@@ -23,10 +23,9 @@ public:
 
 bool operator==(const std::string& str, const AnyTimeBetween& ts);
 bool operator==(const std::string& str, const std::variant<std::string, AnyTimeBetween>& v);
-
 bool operator==(const std::map<std::string, std::string>& lhs, const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& rhs);
 
 using PropsWithTimeTest = std::map<std::string, std::variant<std::string, AnyTimeBetween>>;
 
-#define SHORTLY_AFTER(point) AnyTimeBetween(point, point + expectedTimeDegreeOfFreedom)
-#define BEFORE(point) AnyTimeBetween({}, point)
+#define SHORTLY_AFTER(point) AnyTimeBetween(point, point + shortlyAfterDegreeOfFreedom)
+#define BEFORE_INTERVAL(interval) AnyTimeBetween({}, interval.start)

@@ -9,16 +9,10 @@
 #include "test_time_interval.h"
 #include "utils/time.h"
 
-AnyTimeBetween::AnyTimeBetween(const std::chrono::time_point<std::chrono::system_clock>& start, const std::chrono::time_point<std::chrono::system_clock>& end)
-    : m_start(start)
-    , m_end(end)
-{
-}
-
 bool AnyTimeBetween::operator==(const std::string& str) const
 {
     auto tp = alarms::utils::fromYangTimeFormat(str);
-    return m_start <= tp && tp < m_end;
+    return start <= tp && tp < end;
 }
 
 bool operator==(const std::string& str, const AnyTimeBetween& ts)
@@ -33,7 +27,7 @@ bool operator==(const std::string& str, const std::variant<std::string, AnyTimeB
 
 std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o)
 {
-    return os << "(AnyTimeBetween [" << alarms::utils::yangTimeFormat(o.m_start) << "] and [" << alarms::utils::yangTimeFormat(o.m_end) << "])";
+    return os << "(AnyTimeBetween [" << alarms::utils::yangTimeFormat(o.start) << "] and [" << alarms::utils::yangTimeFormat(o.end) << "])";
 }
 
 bool operator==(const std::map<std::string, std::string>& lhs, const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& rhs)
