@@ -57,6 +57,14 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+bool featureEnabled(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::string& feature)
+{
+    ensureModuleImplemented(session, module, revision);
+
+    auto mod = session.getContext().getModule(module.c_str(), revision.c_str());
+    return mod->featureEnabled(feature.c_str());
+}
+
 void removeNodes(::sysrepo::Session session, const std::vector<std::string>& removePaths, std::optional<libyang::DataNode>& parent)
 {
     auto log = spdlog::get("main");

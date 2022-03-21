@@ -1,6 +1,8 @@
 #include <string>
+#include "AlarmKey.h"
 #include "Daemon.h"
 #include "PurgeFilter.h"
+#include "ShelfMatch.h"
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
@@ -49,13 +51,7 @@ void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std:
     edit.newPath("/ietf-alarms:alarms/alarm-list/last-changed", alarms::utils::yangTimeFormat(lastChanged).c_str());
 }
 
-struct AlarmKey {
-    std::string alarmTypeId;
-    std::string alarmTypeQualifier;
-    std::string resource;
-};
-
-AlarmKey getKey(const libyang::DataNode& node)
+alarms::AlarmKey getKey(const libyang::DataNode& node)
 {
     return {
         alarms::utils::childValue(node, "alarm-type-id"),
@@ -123,6 +119,31 @@ bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<liby
     auto oldSeverity = std::get<libyang::Enum>(oldNode->findPath("perceived-severity")->asTerm().value()).value;
     return newSeverity >= notifySeverityLevelValue || (newSeverity < oldSeverity && oldSeverity >= notifySeverityLevelValue && newSeverity < notifySeverityLevelValue);
 }
+
+/* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
+std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::AlarmKey& key)
+{
+    auto data = session.getData("/ietf-alarms:alarms/control/alarm-shelving");
+    if (!data) {
+        return std::nullopt;
+    }
+
+    auto shelfs = data->findXPath("/ietf-alarms:alarms/control/alarm-shelving/shelf");
+    for (const auto& shelfNode : shelfs) {
+        const auto shelfName = alarms::utils::childValue(shelfNode, "name");
+        spdlog::trace("Shelf {}", shelfName);
+
+        if (alarms::ShelfMatch(shelfNode).match(key)) {
+            return shelfName;
+        }
+
+        /* Each entry defines the criteria for shelving alarms.
+         * Criteria are ANDed. If no criteria are specified, all alarms will be shelved.
+         */
+    }
+
+    return std::nullopt;
+}
 }
 
 namespace alarms {
@@ -130,10 +151,16 @@ namespace alarms {
 Daemon::Daemon()
     : m_connection(sysrepo::Connection{})
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
+    , m_shelvingEnabled(false)
     , m_log(spdlog::get("main"))
 {
     utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11");
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
+
+    if (utils::featureEnabled(m_session, ietfAlarmsModule, "2019-09-11", "alarm-shelving")) {
+        m_shelvingEnabled = true;
+        m_log->info("Enabled ietf-alarms feature alarm-shelving");
+    }
 
     m_rpcSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
     m_rpcSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
@@ -165,7 +192,13 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     std::string alarmNodePath;
 
     try {
-        alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
+        if (m_shelvingEnabled && shouldBeShelved(m_session, alarmKey)) {
+            alarmNodePath = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
+        } else {
+            alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm";
+        }
+
+        alarmNodePath += "[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
         m_log->trace("Alarm node: {}", alarmNodePath);
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());

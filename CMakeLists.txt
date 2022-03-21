@@ -60,6 +60,8 @@ add_library(alarms STATIC
     src/alarms/Daemon.h
     src/alarms/PurgeFilter.cpp
     src/alarms/PurgeFilter.h
+    src/alarms/ShelfMatch.cpp
+    src/alarms/ShelfMatch.h
     )
 target_link_libraries(alarms PUBLIC alarms-utils PRIVATE PkgConfig::LIBYANG)
 
@@ -157,6 +159,10 @@ if(BUILD_TESTING)
     set(fixture-alarms_testing3 ${yangs_for_testing})
     ietfalarms_test(alarm_notifications fixture-alarms_testing3)
     target_link_libraries(test-alarm_notifications alarms)
+
+    set(fixture-alarms_testing4 ${yangs_for_testing})
+    ietfalarms_test(alarm_shelving fixture-alarms_testing4)
+    target_link_libraries(test-alarm_shelving alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
