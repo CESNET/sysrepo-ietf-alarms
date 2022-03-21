@@ -56,12 +56,15 @@ add_library(alarms-utils STATIC
 target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO date::date-tz)
 
 add_library(alarms STATIC
+    src/alarms/Key.h
     src/alarms/Daemon.cpp
     src/alarms/Daemon.h
     src/alarms/Key.cpp
     src/alarms/Key.h
     src/alarms/PurgeFilter.cpp
     src/alarms/PurgeFilter.h
+    src/alarms/ShelfMatch.cpp
+    src/alarms/ShelfMatch.h
     )
 target_link_libraries(alarms PUBLIC alarms-utils PRIVATE PkgConfig::LIBYANG)
 
@@ -156,6 +159,15 @@ if(BUILD_TESTING)
 
     ietfalarms_test(alarm_notifications fixture-alarms_testing)
     target_link_libraries(test-alarm_notifications alarms)
+
+    set(fixture-alarms_testing_shelving
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang FEATURE alarm-shelving
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
+        )
+
+    ietfalarms_test(alarm_shelving fixture-alarms_testing_shelving)
+    target_link_libraries(test-alarm_shelving alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)

@@ -22,5 +22,6 @@ struct Key {
 
 Key getKey(const libyang::DataNode& node);
 std::string constructAlarmNodePath(const Key& alarmKey);
+std::string constructShelvedAlarmNodePath(const Key& alarmKey);
 
 }
