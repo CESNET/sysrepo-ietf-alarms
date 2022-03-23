@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "450c98b4_8ee9009b",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T14:42:49Z",
+      "side": 1,
+      "message": "nit: auto",
+      "range": {
+        "startLine": 152,
+        "startChar": 4,
+        "endLine": 152,
+        "endChar": 21
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ad49a9f5_43d63c85",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T14:42:49Z",
+      "side": 1,
+      "message": "You can use .has_value() instead of casting to bool",
+      "range": {
+        "startLine": 205,
+        "startChar": 103,
+        "endLine": 205,
+        "endChar": 160
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1be560f9_cc708cb9",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T14:42:49Z",
+      "side": 1,
+      "message": "nit: auto",
+      "range": {
+        "startLine": 256,
+        "startChar": 8,
+        "endLine": 256,
+        "endChar": 25
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c62e15d_9e173882",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T14:42:49Z",
+      "side": 1,
+      "message": "Recently I stopped using macros for stuff where a function could be used... Here, you would have to supply actualDataFromSysrepo as an argument. What do you think?",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 62
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bfad697b_30078b2c",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-23T14:42:49Z",
+      "side": 1,
+      "message": "The sequence and subseq names imply that you\u0027re iterating over a contiguous set of elements. However, it\u0027s more like a \"check if subseq is a subset of sequence\". Maybe the function could be called \"includesAll\"? And then maybe sequence could be \"map\" and \"subseq\" could be \"elements\".\n\nAlso, maybe std::all_of is suitable for this?\n  return std::all_of(elements.begin(), elements.end(), [\u0026map] (const auto\u0026 val) { return ... } )",
+      "range": {
+        "startLine": 20,
+        "startChar": 56,
+        "endLine": 20,
+        "endChar": 97
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
