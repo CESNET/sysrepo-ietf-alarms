@@ -34,6 +34,24 @@
       "parentUuid": "b0f54b21_10ce5b4f",
       "revId": "9e27a9ed2a9046ebf0a55dd853a1aec1fcdcf0ef",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ddff5240_8d4fe3aa",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-23T10:09:09Z",
+      "side": 1,
+      "message": "I wouldn\u0027t worry about the atomicity too much. On one hand, there\u0027s that option 1) of removing alarm entries one-at-a-time and only syncing the counter as the very last step. The other option 2) is writing a callback which listens to removals and updates the counter. If you think that 2) is much better, go for it, but I would not bother.",
+      "parentUuid": "3e168156_b1b01915",
+      "revId": "9e27a9ed2a9046ebf0a55dd853a1aec1fcdcf0ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
