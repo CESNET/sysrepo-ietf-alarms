@@ -16,6 +16,24 @@
       "message": "This targets the operational DS, right? If so, then pushing something with `netconf:operation\u003d\"remove\"` actually creates an edit/diff node asking sysrepo to \"keep removing a node if it exists\". Since the alarms are owned by the current session, it looks to me that this function should *discard* an appropriate subtree of operational changes, not \"push a removal\".",
       "revId": "9e27a9ed2a9046ebf0a55dd853a1aec1fcdcf0ef",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3e168156_b1b01915",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-23T08:46:14Z",
+      "side": 1,
+      "message": "Yes, you are right. Fixed.\n\nHowever, this change breaks one of the following commits by losing atomicity of sysrepo operation (removing an alarm from oper DS followed by decreasing alarm counter). I will have to think about how to achieve atomicity there (perhaps the counter will be updated by Update callback on the list of alarms?).",
+      "parentUuid": "b0f54b21_10ce5b4f",
+      "revId": "9e27a9ed2a9046ebf0a55dd853a1aec1fcdcf0ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
