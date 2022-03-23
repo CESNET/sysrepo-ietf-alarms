@@ -12,7 +12,7 @@ namespace alarms::utils {
 /** @brief Extract text value of a leaf which is a child of the given parent */
 std::string childValue(const libyang::DataNode& node, const std::string& leafName)
 {
-    auto leaf = node.findPath(leafName.c_str());
+    auto leaf = node.findPath(leafName);
 
     if (!leaf) {
         throw std::runtime_error("Selected child does not exist");

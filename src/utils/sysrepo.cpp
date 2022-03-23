@@ -55,7 +55,7 @@ void initLogsSysrepo()
 /** @brief Checks whether a module is implemented in Sysrepo and throws if not. */
 void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision)
 {
-    if (auto mod = session.getContext().getModule(module.c_str(), revision.c_str()); !mod || !mod->implemented()) {
+    if (auto mod = session.getContext().getModule(module, revision); !mod || !mod->implemented()) {
         throw std::runtime_error(module + "@" + revision + " is not implemented in sysrepo.");
     }
 }
@@ -66,7 +66,7 @@ void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector
 
     for (const auto& path : removePaths) {
         log->trace("Processing node removal from operational DS: {}", path);
-        connection.discardOperationalChanges(path.c_str());
+        connection.discardOperationalChanges(path);
     }
 }
 }

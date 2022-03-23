@@ -21,9 +21,9 @@ using namespace std::chrono_literals;
 std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session session, const std::string& xpath)
 {
     std::map<std::string, std::string> res;
-    auto data = session.getData((xpath + "/*").c_str());
+    auto data = session.getData(xpath + "/*");
     REQUIRE(data);
-    for (const auto& sibling : data->findXPath(xpath.c_str())) { // Use findXPath here in case the xpath is list without keys.
+    for (const auto& sibling : data->findXPath(xpath)) { // Use findXPath here in case the xpath is list without keys.
         for (const auto& node : sibling.childrenDfs()) {
             const auto briefXPath = std::string(node.path()).substr(alarms::utils::endsWith(xpath, ":*") ? xpath.size() - 1 : xpath.size());
             // We ignore the thing that's exactly the xpath we're retrieving to avoid having {"": ""} entries.
@@ -40,9 +40,9 @@ std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session sessio
 std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, const std::string& rpcPath, std::map<std::string, std::string> input)
 {
     spdlog::get("main")->info("rpcFromSysrepo {}", rpcPath);
-    auto inputNode = session.getContext().newPath(rpcPath.c_str(), nullptr);
+    auto inputNode = session.getContext().newPath(rpcPath, std::nullopt);
     for (const auto& [k, v] : input) {
-        inputNode.newPath((rpcPath + "/" + k).c_str(), v.c_str());
+        inputNode.newPath(rpcPath + "/" + k, v);
     }
     auto output = session.sendRPC(inputNode);
     std::map<std::string, std::string> res;
@@ -73,7 +73,7 @@ std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, cons
     auto oldDs = session.activeDatastore();
     session.switchDatastore(datastore);
 
-    auto lists = session.getData(path.c_str());
+    auto lists = session.getData(path);
 
     session.switchDatastore(oldDs);
 
@@ -82,7 +82,7 @@ std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, cons
     }
 
     std::vector<std::string> res;
-    for (const auto& instance : lists->findXPath(path.c_str())) {
+    for (const auto& instance : lists->findXPath(path)) {
         res.emplace_back(instance.path());
     }
     return res;
@@ -90,5 +90,5 @@ std::vector<std::string> listInstancesFromSysrepo(sysrepo::Session session, cons
 
 void copyStartupDatastore(const std::string& module)
 {
-    sysrepo::Connection{}.sessionStart().copyConfig(sysrepo::Datastore::Startup, module.c_str(), 1000ms);
+    sysrepo::Connection{}.sessionStart().copyConfig(sysrepo::Datastore::Startup, module, 1000ms);
 }
