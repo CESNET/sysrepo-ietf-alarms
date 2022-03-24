@@ -1,3 +1,11 @@
+- job:
+    name: sysrepo-ietf-alarms-f34-clang-asan-ubsan
+    parent: f34-clang-asan-ubsan
+    pre-run: ci/pre.yaml
+    requires: CzechLight-deps-f34-clang-asan-ubsan
+    vars:
+      zuul_work_dir: "{{ zuul.projects[zuul.project.canonical_hostname + '/CzechLight/sysrepo-ietf-alarms'].src_dir }}"
+
 - project:
     check:
       jobs:
@@ -14,7 +22,7 @@
                 override-checkout: v42
               - name: CzechLight/libyang-cpp
               - name: CzechLight/sysrepo-cpp
-        - f34-clang-asan-ubsan:
+        - sysrepo-ietf-alarms-f34-clang-asan-ubsan:
             pre-run: ci/pre.yaml
             required-projects: *projects
         - f34-clang-tsan:
