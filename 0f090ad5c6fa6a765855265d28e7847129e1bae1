@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4f6adf88_4c920641",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T10:03:58Z",
+      "side": 1,
+      "message": "Done, thanks.",
+      "parentUuid": "450c98b4_8ee9009b",
+      "range": {
+        "startLine": 152,
+        "startChar": 4,
+        "endLine": 152,
+        "endChar": 21
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ad49a9f5_43d63c85",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-03-23T14:42:49Z",
       "side": 1,
       "message": "You can use .has_value() instead of casting to bool",
+      "range": {
+        "startLine": 205,
+        "startChar": 103,
+        "endLine": 205,
+        "endChar": 160
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "720a6d25_eb20867e",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T10:03:58Z",
+      "side": 1,
+      "message": "Done, thanks for noticing.",
+      "parentUuid": "ad49a9f5_43d63c85",
       "range": {
         "startLine": 205,
         "startChar": 103,
@@ -70,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d22bedfa_d5a444c2",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 256,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T10:03:58Z",
+      "side": 1,
+      "message": "Done, thanks.",
+      "parentUuid": "1be560f9_cc708cb9",
+      "range": {
+        "startLine": 256,
+        "startChar": 8,
+        "endLine": 256,
+        "endChar": 25
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3c62e15d_9e173882",
@@ -83,6 +155,30 @@
       "writtenOn": "2022-03-23T14:42:49Z",
       "side": 1,
       "message": "Recently I stopped using macros for stuff where a function could be used... Here, you would have to supply actualDataFromSysrepo as an argument. What do you think?",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 62
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "124f788b_02cf0c31",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T10:03:58Z",
+      "side": 1,
+      "message": "Yeah, that is probably a good idea.",
+      "parentUuid": "3c62e15d_9e173882",
       "range": {
         "startLine": 17,
         "startChar": 0,
