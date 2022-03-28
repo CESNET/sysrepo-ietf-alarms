@@ -50,6 +50,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "780516ca_17d746e5",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T09:09:05Z",
+      "side": 1,
+      "message": "I have renamed the variable to controlPrefix. I will think about namespace with constants.\n\n(Anyway I think I am pretty creative (in the bad sense) when it comes to building paths here so I think I will add a patch refactoring (consolidating) this after the shelving patch lands)",
+      "parentUuid": "3269ecc8_a8cf69a1",
+      "range": {
+        "startLine": 14,
+        "startChar": 11,
+        "endLine": 14,
+        "endChar": 18
+      },
+      "revId": "14b8e1ee5de4fb08fa3f05557982f346ce7321b2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "58f17a5f_088c80bd",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 6
@@ -61,6 +85,30 @@
       "writtenOn": "2022-03-23T14:13:27Z",
       "side": 1,
       "message": "nit: I was wondering what \"oldds\" is, but then I figured it out :)",
+      "range": {
+        "startLine": 75,
+        "startChar": 9,
+        "endLine": 75,
+        "endChar": 14
+      },
+      "revId": "14b8e1ee5de4fb08fa3f05557982f346ce7321b2",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6b43c99c_c4cc8e53",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T09:09:05Z",
+      "side": 1,
+      "message": "Identifier was renamed to oldDatastore.",
+      "parentUuid": "58f17a5f_088c80bd",
       "range": {
         "startLine": 75,
         "startChar": 9,
