@@ -210,6 +210,30 @@
       },
       "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "20e900ff_6d5cad2c",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-28T10:12:13Z",
+      "side": 1,
+      "message": "Of course... Redesigned and thanks.",
+      "parentUuid": "bfad697b_30078b2c",
+      "range": {
+        "startLine": 20,
+        "startChar": 56,
+        "endLine": 20,
+        "endChar": 97
+      },
+      "revId": "0f090ad5c6fa6a765855265d28e7847129e1bae1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
