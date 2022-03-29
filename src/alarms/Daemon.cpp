@@ -15,6 +15,8 @@ const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
+const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
+const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
@@ -158,8 +160,22 @@ Daemon::Daemon()
         m_session.applyChanges();
     }
 
-    m_rpcSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
-    m_rpcSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
+    m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
+    m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
+
+    if (m_shelvingEnabled) {
+        m_session.switchDatastore(sysrepo::Datastore::Running);
+        m_alarmSub->onModuleChange(
+            ietfAlarmsModule,
+            [&](auto, auto, auto, auto, auto, auto) {
+                reshelve();
+                return sysrepo::ErrorCode::Ok;
+            },
+            controlPrefix + "/alarm-shelving"s,
+            0,
+            sysrepo::SubscribeOptions::Passive | sysrepo::SubscribeOptions::DoneOnly);
+        m_session.switchDatastore(sysrepo::Datastore::Operational);
+    }
 
     m_inventorySub = m_session.onModuleChange(
         ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
@@ -289,4 +305,82 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyan
     output.newPath(purgeRpcPrefix + "/purged-alarms"s, std::to_string(toDelete.size()), libyang::CreationOptions::Output);
     return sysrepo::ErrorCode::Ok;
 }
+
+namespace {
+void shelveExistingAlarm(libyang::DataNode& edit, const libyang::DataNode& alarm, const AlarmKey& alarmKey, const std::string& shelfName)
+{
+    const auto key = shelvedAlarmListInstances + "[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource='" + alarmKey.resource + "']";
+
+    edit.newPath(key + "/shelf-name", shelfName);
+    for (const auto& leafName : {"is-cleared", "last-raised", "last-changed", "perceived-severity", "alarm-text"}) {
+        edit.newPath(key + "/" + leafName, utils::childValue(alarm, leafName));
+    }
+}
+
+void unshelveExistingAlarm(libyang::DataNode& edit, const libyang::DataNode& alarm, const AlarmKey& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
+{
+    const auto key = alarmListInstances + "[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource='" + alarmKey.resource + "']";
+
+    edit.newPath(key + "/time-created", utils::yangTimeFormat(now));
+    for (const auto& leafName : {"is-cleared", "last-raised", "last-changed", "perceived-severity", "alarm-text"}) {
+        edit.newPath(key + "/" + leafName, utils::childValue(alarm, leafName));
+    }
+}
+}
+
+void Daemon::reshelve()
+{
+    auto data = m_session.getData("/ietf-alarms:alarms");
+    if (!data) {
+        return;
+    }
+
+    auto edit = m_session.getContext().newPath("/ietf-alarms:alarms", std::nullopt);
+    auto now = std::chrono::system_clock::now();
+    std::vector<std::string> toErase;
+    bool change = false;
+    size_t shelvedCount = 0;
+    size_t unshelvedCount = 0;
+
+    for (const auto& node : data->findXPath(alarmListInstances)) {
+        const auto alarmKey = getKey(node);
+        if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
+            shelveExistingAlarm(edit, node, alarmKey, *shelf);
+            m_log->trace("Alarm {} shelved ({})", node.path(), *shelf);
+            toErase.emplace_back(node.path());
+            shelvedCount += 1;
+            change = true;
+        }
+    }
+
+    for (const auto& node : data->findXPath(shelvedAlarmListInstances)) {
+        const auto alarmKey = getKey(node);
+        if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
+            if (*shelf != utils::childValue(node, "shelf-name")) {
+                const auto key = shelvedAlarmListInstances + "[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource='" + alarmKey.resource + "']";
+                edit.newPath(key + "/shelf-name", *shelf);
+                m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
+                change = true;
+            }
+        } else {
+            unshelveExistingAlarm(edit, node, alarmKey, now);
+            m_log->trace("Alarm {} moved from shelf", node.path());
+            toErase.emplace_back(node.path());
+            unshelvedCount += 1;
+            change = true;
+        }
+    }
+
+    if (change) {
+        // FIXME: These are 3 individual operations; not an atomic change.
+        if (shelvedCount > 0 || unshelvedCount > 0) {
+            updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) - shelvedCount + unshelvedCount, now);
+        }
+
+        utils::removeFromOperationalDS(m_connection, toErase);
+        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        m_session.applyChanges();
+    }
+}
+
 }
