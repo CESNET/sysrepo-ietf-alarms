@@ -22,6 +22,30 @@
       },
       "revId": "b3b8b51bae085cdf4f89fe661d9f103aa06f9c6b",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7fd4a997_ef4b18de",
+        "filename": "tests/alarm_notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-03-29T09:46:21Z",
+      "side": 1,
+      "message": "Yes, I think so.\n\n map\u003cstring, string\u003e\n\nthat is obtained from sysrepo (event data tree) is not convertible to\n\n PropsWithTimeTest (aka) map\u003cstring, variant\u003cstring, AnyTimeBetween\u003e\u003e\n\nso I can\u0027t refactor notify method of the mock to accept PropsWithTimeTest and let compiler/trompeloeil to figure things out.",
+      "parentUuid": "32e94b59_46fed56e",
+      "range": {
+        "startLine": 25,
+        "startChar": 82,
+        "endLine": 25,
+        "endChar": 98
+      },
+      "revId": "b3b8b51bae085cdf4f89fe661d9f103aa06f9c6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
