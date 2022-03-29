@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "32e94b59_46fed56e",
+        "filename": "tests/alarm_notifications.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-29T08:23:47Z",
+      "side": 1,
+      "message": "is this needed?",
+      "range": {
+        "startLine": 25,
+        "startChar": 82,
+        "endLine": 25,
+        "endChar": 98
+      },
+      "revId": "b3b8b51bae085cdf4f89fe661d9f103aa06f9c6b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
