@@ -1,4 +1,5 @@
 #include "trompeloeil_doctest.h"
+#include <chrono>
 #include <sysrepo-cpp/Connection.hpp>
 #include "alarms/Daemon.h"
 #include "test_alarm_helpers.h"
@@ -132,6 +133,13 @@ struct StringMaker<std::vector<Alarm>> {
 };
 }
 
+AnyTimeBetween getExecutionTimeInterval(const std::function<void()>& foo)
+{
+    auto start = std::chrono::system_clock::now();
+    foo();
+    return AnyTimeBetween{start, std::chrono::system_clock::now()};
+}
+
 TEST_CASE("Alarm shelving")
 {
     TEST_SYSREPO_INIT_LOGS;
@@ -161,119 +169,284 @@ TEST_CASE("Alarm shelving")
                 {"/shelved-alarms", ""},
             });
 
-    bool shelved;
-
-    SECTION("Empty criteria")
+    SECTION("Test shelving on publish action")
     {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']", std::nullopt);
-        shelved = true;
+        bool shelved;
+
+        SECTION("Empty criteria")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Exact match")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Multiple resources; ours included")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='ahoj']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Multiple resources; ours not included")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='ahoj']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = false;
+        }
+
+        SECTION("No resources")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Multiple alarm-types, ours included")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier-match='low']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("No resources; multiple alarm-types, ours included")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier-match='low']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("No resources; multiple alarm-types, ours not included")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='low']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("No resources; multiple alarm-types, matching types but not qualifiers")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='low']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='not-high']", std::nullopt);
+            shelved = false;
+        }
+
+        SECTION("Accept descendants of alarm-2")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Accept all descendants of alarm-2 but with other qualifier")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='not-high']", std::nullopt);
+            shelved = false;
+        }
+
+        SECTION("Accept all descendants of alarm-1")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = false;
+        }
+
+        SECTION("Accept all descendants of alarm-2 and alarm-1")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='high']", std::nullopt);
+            shelved = true;
+        }
+
+        SECTION("Accept all descendants of alarm-2 with an incorrect qualifier and alarm-1 with a correct one")
+        {
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
+            userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='low']", std::nullopt);
+            shelved = false;
+        }
+
+        userSess->applyChanges();
+
+        auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "Hey, I'm overheating.");
+        std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        if (shelved) {
+            REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{"edfa", "alarms-test:alarm-2-1", "high", "shelf"}}));
+        } else {
+            REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>{{"edfa", "alarms-test:alarm-2-1", "high"}});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmListInstances + "[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']"s, sysrepo::Datastore::Operational), PropsWithTimeTest({{"/time-created"s, origTime}})));
+        }
     }
 
-    SECTION("Exact match")
+    SECTION("Alarms are moved from/to shelf when alarm-shelving control changes")
     {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "text");
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "wss", "warning", "text");
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "low", "wss", "warning", "text");
 
-    SECTION("Multiple resources; ours included")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='ahoj']", std::nullopt);
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
+        userSess->applyChanges();
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"edfa", "alarms-test:alarm-2-1", "high"},
+                    {"wss", "alarms-test:alarm-1", "high"},
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{});
+
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']");
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        userSess->applyChanges();
 
-    SECTION("Multiple resources; ours not included")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='ahoj']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = false;
-    }
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='shelf']", ""},
+                    {"/shelf[name='shelf']/name", "shelf"},
+                    {"/shelf[name='shelf']/resource[.='wss']", "wss"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                });
 
-    SECTION("No resources")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"edfa", "alarms-test:alarm-2-1", "high"},
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                });
 
-    SECTION("Multiple alarm-types, ours included")
-    {
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier-match='low']", std::nullopt);
+        userSess->applyChanges();
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='shelf']", ""},
+                    {"/shelf[name='shelf']/name", "shelf"},
+                    {"/shelf[name='shelf']/resource[.='wss']", "wss"},
+                    {"/shelf[name='shelf']/resource[.='edfa']", "edfa"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                });
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"edfa", "alarms-test:alarm-2-1", "high"},
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                });
+
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        userSess->applyChanges();
 
-    SECTION("No resources; multiple alarm-types, ours included")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier-match='low']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='shelf']", ""},
+                    {"/shelf[name='shelf']/name", "shelf"},
+                    {"/shelf[name='shelf']/resource[.='wss']", "wss"},
+                    {"/shelf[name='shelf']/resource[.='edfa']", "edfa"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                });
 
-    SECTION("No resources; multiple alarm-types, ours not included")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='low']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
+                });
 
-    SECTION("No resources; multiple alarm-types, matching types but not qualifiers")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='low']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='not-high']", std::nullopt);
-        shelved = false;
-    }
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']");
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']");
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']");
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']");
+        userSess->applyChanges();
 
-    SECTION("Accept descendants of alarm-2")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='shelf']", ""},
+                    {"/shelf[name='shelf']/name", "shelf"},
+                });
 
-    SECTION("Accept all descendants of alarm-2 but with other qualifier")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='not-high']", std::nullopt);
-        shelved = false;
-    }
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({}));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
+                    {"wss", "alarms-test:alarm-2-1", "low", "shelf"},
+                });
 
-    SECTION("Accept all descendants of alarm-1")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = false;
-    }
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']");
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']", std::nullopt);
+        userSess->applyChanges();
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='shelf-replacement']", ""},
+                    {"/shelf[name='shelf-replacement']/name", "shelf-replacement"},
+                });
 
-    SECTION("Accept all descendants of alarm-2 and alarm-1")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='high']", std::nullopt);
-        shelved = true;
-    }
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({}));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"wss", "alarms-test:alarm-1", "high", "shelf-replacement"},
+                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
+                    {"wss", "alarms-test:alarm-2-1", "low", "shelf-replacement"},
+                });
 
-    SECTION("Accept all descendants of alarm-2 with an incorrect qualifier and alarm-1 with a correct one")
-    {
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier-match='low']", std::nullopt);
-        shelved = false;
-    }
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
+        auto changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
-    userSess->applyChanges();
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='aashelf']", ""},
+                    {"/shelf[name='aashelf']/name", "aashelf"},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                    {"/shelf[name='shelf-replacement']", ""},
+                    {"/shelf[name='shelf-replacement']/name", "shelf-replacement"},
+                    {"/shelf[name='shelf-replacement']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='shelf-replacement']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/shelf[name='shelf-replacement']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                });
 
-    auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "Hey, I'm overheating.");
-    std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
-    if (shelved) {
-        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{"edfa", "alarms-test:alarm-2-1", "high", "shelf"}}));
-    } else {
-        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>{{"edfa", "alarms-test:alarm-2-1", "high"}});
-        REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmListInstances + "[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']"s, sysrepo::Datastore::Operational), PropsWithTimeTest({{"/time-created"s, origTime}})));
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"wss", "alarms-test:alarm-1", "high"},
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmListInstances + "[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']"s, sysrepo::Datastore::Operational), PropsWithTimeTest({{"/time-created"s, changedTime}})));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
+                });
+
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']");
+        userSess->applyChanges();
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
+                    {"/shelf[name='aashelf']", ""},
+                    {"/shelf[name='aashelf']/name", "aashelf"},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", ""},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']/alarm-type-qualifier-match", "high"},
+                });
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
+                    {"wss", "alarms-test:alarm-1", "high"},
+                    {"wss", "alarms-test:alarm-2-1", "low"},
+                }));
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {"edfa", "alarms-test:alarm-2-1", "high", "aashelf"},
+                });
     }
 
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules
