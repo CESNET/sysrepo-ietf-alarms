@@ -48,6 +48,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "49e36738_3c325e70",
+        "filename": "tests/alarm_notifications.cpp",
+        "patchSetId": 9
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-29T09:54:32Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "932be687_4b38a9a0",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 54,
+        "endChar": 5
+      },
+      "revId": "729053e89325bf8a8a967137c8f2b2a70cd7437e",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "83cc911b_3910556a",
