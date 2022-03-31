@@ -66,6 +66,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "a969454f_e67ccc3e",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-31T16:48:18Z",
+      "side": 1,
+      "message": "Yeah that seems better",
+      "parentUuid": "d951adbf_6a98ca56",
+      "revId": "b14ea858185551b0af9480140ac69e77801ab7b9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9cc464e3_33f93a68",
         "filename": "tests/test_sysrepo_helpers.cpp",
         "patchSetId": 11
