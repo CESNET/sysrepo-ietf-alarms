@@ -33,6 +33,24 @@
       "message": "What\u0027s the point of using all these variables, anyway? Let\u0027s just pass the ${yangs_for_testing} to each ietfalarms_test() directly.",
       "revId": "e97a8ed83a6a45ba71cdbbc72f2472015973a61c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d83b2ed_4d16b1a2",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-03-31T16:42:45Z",
+      "side": 1,
+      "message": "Ideally, the variable name would be fixture-alarms_testing",
+      "parentUuid": "8ca00716_7246118f",
+      "revId": "e97a8ed83a6a45ba71cdbbc72f2472015973a61c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
