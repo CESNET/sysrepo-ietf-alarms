@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0134f9e1_ba589f4d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:22:40Z",
+      "side": 1,
+      "message": "I like this!",
+      "revId": "e2d6672ee296d2b950f3bf7c6ffb03134afecff4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eb48a4f9_f7e42823",
+        "filename": "tests/test_time_interval.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:22:40Z",
+      "side": 1,
+      "message": "Consider removing this. After this commit, there\u0027s only one user (that part which sets up an expectation for a notification change, and sends out an RPC which triggers that notification). Its use looks correct to me, but now that all other places have a stricter time tracking, I would prefer to remove this macro so that it won\u0027t get used \"accidentally\".",
+      "range": {
+        "startLine": 28,
+        "startChar": 8,
+        "endLine": 28,
+        "endChar": 21
+      },
+      "revId": "e2d6672ee296d2b950f3bf7c6ffb03134afecff4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
