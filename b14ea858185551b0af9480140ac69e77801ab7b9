@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "73bd4d35_9f763444",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:12:49Z",
+      "side": 1,
+      "message": ":), and it\u0027s something which comes from a standard model, anyway",
+      "range": {
+        "startLine": 47,
+        "startChar": 49,
+        "endLine": 47,
+        "endChar": 142
+      },
+      "revId": "b14ea858185551b0af9480140ac69e77801ab7b9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b40fffee_599d32d6",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:12:49Z",
+      "side": 1,
+      "message": "this should happen before the subscriptions are registered, otherwise there\u0027s a (theoretical) chance of a race where this code overwrites something which has been just-updated by the CBs",
+      "range": {
+        "startLine": 151,
+        "startChar": 0,
+        "endLine": 154,
+        "endChar": 29
+      },
+      "revId": "b14ea858185551b0af9480140ac69e77801ab7b9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d951adbf_6a98ca56",
+        "filename": "tests/alarm_purge.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:12:49Z",
+      "side": 1,
+      "message": "Looking at these identifiers, it is not clear to me whether it checks that all \"elements\" are in the \"map\", or whether everything that\u0027s in the \"map\" is also among the \"elements\".\n\nThe convention that I\u0027ve seen a few times is \"needle\" and \"haystack\". Perhaps s/elements/needles and s/map/haystack/?",
+      "revId": "b14ea858185551b0af9480140ac69e77801ab7b9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9cc464e3_33f93a68",
+        "filename": "tests/test_sysrepo_helpers.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-03-31T01:12:49Z",
+      "side": 1,
+      "message": "why is this needed?",
+      "revId": "b14ea858185551b0af9480140ac69e77801ab7b9",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
