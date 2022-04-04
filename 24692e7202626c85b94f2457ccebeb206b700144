@@ -70,6 +70,54 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "75e0d41d_87937e31",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T08:45:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8d4bdf8f_19df9ddb",
+      "range": {
+        "startLine": 127,
+        "startChar": 101,
+        "endLine": 127,
+        "endChar": 115
+      },
+      "revId": "24692e7202626c85b94f2457ccebeb206b700144",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0eacee4d_026467d1",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T08:45:09Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "e5c74927_6e77863c",
+      "range": {
+        "startLine": 127,
+        "startChar": 12,
+        "endLine": 127,
+        "endChar": 29
+      },
+      "revId": "24692e7202626c85b94f2457ccebeb206b700144",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3241d064_b610d40d",
@@ -83,6 +131,24 @@
       "writtenOn": "2022-03-31T00:17:09Z",
       "side": 1,
       "message": "this has the same SECTION name as the SECTION above (or if it is not the same, then it is visually to similar so that I don\u0027t see any difference)",
+      "revId": "24692e7202626c85b94f2457ccebeb206b700144",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1fe2d687_90df3eb1",
+        "filename": "tests/alarm_notifications.cpp",
+        "patchSetId": 7
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T08:45:09Z",
+      "side": 1,
+      "message": "Fixed (should have been \"inventory change notifications\")",
+      "parentUuid": "3241d064_b610d40d",
       "revId": "24692e7202626c85b94f2457ccebeb206b700144",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }

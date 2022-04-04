@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "3963db0f_3eea97eb",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T08:45:09Z",
+      "side": 1,
+      "message": "Why not. Done.",
+      "parentUuid": "2b8713ec_bbf4e996",
+      "range": {
+        "startLine": 127,
+        "startChar": 39,
+        "endLine": 127,
+        "endChar": 51
+      },
+      "revId": "c3cd19c5196dc6c16d569cbf29961fb2550c98ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "39cd655f_2b837ece",
         "filename": "tests/test_sysrepo_helpers.h",
         "patchSetId": 8
@@ -37,6 +61,24 @@
       "writtenOn": "2022-03-31T00:17:09Z",
       "side": 1,
       "message": "I\u0027m not sure these one-liner macros make the code much more readable, but perhaps they do, I\u0027m OK with these.",
+      "revId": "c3cd19c5196dc6c16d569cbf29961fb2550c98ac",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "610cd11d_c3c5f74d",
+        "filename": "tests/test_sysrepo_helpers.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T08:45:09Z",
+      "side": 1,
+      "message": "I will think about it but I am going to leave it like this for now.",
+      "parentUuid": "39cd655f_2b837ece",
       "revId": "c3cd19c5196dc6c16d569cbf29961fb2550c98ac",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
