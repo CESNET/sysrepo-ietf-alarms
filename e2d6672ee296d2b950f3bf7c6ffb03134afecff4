@@ -39,6 +39,30 @@
       },
       "revId": "e2d6672ee296d2b950f3bf7c6ffb03134afecff4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1f8cb11_97cbb302",
+        "filename": "tests/test_time_interval.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-04T09:08:32Z",
+      "side": 1,
+      "message": "I have inlined the macro in the place it was used. I thought about just moving it to the test compile unit but it\u0027s probably not worth it.",
+      "parentUuid": "eb48a4f9_f7e42823",
+      "range": {
+        "startLine": 28,
+        "startChar": 8,
+        "endLine": 28,
+        "endChar": 21
+      },
+      "revId": "e2d6672ee296d2b950f3bf7c6ffb03134afecff4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
