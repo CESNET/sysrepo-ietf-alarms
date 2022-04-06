@@ -60,6 +60,14 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
+bool featureEnabled(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::string& feature)
+{
+    ensureModuleImplemented(session, module, revision);
+
+    auto mod = session.getContext().getModule(module, revision);
+    return mod->featureEnabled(feature);
+}
+
 void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector<std::string>& removePaths)
 {
     auto log = spdlog::get("main");
