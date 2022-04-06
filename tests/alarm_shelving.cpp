@@ -45,6 +45,9 @@ TEST_CASE("Alarm shelving")
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "0"},
                 {"/alarm-list/last-changed", initTime},
+                {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
                 {"/shelved-alarms", ""},
@@ -167,6 +170,8 @@ TEST_CASE("Alarm shelving")
                         {"/alarm-list/number-of-alarms", "0"},
                         {"/alarm-list/last-changed", initTime},
                         {"/shelved-alarms", ""},
+                        {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                        {"/shelved-alarms/shelved-alarms-last-changed", origTime},
                         {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
                         {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
                         {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -196,6 +201,9 @@ TEST_CASE("Alarm shelving")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/time-created", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                        {"/shelved-alarms", ""},
+                        {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                        {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/shelved-alarms", ""},
@@ -251,6 +259,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']");
@@ -294,6 +304,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -347,6 +359,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -393,6 +407,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "2"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -434,6 +450,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "3"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
@@ -466,9 +484,11 @@ TEST_CASE("Alarm shelving")
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/shelf-name", "shelf"},
                 });
 
+        auto oldChangedTime = changedTime;
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']");
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']", std::nullopt);
-        userSess->applyChanges();
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
+
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
                     {"/shelf[name='shelf-replacement']", ""},
                     {"/shelf[name='shelf-replacement']/name", "shelf-replacement"},
@@ -478,10 +498,12 @@ TEST_CASE("Alarm shelving")
                     {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "0"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", oldChangedTime},
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "3"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
@@ -559,6 +581,8 @@ TEST_CASE("Alarm shelving")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -572,7 +596,8 @@ TEST_CASE("Alarm shelving")
                 });
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']");
-        userSess->applyChanges();
+        oldChangedTime = changedTime;
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/control/alarm-shelving", sysrepo::Datastore::Running) == std::map<std::string, std::string>{
                     {"/shelf[name='aashelf']", ""},
@@ -586,7 +611,7 @@ TEST_CASE("Alarm shelving")
                     {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "2"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", oldChangedTime},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
@@ -596,7 +621,7 @@ TEST_CASE("Alarm shelving")
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-text", "text"},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/last-raised", origTime3},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/last-changed", origTime3},
-                    {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/time-created", changedTime},
+                    {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/time-created", oldChangedTime},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -606,10 +631,12 @@ TEST_CASE("Alarm shelving")
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "text"},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime2},
                     {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime2},
-                    {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", changedTime},
+                    {"/alarm-list/alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", oldChangedTime},
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", changedTime},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
