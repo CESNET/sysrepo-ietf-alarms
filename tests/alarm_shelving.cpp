@@ -179,6 +179,13 @@ AnyTimeBetween getExecutionTimeInterval(const std::function<void()>& foo)
     return AnyTimeBetween{start, std::chrono::system_clock::now()};
 }
 
+#define SHELF_SUMMARY(SESS, NUMBER_OF_SHELVED_ALARMS, SHELVED_ALARMS_LAST_CHANGE)                                 \
+    {                                                                                                             \
+        auto data = dataFromSysrepo(SESS, "/ietf-alarms:alarms/shelved-alarms", sysrepo::Datastore::Operational); \
+        REQUIRE(data["/number-of-shelved-alarms"] == std::to_string(NUMBER_OF_SHELVED_ALARMS));                   \
+        REQUIRE(data["/shelved-alarms-last-changed"] == SHELVED_ALARMS_LAST_CHANGE);                              \
+    }
+
 TEST_CASE("Alarm shelving")
 {
     TEST_SYSREPO_INIT_LOGS;
@@ -203,6 +210,9 @@ TEST_CASE("Alarm shelving")
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "0"},
                 {"/alarm-list/last-changed", initTime},
+                {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
                 {"/shelved-alarms", ""},
@@ -320,10 +330,12 @@ TEST_CASE("Alarm shelving")
         if (shelved) {
             REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{"edfa", "alarms-test:alarm-2-1", "high", "shelf"}}));
             REQUIRE(extractAlarms(*userSess).empty());
+            SHELF_SUMMARY(*userSess, 1, origTime);
         } else {
             REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>{{"edfa", "alarms-test:alarm-2-1", "high"}});
             REQUIRE(extractShelvedAlarms(*userSess).empty());
             REQUIRE(dataFromSysrepo(*userSess, alarmListInstances + "[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']"s, sysrepo::Datastore::Operational)["/time-created"] == origTime);
+            SHELF_SUMMARY(*userSess, 0, initTime);
         }
     }
 
@@ -346,7 +358,7 @@ TEST_CASE("Alarm shelving")
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']");
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
-        userSess->applyChanges();
+        auto changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"wss"}, {{"alarms-test:alarm-1", "high"}}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
@@ -356,6 +368,7 @@ TEST_CASE("Alarm shelving")
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
                     {"wss", "alarms-test:alarm-1", "high", "shelf"},
                 });
+        SHELF_SUMMARY(*userSess, 1, changedTime);
 
         // append a value to shelf leaf-list and test again
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
@@ -369,9 +382,10 @@ TEST_CASE("Alarm shelving")
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
                     {"wss", "alarms-test:alarm-1", "high", "shelf"},
                 });
+        SHELF_SUMMARY(*userSess, 1, changedTime);
 
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        userSess->applyChanges();
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"wss", "edfa"}, {{"alarms-test:alarm-1", "high"}, {"alarms-test:alarm-2-1", "high"}}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
@@ -381,12 +395,13 @@ TEST_CASE("Alarm shelving")
                     {"wss", "alarms-test:alarm-1", "high", "shelf"},
                     {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
                 });
+        SHELF_SUMMARY(*userSess, 2, changedTime);
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier-match='high']");
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']");
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']");
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']");
-        userSess->applyChanges();
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {}, {}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({}));
@@ -395,10 +410,11 @@ TEST_CASE("Alarm shelving")
                     {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
                     {"wss", "alarms-test:alarm-2-1", "low", "shelf"},
                 });
+        SHELF_SUMMARY(*userSess, 3, changedTime);
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']");
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']", std::nullopt);
-        userSess->applyChanges();
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf-replacement", {}, {}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({}));
@@ -407,10 +423,11 @@ TEST_CASE("Alarm shelving")
                     {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
                     {"wss", "alarms-test:alarm-2-1", "low", "shelf-replacement"},
                 });
+        SHELF_SUMMARY(*userSess, 3, changedTime);
 
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='aashelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
-        auto changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{
                     {"shelf-replacement", {}, {{"alarms-test:alarm-2-1", "high"}}},
@@ -424,9 +441,10 @@ TEST_CASE("Alarm shelving")
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
                     {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
                 });
+        SHELF_SUMMARY(*userSess, 1, changedTime);
 
         userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf-replacement']");
-        userSess->applyChanges();
+        changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"aashelf", {}, {{"alarms-test:alarm-2-1", "high"}}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>({
@@ -436,6 +454,7 @@ TEST_CASE("Alarm shelving")
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
                     {"edfa", "alarms-test:alarm-2-1", "high", "aashelf"},
                 });
+        SHELF_SUMMARY(*userSess, 1, changedTime);
     }
 
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules
