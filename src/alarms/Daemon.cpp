@@ -15,6 +15,8 @@ const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
+const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
+const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
@@ -26,11 +28,21 @@ size_t numberOfListInstances(sysrepo::Session& session, const std::string& xPath
     return data ? data->findXPath(xPath).size() : 0;
 }
 
-void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
+void updateStats(libyang::DataNode& edit, const std::string& prefix, const std::string& alarmsCountLeafName, size_t alarmCount, const std::string& lastChangedLeafName, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
 {
     // number-of-alarms is of type yang:gauge32. If we ever support more than 2^32-1 alarms then we will have to deal with cropping the value.
-    edit.newPath("/ietf-alarms:alarms/alarm-list/number-of-alarms", std::to_string(alarmCount));
-    edit.newPath("/ietf-alarms:alarms/alarm-list/last-changed", alarms::utils::yangTimeFormat(lastChanged));
+    edit.newPath(prefix + "/" + alarmsCountLeafName, std::to_string(alarmCount));
+    edit.newPath(prefix + "/" + lastChangedLeafName, alarms::utils::yangTimeFormat(lastChanged));
+}
+
+void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
+{
+    updateStats(edit, alarmList, "number-of-alarms", alarmCount, "last-changed", lastChanged);
+}
+
+void updateShelvedAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
+{
+    updateStats(edit, shelvedAlarmList, "number-of-shelved-alarms", alarmCount, "shelved-alarms-last-changed", lastChanged);
 }
 
 /** @brief Returns node specified by xpath in the tree */
@@ -122,6 +134,9 @@ Daemon::Daemon()
     {
         auto edit = m_session.getContext().newPath(alarmList);
         updateAlarmListStats(edit, 0, std::chrono::system_clock::now());
+        if (m_shelvingEnabled) {
+            updateShelvedAlarmListStats(edit, 0, std::chrono::system_clock::now());
+        }
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
     }
@@ -211,6 +226,9 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) + static_cast<int>(editAlarmNode->findPath("time-created").has_value()), now);
     } else {
         edit.newPath(alarmNodePath + "/shelf-name", matchedShelf);
+        if (!existingAlarmNode) {
+            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) + 1, now);
+        }
     }
 
     m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
@@ -305,6 +323,7 @@ void Daemon::reshelve()
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
     bool change = false;
+    bool movedBetweenShelfs = false;
     size_t shelvedCount = 0;
     size_t unshelvedCount = 0;
 
@@ -327,6 +346,7 @@ void Daemon::reshelve()
                 edit.newPath(key + "/shelf-name", *shelf);
                 m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
                 change = true;
+                movedBetweenShelfs = true;
             }
         } else {
             unshelveExistingAlarm(edit, node, alarmKey, now);
@@ -338,9 +358,12 @@ void Daemon::reshelve()
     }
 
     if (change) {
-        // FIXME: These are 3 individual operations; not an atomic change.
+        // FIXME: These are 2 individual operations (delete oper data + change stats); not an atomic change.
         if (shelvedCount > 0 || unshelvedCount > 0) {
             updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) - shelvedCount + unshelvedCount, now);
+        }
+        if (shelvedCount > 0 || unshelvedCount > 0 || movedBetweenShelfs) {
+            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) + shelvedCount - unshelvedCount, now);
         }
 
         utils::removeFromOperationalDS(m_connection, toErase);
