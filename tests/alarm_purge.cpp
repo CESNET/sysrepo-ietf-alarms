@@ -24,7 +24,7 @@ bool includesAll(const std::map<std::string, std::string>& haystack, const Props
     });
 }
 
-TEST_CASE("Basic alarm publishing and updating")
+TEST_CASE("Purge alarms RPC")
 {
     TEST_SYSREPO_INIT_LOGS;
 
