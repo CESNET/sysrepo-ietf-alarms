@@ -7,11 +7,15 @@
 
 #pragma once
 #include <string>
+#include <vector>
 
 namespace libyang {
 class DataNode;
+class Identity;
 }
 
 namespace alarms::utils {
 std::string childValue(const libyang::DataNode& node, const std::string& name);
+std::vector<libyang::Identity> getIdentitiesDerivedFrom(const libyang::Identity& baseIdentity);
+
 }
