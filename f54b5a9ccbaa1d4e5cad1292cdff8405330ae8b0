@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8e12dfc7_6ec611b9",
+        "filename": "src/utils/libyang.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:17:17Z",
+      "side": 1,
+      "message": "I think this could be called \"getDerivedRecursive\" or maybe \"getRecursiveDerived\". And then... the function can possibly be called recursively? I could add this to libyang-cpp also, it makes sense.",
+      "range": {
+        "startLine": 29,
+        "startChar": 31,
+        "endLine": 29,
+        "endChar": 55
+      },
+      "revId": "f54b5a9ccbaa1d4e5cad1292cdff8405330ae8b0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
