@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e05268e1_48da6925",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "spaces here",
+      "range": {
+        "startLine": 161,
+        "startChar": 0,
+        "endLine": 161,
+        "endChar": 2
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e8142887_6bfb82be",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "and here",
+      "range": {
+        "startLine": 163,
+        "startChar": 0,
+        "endLine": 163,
+        "endChar": 2
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "94dbbcac_88f11451",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "Hmm... at first I thought this is a bool, but shouldBeShelved returns optional\u003cstring\u003e and you obviously use that below... maybe, this should be named something like \"matchedShelve\"? (from the doc of shouldBeShelved)",
+      "range": {
+        "startLine": 181,
+        "startChar": 9,
+        "endLine": 181,
+        "endChar": 14
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0b1ca4fa_e6e673ef",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "I see that you mention \u003cset\u003e below, but now it is not needed I think",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 3,
+        "endChar": 14
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cef0a751_190d8d2f",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "is this needed? afaik valueStr returns an SV and alarmKey.resource as a string (and these should be comparable)",
+      "range": {
+        "startLine": 18,
+        "startChar": 15,
+        "endLine": 18,
+        "endChar": 27
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fafbdce9_855f6f11",
+        "filename": "src/alarms/ShelfMatch.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "nit: shelves",
+      "range": {
+        "startLine": 15,
+        "startChar": 105,
+        "endLine": 15,
+        "endChar": 111
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7421536c_6aaa7508",
+        "filename": "src/utils/libyang.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:32:03Z",
+      "side": 1,
+      "message": "Is this needed?",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 30
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
