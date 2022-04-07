@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7e93a1dd_1a1ceccf",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e05268e1_48da6925",
+      "range": {
+        "startLine": 161,
+        "startChar": 0,
+        "endLine": 161,
+        "endChar": 2
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "e8142887_6bfb82be",
@@ -37,6 +61,30 @@
       "writtenOn": "2022-04-07T02:32:03Z",
       "side": 1,
       "message": "and here",
+      "range": {
+        "startLine": 163,
+        "startChar": 0,
+        "endLine": 163,
+        "endChar": 2
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a856f18_7cd7d1ad",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 5
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e8142887_6bfb82be",
       "range": {
         "startLine": 163,
         "startChar": 0,
@@ -70,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "f66ad9cd_bd03e416",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Good idea. Done.",
+      "parentUuid": "94dbbcac_88f11451",
+      "range": {
+        "startLine": 181,
+        "startChar": 9,
+        "endLine": 181,
+        "endChar": 14
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0b1ca4fa_e6e673ef",
@@ -83,6 +155,30 @@
       "writtenOn": "2022-04-07T02:32:03Z",
       "side": 1,
       "message": "I see that you mention \u003cset\u003e below, but now it is not needed I think",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 3,
+        "endChar": 14
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "85d5055b_358ffef1",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0b1ca4fa_e6e673ef",
       "range": {
         "startLine": 3,
         "startChar": 0,
@@ -118,6 +214,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "0870eba4_ac6f00c0",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 5
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "It is not. Maybe a leftover from old libyang-cpp 1.0.0?",
+      "parentUuid": "cef0a751_190d8d2f",
+      "range": {
+        "startLine": 18,
+        "startChar": 15,
+        "endLine": 18,
+        "endChar": 27
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "fafbdce9_855f6f11",
         "filename": "src/alarms/ShelfMatch.h",
         "patchSetId": 5
@@ -129,6 +249,30 @@
       "writtenOn": "2022-04-07T02:32:03Z",
       "side": 1,
       "message": "nit: shelves",
+      "range": {
+        "startLine": 15,
+        "startChar": 105,
+        "endLine": 15,
+        "endChar": 111
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "95424941_46073829",
+        "filename": "src/alarms/ShelfMatch.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "fafbdce9_855f6f11",
       "range": {
         "startLine": 15,
         "startChar": 105,
@@ -152,6 +296,30 @@
       "writtenOn": "2022-04-07T02:32:03Z",
       "side": 1,
       "message": "Is this needed?",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 30
+      },
+      "revId": "2b76cd898b6ab0ec0e1586a18da02104493cec5b",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8b8bfada_68cd11da",
+        "filename": "src/utils/libyang.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000062
+      },
+      "writtenOn": "2022-04-07T17:44:46Z",
+      "side": 1,
+      "message": "Bad rebase when refactoring :(. Thanks for noticing.",
+      "parentUuid": "7421536c_6aaa7508",
       "range": {
         "startLine": 18,
         "startChar": 0,
