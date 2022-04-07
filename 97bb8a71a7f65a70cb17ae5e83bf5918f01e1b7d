@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f80e3279_ced7d616",
+        "filename": "src/utils/sysrepo.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:10:49Z",
+      "side": 1,
+      "message": "You don\u0027t have to use the .c_str()s anymore :)",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 48
+      },
+      "revId": "97bb8a71a7f65a70cb17ae5e83bf5918f01e1b7d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
