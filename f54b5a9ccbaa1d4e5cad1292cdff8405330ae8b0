@@ -22,6 +22,30 @@
       },
       "revId": "f54b5a9ccbaa1d4e5cad1292cdff8405330ae8b0",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f85904c4_82cfe134",
+        "filename": "src/utils/libyang.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000056
+      },
+      "writtenOn": "2022-04-07T02:17:51Z",
+      "side": 1,
+      "message": "But maybe it\u0027s just too late for me :)",
+      "parentUuid": "8e12dfc7_6ec611b9",
+      "range": {
+        "startLine": 29,
+        "startChar": 31,
+        "endLine": 29,
+        "endChar": 55
+      },
+      "revId": "f54b5a9ccbaa1d4e5cad1292cdff8405330ae8b0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
