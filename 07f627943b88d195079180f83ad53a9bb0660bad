@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2b6a4269_c8b6a8a0",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-11T08:40:43Z",
+      "side": 1,
+      "message": "2 operations",
+      "revId": "07f627943b88d195079180f83ad53a9bb0660bad",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
