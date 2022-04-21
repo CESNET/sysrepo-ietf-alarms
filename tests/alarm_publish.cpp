@@ -32,6 +32,7 @@ TEST_CASE("Basic alarm publishing and updating")
     TEST_SYSREPO_CLIENT_INIT(userSess);
 
     REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                {"/alarm-inventory", ""},
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "0"},
                 {"/alarm-list/last-changed", initTime},
@@ -41,6 +42,7 @@ TEST_CASE("Basic alarm publishing and updating")
     auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
     std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
     REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                {"/alarm-inventory", ""},
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "1"},
                 {"/alarm-list/last-changed", origTime},
@@ -64,6 +66,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", origTime},
@@ -92,6 +95,7 @@ TEST_CASE("Basic alarm publishing and updating")
         auto origTime1 = CLIENT_ALARM_RPC(cli2Sess, "alarms-test:alarm-2-1", "", "psu-1", "major", "More juice pls.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "2"},
                     {"/alarm-list/last-changed", origTime1},
@@ -124,6 +128,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "2"},
                     {"/alarm-list/last-changed", origTime1},
@@ -161,6 +166,7 @@ TEST_CASE("Basic alarm publishing and updating")
             auto clearedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Functioning within normal parameters.");
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                        {"/alarm-inventory", ""},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", clearedTime},
@@ -181,6 +187,7 @@ TEST_CASE("Basic alarm publishing and updating")
             auto raisedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                        {"/alarm-inventory", ""},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", raisedTime},
@@ -204,6 +211,7 @@ TEST_CASE("Basic alarm publishing and updating")
             CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "psu", "cleared", "Functioning within normal parameters.");
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                        {"/alarm-inventory", ""},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", origTime},
@@ -228,6 +236,7 @@ TEST_CASE("Basic alarm publishing and updating")
         auto changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "indeterminate", "Something happen but we don't know what and how serious it is.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -248,6 +257,7 @@ TEST_CASE("Basic alarm publishing and updating")
         changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "minor", "No worries.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -268,6 +278,7 @@ TEST_CASE("Basic alarm publishing and updating")
         changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Functioning within normal parameters.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -288,6 +299,7 @@ TEST_CASE("Basic alarm publishing and updating")
         auto reraisedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "major", "Hey, I'm overheating.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", reraisedTime},
@@ -308,6 +320,7 @@ TEST_CASE("Basic alarm publishing and updating")
         changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "critical", "Hey, I'm overheating.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -332,6 +345,7 @@ TEST_CASE("Basic alarm publishing and updating")
         auto origTime2 = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "/ietf-interfaces:interface[name=\"eth2\"]", "minor", "Link operationally down but administratively up.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "3"},
                     {"/alarm-list/last-changed", origTime2},
