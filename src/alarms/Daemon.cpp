@@ -18,6 +18,7 @@ const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
 const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
 const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
 
@@ -142,7 +143,11 @@ Daemon::Daemon()
     }
 
     m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
-    m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(input, output); });
+    m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeRpcPrefix, alarmListInstances, input, output); });
+
+    if (m_shelvingEnabled) {
+        m_alarmSub->onRPCAction(purgeShelvedRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeShelvedRpcPrefix, shelvedAlarmListInstances, input, output); });
+    }
 
     if (m_shelvingEnabled) {
         m_session.switchDatastore(sysrepo::Datastore::Running);
@@ -260,14 +265,14 @@ libyang::DataNode Daemon::createStatusChangeNotification(const std::string& alar
     return notification;
 }
 
-sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyang::DataNode output)
+sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output)
 {
     const auto now = std::chrono::system_clock::now();
     PurgeFilter filter(rpcInput);
     std::vector<std::string> toDelete;
 
     if (auto rootNode = m_session.getData("/ietf-alarms:alarms")) {
-        for (const auto& alarmNode : rootNode->findXPath("/ietf-alarms:alarms/alarm-list/alarm")) {
+        for (const auto& alarmNode : rootNode->findXPath(alarmListXPath)) {
             if (filter.matches(alarmNode)) {
                 toDelete.push_back(std::string(alarmNode.path()));
             }
@@ -281,12 +286,18 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const libyang::DataNode& rpcInput, libyan
         utils::removeFromOperationalDS(m_connection, toDelete);
 
         auto edit = m_session.getContext().newPath(alarmList);
-        updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances), now);
+
+        if (rpcPath == purgeRpcPrefix) {
+            updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances), now);
+        } else {
+            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances), now);
+        }
+
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
     }
 
-    output.newPath(purgeRpcPrefix + "/purged-alarms"s, std::to_string(toDelete.size()), libyang::CreationOptions::Output);
+    output.newPath(rpcPath + "/purged-alarms", std::to_string(toDelete.size()), libyang::CreationOptions::Output);
     return sysrepo::ErrorCode::Ok;
 }
 
