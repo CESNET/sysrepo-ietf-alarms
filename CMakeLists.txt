@@ -151,9 +151,6 @@ if(BUILD_TESTING)
     ietfalarms_test(alarm_publish fixture-alarms_testing)
     target_link_libraries(test-alarm_publish alarms)
 
-    ietfalarms_test(alarm_purge fixture-alarms_testing)
-    target_link_libraries(test-alarm_purge alarms)
-
     ietfalarms_test(alarm_notifications fixture-alarms_testing)
     target_link_libraries(test-alarm_notifications alarms)
 
@@ -165,6 +162,9 @@ if(BUILD_TESTING)
 
     ietfalarms_test(alarm_shelving fixture-alarms_testing_shelving)
     target_link_libraries(test-alarm_shelving alarms)
+
+    ietfalarms_test(alarm_purge fixture-alarms_testing_shelving)
+    target_link_libraries(test-alarm_purge alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
