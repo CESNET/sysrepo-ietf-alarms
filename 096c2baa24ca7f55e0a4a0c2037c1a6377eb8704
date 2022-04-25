@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da9d5d21_516b216f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-25T11:29:53Z",
+      "side": 1,
+      "message": "This is already taken care of via https://gerrit.cesnet.cz/c/CzechLight/sysrepo-ietf-alarms/+/5687, unless I\u0027m really wrong. Can you please rebase the rest of this series?",
+      "revId": "096c2baa24ca7f55e0a4a0c2037c1a6377eb8704",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
