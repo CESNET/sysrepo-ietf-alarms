@@ -17,7 +17,7 @@ private:
     alarms::Log m_log;
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
-    sysrepo::ErrorCode purgeAlarms(const libyang::DataNode& rpcInput, libyang::DataNode output);
+    sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const std::string& alarmNodePath);
     void reshelve();
 };
