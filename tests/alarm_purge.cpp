@@ -14,8 +14,11 @@ namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
+const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
+const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 }
 
 bool includesAll(const std::map<std::string, std::string>& haystack, const PropsWithTimeTest& needles)
@@ -37,11 +40,21 @@ TEST_CASE("Purge alarms RPC")
     TEST_SYSREPO_CLIENT_INIT(cli2Sess);
     TEST_SYSREPO_CLIENT_INIT(userSess);
 
+    userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
+    userSess->applyChanges();
+
     CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "edfa", "warning", "A warning");
     CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "edfa", "major", "A major issue");
+    CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "wss", "warning", "A warning");
+    CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "wss", "major", "A major issue");
+
     REQUIRE(listInstancesFromSysrepo(*userSess, alarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+            });
+    REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
             });
 
     auto time = CLIENT_PURGE_RPC(userSess, 0, "cleared", {});
@@ -54,6 +67,16 @@ TEST_CASE("Purge alarms RPC")
                                                                                                     {"/number-of-alarms", "2"},
                                                                                                 }));
 
+    auto timeShelf = CLIENT_PURGE_SHELVED_RPC(userSess, 0, "cleared", {});
+    REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+            });
+    REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                           {"/shelved-alarms-last-changed", BEFORE_INTERVAL(timeShelf)},
+                                                                                                           {"/number-of-shelved-alarms", "2"},
+                                                                                                       }));
+
     time = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "edfa", "cleared", "A cleared issue");
     REQUIRE(listInstancesFromSysrepo(*userSess, alarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
                 "/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
@@ -63,6 +86,16 @@ TEST_CASE("Purge alarms RPC")
                                                                                                     {"/last-changed", time},
                                                                                                     {"/number-of-alarms", "2"},
                                                                                                 }));
+
+    timeShelf = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "wss", "cleared", "A cleared issue");
+    REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='']",
+                "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+            });
+    REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                           {"/shelved-alarms-last-changed", BEFORE_INTERVAL(timeShelf)},
+                                                                                                           {"/number-of-shelved-alarms", "2"},
+                                                                                                       }));
 
     SECTION("Purge by clearance status")
     {
@@ -77,17 +110,42 @@ TEST_CASE("Purge alarms RPC")
                                                                                                             {"/number-of-alarms", "1"},
                                                                                                         }));
 
+            timeShelf = CLIENT_PURGE_SHELVED_RPC(userSess, 1, "cleared", {});
+            REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{
+                        "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
+                    });
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                   {"/shelved-alarms-last-changed", timeShelf},
+                                                                                                                   {"/number-of-shelved-alarms", "1"},
+                                                                                                               }));
+
             time = CLIENT_PURGE_RPC(userSess, 1, "any", {});
             REQUIRE(listInstancesFromSysrepo(*userSess, alarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{});
             REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
                                                                                                             {"/last-changed", time},
                                                                                                             {"/number-of-alarms", "0"},
                                                                                                         }));
-            time = CLIENT_PURGE_RPC(userSess, 0, "any", {});
+
+            timeShelf = CLIENT_PURGE_SHELVED_RPC(userSess, 1, "any", {});
+            REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                   {"/shelved-alarms-last-changed", timeShelf},
+                                                                                                                   {"/number-of-shelved-alarms", "0"},
+                                                                                                               }));
+
+
+            CLIENT_PURGE_RPC(userSess, 0, "any", {});
             REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
-                                                                                                            {"/last-changed", BEFORE_INTERVAL(time)},
+                                                                                                            {"/last-changed", time},
                                                                                                             {"/number-of-alarms", "0"},
                                                                                                         }));
+
+            CLIENT_PURGE_SHELVED_RPC(userSess, 0, "any", {});
+            REQUIRE(listInstancesFromSysrepo(*userSess, shelvedAlarmListInstances, sysrepo::Datastore::Operational) == std::vector<std::string>{});
+            REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
+                                                                                                                   {"/shelved-alarms-last-changed", timeShelf},
+                                                                                                                   {"/number-of-shelved-alarms", "0"},
+                                                                                                               }));
         }
 
         SECTION("purge not cleared")
