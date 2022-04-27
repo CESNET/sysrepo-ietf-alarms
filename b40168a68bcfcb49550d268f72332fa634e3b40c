@@ -120,6 +120,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "eab4d377_2e568233",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T13:36:45Z",
+      "side": 1,
+      "message": "\u003e Nobody suggested making that configurable. We just need to keep track of what the sysrepo supports so we don\u0027t query/push invalid leaves (i.e., user installed module without alarm-shelving).\n\nI\u0027m suggesting to die hard if that feature is disabled. I\u0027m suggesting that because I do not see a use case for not enabling that feature when using sysrepo. I understand why an IETF module\u0027s author who\u0027s aiming to make their module as lightweight as possible added that option, but we\u0027re working with sysrepo, Netopeer2, etc, and I am yet to see a use case where alarm shelving is not worth the system resources.\n\nWe have control over the platform, so it\u0027s possible to require that \"the user\" who installs this project always enables this YANG feature (because \"the user\" is actually a \"device vendor\", not \"a user talking to us via NETCONF\").\n\nSorry for the std::set detour, I was focusing on something else and I assumed enums and bit flags instead of a std::set. The point stands, though -- let\u0027s make the code easier to maintain rather than make it even just-so-slightly-more-complex-with-two-ifs only to support a YANG feature which disables useful functionality.",
+      "parentUuid": "5c64de1e_f8877d98",
+      "range": {
+        "startLine": 17,
+        "startChar": 28,
+        "endLine": 17,
+        "endChar": 101
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9e55c4d0_85fe11eb",
         "filename": "src/alarms/ShelfMatch.cpp",
         "patchSetId": 8
