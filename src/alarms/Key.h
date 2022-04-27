@@ -18,8 +18,9 @@ struct Key {
     std::string alarmTypeId;
     std::string alarmTypeQualifier;
     std::string resource;
-};
 
-Key getKey(const libyang::DataNode& node);
+    std::string alarmPath() const;
+    static Key fromNode(const libyang::DataNode& node);
+};
 
 }

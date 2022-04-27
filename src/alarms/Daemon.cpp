@@ -18,24 +18,6 @@ const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
 
-/** @brief Escapes key with the other type of quotes than found in the string.
- *
- *  @throws std::invalid_argument if both single and double quotes used in the input
- * */
-std::string escapeListKey(const std::string& str)
-{
-    auto singleQuotes = str.find('\'') != std::string::npos;
-    auto doubleQuotes = str.find('\"') != std::string::npos;
-
-    if (singleQuotes && doubleQuotes) {
-        throw std::invalid_argument("Encountered mixed single and double quotes in XPath; can't properly escape.");
-    } else if (singleQuotes) {
-        return '\"' + str + '\"';
-    } else {
-        return '\'' + str + '\'';
-    }
-}
-
 /** @brief returns number of list instances in the list specified by xPath */
 size_t numberOfListInstances(sysrepo::Session& session, const std::string& xPath)
 {
@@ -143,7 +125,7 @@ Daemon::Daemon()
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
-    const auto& alarmKey = getKey(input);
+    const auto& alarmKey = Key::fromNode(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
@@ -151,7 +133,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     std::string alarmNodePath;
 
     try {
-        alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
+        alarmNodePath = alarmKey.alarmPath();
         m_log->trace("Alarm node: {}", alarmNodePath);
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());
