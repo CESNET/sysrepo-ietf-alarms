@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "249ea177_98fc58b9",
+        "filename": "src/alarms/Key.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T13:45:12Z",
+      "side": 1,
+      "message": "I wonder if this will need any changes once shelving is done. Perhaps call this method something like `xpathKey`?",
+      "range": {
+        "startLine": 41,
+        "startChar": 12,
+        "endLine": 41,
+        "endChar": 48
+      },
+      "revId": "72c30af71c2f6bbce50d3a489493175ae985f49d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6c540358_44cee16a",
+        "filename": "src/alarms/Key.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T13:45:12Z",
+      "side": 1,
+      "message": "just a random suggestion: if I was writing this, it would have been a static method (\"a named constructor\"):\n \nstruct Key {\n  ...\n  static Key fromNode(const libyang::DataNode\u0026 node);\n}",
+      "range": {
+        "startLine": 23,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 42
+      },
+      "revId": "72c30af71c2f6bbce50d3a489493175ae985f49d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1134e5f1_6bad8fed",
+        "filename": "src/alarms/Key.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T13:45:12Z",
+      "side": 1,
+      "message": "I would prefer this as a member of they `Key` struct; something like `std::string alarmPath() const`. It\u0027s going to be shorter to type and (to me, anyway) easier to understand.",
+      "revId": "72c30af71c2f6bbce50d3a489493175ae985f49d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
