@@ -144,6 +144,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "eeade6f3_19608c53",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T16:38:51Z",
+      "side": 1,
+      "message": "OK i\u0027m  not bothering with that and I will just throw from the constructor.",
+      "parentUuid": "eab4d377_2e568233",
+      "range": {
+        "startLine": 17,
+        "startChar": 28,
+        "endLine": 17,
+        "endChar": 101
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9e55c4d0_85fe11eb",
         "filename": "src/alarms/ShelfMatch.cpp",
         "patchSetId": 8
