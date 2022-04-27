@@ -60,11 +60,13 @@ bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang
 /** @brief Checks if we should notify about changes made based on the values changed and current settings in control container */
 bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& edit)
 {
-    auto oldDatastore = session.activeDatastore();
-    session.switchDatastore(sysrepo::Datastore::Running);
-    auto data = session.getData(controlPrefix);
-    auto notifyStatusChangesNode = data->findPath(controlPrefix + "/notify-status-changes"s);
-    session.switchDatastore(oldDatastore);
+    std::optional<libyang::DataNode> data;
+    std::optional<libyang::DataNode> notifyStatusChangesNode;
+    {
+        alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
+        data = session.getData(controlPrefix);
+        notifyStatusChangesNode = data->findPath(controlPrefix + "/notify-status-changes"s);
+    }
 
     bool raised = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "false" && valueChanged(oldNode, edit, "is-cleared");
     bool cleared = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "true" && valueChanged(oldNode, edit, "is-cleared");
@@ -96,15 +98,13 @@ bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<liby
 /* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
 std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::Key& key)
 {
-    auto oldDatastore = session.activeDatastore();
-    session.switchDatastore(sysrepo::Datastore::Running);
+    alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
 
     std::optional<std::string> shelfName;
     if (auto data = session.getData("/ietf-alarms:alarms/control/alarm-shelving")) {
         shelfName = findMatchingShelf(key, data->findXPath("/ietf-alarms:alarms/control/alarm-shelving/shelf"));
     }
 
-    session.switchDatastore(oldDatastore);
     return shelfName;
 }
 }

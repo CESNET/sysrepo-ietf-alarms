@@ -6,7 +6,6 @@
  */
 
 #include <sysrepo-cpp/Connection.hpp>
-#include <sysrepo-cpp/Session.hpp>
 #include "sysrepo.h"
 #include "utils/log.h"
 
@@ -77,4 +76,17 @@ void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector
         connection.discardOperationalChanges(path);
     }
 }
+
+ScopedDatastoreSwitch::ScopedDatastoreSwitch(sysrepo::Session session, sysrepo::Datastore ds)
+    : m_session(std::move(session))
+    , m_oldDatastore(m_session.activeDatastore())
+{
+    m_session.switchDatastore(ds);
+}
+
+ScopedDatastoreSwitch::~ScopedDatastoreSwitch()
+{
+    m_session.switchDatastore(m_oldDatastore);
+}
+
 }

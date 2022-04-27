@@ -14,6 +14,7 @@
 #include "test_log_setup.h"
 #include "test_sysrepo_helpers.h"
 #include "utils/string.h"
+#include "utils/sysrepo.h"
 
 using namespace std::chrono_literals;
 
@@ -60,11 +61,8 @@ std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, cons
 /** @short Return a subtree from specified sysrepo's datastore, compacting the XPath */
 std::map<std::string, std::string> dataFromSysrepo(sysrepo::Session session, const std::string& xpath, sysrepo::Datastore datastore)
 {
-    auto oldDatastore = session.activeDatastore();
-    session.switchDatastore(datastore);
-    auto res = dataFromSysrepo(session, xpath);
-    session.switchDatastore(oldDatastore);
-    return res;
+    alarms::utils::ScopedDatastoreSwitch s(session, datastore);
+    return dataFromSysrepo(session, xpath);
 }
 
 /** @short Returns xPaths of list instances from the list specified by path */
