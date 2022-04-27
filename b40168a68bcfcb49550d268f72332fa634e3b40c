@@ -1,0 +1,221 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bd36a096_4ce4129d",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "It is not related to this commit, but there\u0027s a lot of places already where this switch-the-DS-then-do-something-and-finally-switch-back happens. Can you please introduce some RAII guard which makes it a trivial on-liner that is exception-safe?",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c5eb7770_bde06a3c",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "In case of shelving, you already have this path, but I understand you might not have a matching shelf, so you cannot use that. However, I think there should really be a helper for AlarmKey which produces a string like this one (in a separate commit I guess).",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9f5cdc6_d36ba021",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "Are you sure about that? I think it\u0027s actually a bit easier to write code like this:\n if (foo-\u003ehasWheels()) ...\n\nrather than:\n if (foo-\u003efeatures \u0026 Feature::Wheels) ...\n\nBut more importantly, why do we need to make this configurable? The RFC has that optional, but I think that\u0027s because of concerns about possibly limited CPU power, etc. I think we can afford to make it impossible to disable this feature in order to simplify the code a little bit.",
+      "range": {
+        "startLine": 17,
+        "startChar": 28,
+        "endLine": 17,
+        "endChar": 101
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9e55c4d0_85fe11eb",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "For all functions in this file, can you please add brief docs about what arguments are supported? e.g., if it\u0027s a libyang set of datanodes, from which tree they\u0027re supposed to come? etc",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4d57c47d_5e219ce0",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "This function doesn\u0027t really work on \"a resource\"; it performs a string match over a set of nodes, ignoring their XPaths. The \"resource\" part is only relevant because it\u0027s (so far) always called with a node that is named \"resource\". If it\u0027s worth having a named function for this, can we call it something like \"matchesString\" or something?",
+      "range": {
+        "startLine": 15,
+        "startChar": 5,
+        "endLine": 15,
+        "endChar": 20
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c629ddc2_862364ff",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "since the helper function above is a \"simple string matcher\", maybe this one should be made a \"generic identityref matcher\", which means that instead of a `DataNode alarmTypeNode`, it should have a `Identity identity`",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "34cab152_b6c5f116",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "libyang-cpp has qualifiedName() for this",
+      "range": {
+        "startLine": 28,
+        "startChar": 15,
+        "endLine": 28,
+        "endChar": 75
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2c6e2485_9e40f3a6",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "typo: matches",
+      "range": {
+        "startLine": 32,
+        "startChar": 5,
+        "endLine": 32,
+        "endChar": 11
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7d188385_0ea71662",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "this function should have early `return false` so that it doesn\u0027t watse too much CPU time, i.e.:\n\n if (!matchesX(...))\n     return false;\n\n if (!matchesY(...))\n     return false;\n\n return true;",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "abc204eb_4684240a",
+        "filename": "src/utils/libyang.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "nit: whitespace noise",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e230155_43ccc438",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "nit: this is a candidate for immediately-invokable lambda that returns something which gets stored to initTime",
+      "range": {
+        "startLine": 23,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 5
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

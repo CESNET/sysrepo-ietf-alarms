@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2b5efc62_767c607e",
+        "filename": "src/alarms/AlarmKey.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-04-27T10:05:23Z",
+      "side": 1,
+      "message": "some random bikeshedding: given that this already lives in `namespace alarms`, can you perhaps remove the `Alarm` prefix from the struct\u0027s name and its members?",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 2
+      },
+      "revId": "c0b4aa2b9e50e289b3e57f4997a8984a88bb369f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
