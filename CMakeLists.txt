@@ -58,6 +58,8 @@ target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgCon
 add_library(alarms STATIC
     src/alarms/Daemon.cpp
     src/alarms/Daemon.h
+    src/alarms/Key.cpp
+    src/alarms/Key.h
     src/alarms/PurgeFilter.cpp
     src/alarms/PurgeFilter.h
     )

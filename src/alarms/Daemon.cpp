@@ -1,5 +1,6 @@
 #include <string>
 #include "Daemon.h"
+#include "Key.h"
 #include "PurgeFilter.h"
 #include "utils/libyang.h"
 #include "utils/log.h"
@@ -47,20 +48,6 @@ void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std:
     // number-of-alarms is of type yang:gauge32. If we ever support more than 2^32-1 alarms then we will have to deal with cropping the value.
     edit.newPath("/ietf-alarms:alarms/alarm-list/number-of-alarms", std::to_string(alarmCount));
     edit.newPath("/ietf-alarms:alarms/alarm-list/last-changed", alarms::utils::yangTimeFormat(lastChanged));
-}
-
-struct AlarmKey {
-    std::string alarmTypeId;
-    std::string alarmTypeQualifier;
-    std::string resource;
-};
-
-AlarmKey getKey(const libyang::DataNode& node)
-{
-    return {
-        alarms::utils::childValue(node, "alarm-type-id"),
-        alarms::utils::childValue(node, "alarm-type-qualifier"),
-        alarms::utils::childValue(node, "resource")};
 }
 
 /** @brief Returns node specified by xpath in the tree */
