@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "85635acb_7ec972e4",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "I am going to implement that in a subsequent commit (tree-wide).",
+      "parentUuid": "bd36a096_4ce4129d",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c5eb7770_bde06a3c",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 8
@@ -31,6 +49,24 @@
       "writtenOn": "2022-04-27T10:05:23Z",
       "side": 1,
       "message": "In case of shelving, you already have this path, but I understand you might not have a matching shelf, so you cannot use that. However, I think there should really be a helper for AlarmKey which produces a string like this one (in a separate commit I guess).",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "50f9bc1d_e488b61f",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c5eb7770_bde06a3c",
       "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -60,6 +96,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "5c64de1e_f8877d98",
+        "filename": "src/alarms/Daemon.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "I\u0027m sorry but I have no idea what this comment is about.\n\n\u003e if (foo-\u003efeatures \u0026 Feature::Wheels)\n\nstd::set has no \u0026 operator and I did not suggest using this notation anyway.\n\n\u003e if (foo-\u003ehasWheels()) ...\n\nYes, that is interface that we will go for *when* we implement more features. std::set\u003cFeature\u003e seems like a better option to me than having several boolean members. Or do you prefer bit flags with enum class?\n\n\u003e But more importantly, why do we need to make this configurable\n\nNobody suggested making that configurable. We just need to keep track of what the sysrepo supports so we don\u0027t query/push invalid leaves (i.e., user installed module without alarm-shelving).",
+      "parentUuid": "b9f5cdc6_d36ba021",
+      "range": {
+        "startLine": 17,
+        "startChar": 28,
+        "endLine": 17,
+        "endChar": 101
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "9e55c4d0_85fe11eb",
         "filename": "src/alarms/ShelfMatch.cpp",
         "patchSetId": 8
@@ -71,6 +131,24 @@
       "writtenOn": "2022-04-27T10:05:23Z",
       "side": 1,
       "message": "For all functions in this file, can you please add brief docs about what arguments are supported? e.g., if it\u0027s a libyang set of datanodes, from which tree they\u0027re supposed to come? etc",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8e218ce0_89d8a761",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9e55c4d0_85fe11eb",
       "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -98,6 +176,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d78e1e1_f09a5332",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Since you asked \"if it\u0027s worth having\" the function at all I decided to inline the body.",
+      "parentUuid": "4d57c47d_5e219ce0",
+      "range": {
+        "startLine": 15,
+        "startChar": 5,
+        "endLine": 15,
+        "endChar": 20
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c629ddc2_862364ff",
@@ -115,6 +217,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "583b1d1d_c588144f",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "I tried to do something about that. Please check the result.",
+      "parentUuid": "c629ddc2_862364ff",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "34cab152_b6c5f116",
@@ -128,6 +248,30 @@
       "writtenOn": "2022-04-27T10:05:23Z",
       "side": 1,
       "message": "libyang-cpp has qualifiedName() for this",
+      "range": {
+        "startLine": 28,
+        "startChar": 15,
+        "endLine": 28,
+        "endChar": 75
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "73c11c17_705a3023",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "34cab152_b6c5f116",
       "range": {
         "startLine": 28,
         "startChar": 15,
@@ -161,6 +305,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "10a708a1_2c370772",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2c6e2485_9e40f3a6",
+      "range": {
+        "startLine": 32,
+        "startChar": 5,
+        "endLine": 32,
+        "endChar": 11
+      },
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7d188385_0ea71662",
@@ -174,6 +342,24 @@
       "writtenOn": "2022-04-27T10:05:23Z",
       "side": 1,
       "message": "this function should have early `return false` so that it doesn\u0027t watse too much CPU time, i.e.:\n\n if (!matchesX(...))\n     return false;\n\n if (!matchesY(...))\n     return false;\n\n return true;",
+      "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9ab8ae9_3932142d",
+        "filename": "src/alarms/ShelfMatch.cpp",
+        "patchSetId": 8
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7d188385_0ea71662",
       "revId": "b40168a68bcfcb49550d268f72332fa634e3b40c",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },

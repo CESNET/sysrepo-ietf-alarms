@@ -22,6 +22,30 @@
       },
       "revId": "c0b4aa2b9e50e289b3e57f4997a8984a88bb369f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c6752849_959e6244",
+        "filename": "src/alarms/AlarmKey.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-04-27T13:15:41Z",
+      "side": 1,
+      "message": "Done for struct name. I think I don\u0027t want to remove alarm prefix from the names because they correspond to alarm-type-{id,qualifier} leaves.",
+      "parentUuid": "2b5efc62_767c607e",
+      "range": {
+        "startLine": 13,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 2
+      },
+      "revId": "c0b4aa2b9e50e289b3e57f4997a8984a88bb369f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
