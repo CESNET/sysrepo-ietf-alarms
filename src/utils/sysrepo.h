@@ -18,8 +18,7 @@ class Session;
 namespace alarms::utils {
 
 void initLogsSysrepo();
-void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision);
-bool featureEnabled(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::string& feature);
+void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::vector<std::string>& features = {});
 
 void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector<std::string>& removePaths);
 }

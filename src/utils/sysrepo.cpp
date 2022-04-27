@@ -52,20 +52,20 @@ void initLogsSysrepo()
     sr_log_set_cb(spdlog_sr_log_cb);
 }
 
-/** @brief Checks whether a module is implemented in Sysrepo and throws if not. */
-void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision)
+/** @brief Checks whether a module is implemented in Sysrepo and required features are enabled. Throws if not. */
+void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::vector<std::string>& features)
 {
-    if (auto mod = session.getContext().getModule(module, revision); !mod || !mod->implemented()) {
+    auto mod = session.getContext().getModule(module, revision);
+
+    if (!mod || !mod->implemented()) {
         throw std::runtime_error(module + "@" + revision + " is not implemented in sysrepo.");
     }
-}
 
-bool featureEnabled(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::string& feature)
-{
-    ensureModuleImplemented(session, module, revision);
-
-    auto mod = session.getContext().getModule(module, revision);
-    return mod->featureEnabled(feature);
+    for (const auto& feature : features) {
+        if (!mod->featureEnabled(feature)) {
+            throw std::runtime_error("Feature " + feature + " not enabled for module " + module + "@" + revision);
+        }
+    }
 }
 
 void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector<std::string>& removePaths)
