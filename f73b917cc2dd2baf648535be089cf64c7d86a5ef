@@ -1,0 +1,199 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d8b5934c_c17af37e",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "The doc says that this will cause the alarm-shelving container to not appear in the operational DS, which looks fishy to me",
+      "range": {
+        "startLine": 143,
+        "startChar": 39,
+        "endLine": 143,
+        "endChar": 46
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7f1b776e_85e92dbc",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "please add docs explaining the actual actions performed here -- it looks to me that it prepares a tree which can be used as a part of an edit for shelving an alarm, but no actual shelving takes place; perhaps reflect that in the name of this function?",
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "52b68b9f_7c819526",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "can you use alarmListKeyPredicates() for this?",
+      "range": {
+        "startLine": 278,
+        "startChar": 49,
+        "endLine": 278,
+        "endChar": 68
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f6b93232_f9c582ef",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "this is a candidate for a helper because it\u0027s present in two functions",
+      "range": {
+        "startLine": 281,
+        "startChar": 0,
+        "endLine": 283,
+        "endChar": 5
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "39a79784_7f6c82f5",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "alarmListKeyPredicates()",
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7e90aadd_f4a83c12",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "call a helper for this, please",
+      "range": {
+        "startLine": 326,
+        "startChar": 61,
+        "endLine": 326,
+        "endChar": 80
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3acf94a4_a58ba957",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "nice catch, I didn\u0027t realize this could happen",
+      "range": {
+        "startLine": 328,
+        "startChar": 30,
+        "endLine": 328,
+        "endChar": 70
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9b581e0d_a5d8c8cd",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 267,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "What is this for? It\u0027s \"just\" a copy of what was pushed earlier, but I suppose it\u0027s intended as a code-comment saying \"dear maintainer, note that this is how the shelving control looks like now\". OK, makes sense :).",
+      "range": {
+        "startLine": 260,
+        "startChar": 0,
+        "endLine": 267,
+        "endChar": 19
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f6942745_d2a1ca8c",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 515,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-02T09:22:57Z",
+      "side": 1,
+      "message": "I\u0027m picking one random change in this file to illustrate a bigger issue -- there\u0027s a lot of things going on in this file, and it\u0027s hard to see the actual \"core business\" that\u0027s getting tested over all this XPath noise. I guess that the interesting part here is that an alarm identified by an already too verbose XPath (that you cannot change, I understand that) is moved between shelf A and shelf B, and perhaps its dat/timestamp/whatever has changed. Can you please make this much, much more succinct? I guess that test might look roughly like this:\n\n REQUIRE(extractShelvedAlarms(*userSess) \u003d\u003d {\n   {\"wss\", \"alarms-test:alarm1\", \"shelf1\", origTime1},\n   {\"edfa\", \"alarms-test:alarm2\", \"replacementShelf\", newTime666},\n });\n\nI\u0027m asking for this because I had search among 121 occurrences of string \"[shelve\u003d\" in order to find a place which tests that an alarm is correctly moved between shelves A and B.",
+      "range": {
+        "startLine": 477,
+        "startChar": 0,
+        "endLine": 515,
+        "endChar": 19
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
