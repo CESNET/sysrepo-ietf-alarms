@@ -41,6 +41,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "692d7e78_8dc639d5",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-02T20:01:14Z",
+      "side": 1,
+      "message": "Done. Naming this is hard tbh.",
+      "parentUuid": "7f1b776e_85e92dbc",
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "52b68b9f_7c819526",
@@ -54,6 +72,30 @@
       "writtenOn": "2022-05-02T09:22:57Z",
       "side": 1,
       "message": "can you use alarmListKeyPredicates() for this?",
+      "range": {
+        "startLine": 278,
+        "startChar": 49,
+        "endLine": 278,
+        "endChar": 68
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b30a4d4_9bea935b",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-02T20:01:14Z",
+      "side": 1,
+      "message": "I can actually use the new Key::shelvedAlarmPath(Key) method, didn\u0027t realize while rebasing.",
+      "parentUuid": "52b68b9f_7c819526",
       "range": {
         "startLine": 278,
         "startChar": 49,
@@ -87,6 +129,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9cc8d747_025ef590",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 283,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-02T20:01:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6b93232_f9c582ef",
+      "range": {
+        "startLine": 281,
+        "startChar": 0,
+        "endLine": 283,
+        "endChar": 5
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "39a79784_7f6c82f5",
@@ -104,6 +170,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d4f2d95e_0e5e2ef9",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-02T20:01:14Z",
+      "side": 1,
+      "message": "Same as above.",
+      "parentUuid": "39a79784_7f6c82f5",
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7e90aadd_f4a83c12",
@@ -117,6 +201,30 @@
       "writtenOn": "2022-05-02T09:22:57Z",
       "side": 1,
       "message": "call a helper for this, please",
+      "range": {
+        "startLine": 326,
+        "startChar": 61,
+        "endLine": 326,
+        "endChar": 80
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1278fb2_c03ed122",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 326,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-02T20:01:14Z",
+      "side": 1,
+      "message": "Done. Same as above.",
+      "parentUuid": "7e90aadd_f4a83c12",
       "range": {
         "startLine": 326,
         "startChar": 61,
