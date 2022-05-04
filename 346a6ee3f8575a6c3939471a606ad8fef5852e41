@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89d3d05b_e4e034d3",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-04T10:59:04Z",
+      "side": 1,
+      "message": "nice!",
+      "revId": "346a6ee3f8575a6c3939471a606ad8fef5852e41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3c175e09_03a85366",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-05-04T10:59:04Z",
+      "side": 1,
+      "message": "If this test fails, it will print an error message which won\u0027t tell what\u0027s broken because that testing is done inside includesAll(). Also, it\u0027s testing a single leaf. Why not just fetch that leaf and do a REQUIRE(data...(\"/blah.../time-created\") \u003d\u003d origTime)?",
+      "revId": "346a6ee3f8575a6c3939471a606ad8fef5852e41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
