@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "326a3701_76ff50da",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-04T08:52:06Z",
+      "side": 1,
+      "message": "I see, removed.",
+      "parentUuid": "d8b5934c_c17af37e",
+      "range": {
+        "startLine": 143,
+        "startChar": 39,
+        "endLine": 143,
+        "endChar": 46
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7f1b776e_85e92dbc",
@@ -294,6 +318,30 @@
       "writtenOn": "2022-05-02T09:22:57Z",
       "side": 1,
       "message": "I\u0027m picking one random change in this file to illustrate a bigger issue -- there\u0027s a lot of things going on in this file, and it\u0027s hard to see the actual \"core business\" that\u0027s getting tested over all this XPath noise. I guess that the interesting part here is that an alarm identified by an already too verbose XPath (that you cannot change, I understand that) is moved between shelf A and shelf B, and perhaps its dat/timestamp/whatever has changed. Can you please make this much, much more succinct? I guess that test might look roughly like this:\n\n REQUIRE(extractShelvedAlarms(*userSess) \u003d\u003d {\n   {\"wss\", \"alarms-test:alarm1\", \"shelf1\", origTime1},\n   {\"edfa\", \"alarms-test:alarm2\", \"replacementShelf\", newTime666},\n });\n\nI\u0027m asking for this because I had search among 121 occurrences of string \"[shelve\u003d\" in order to find a place which tests that an alarm is correctly moved between shelves A and B.",
+      "range": {
+        "startLine": 477,
+        "startChar": 0,
+        "endLine": 515,
+        "endChar": 19
+      },
+      "revId": "f73b917cc2dd2baf648535be089cf64c7d86a5ef",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a69ba8a5_6c7f4ba4",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 11
+      },
+      "lineNbr": 515,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-04T08:52:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6942745_d2a1ca8c",
       "range": {
         "startLine": 477,
         "startChar": 0,
