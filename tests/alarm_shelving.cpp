@@ -5,12 +5,131 @@
 #include "test_log_setup.h"
 #include "test_sysrepo_helpers.h"
 #include "test_time_interval.h"
+#include "utils/libyang.h"
 
 using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto ietfAlarms = "/ietf-alarms:alarms";
+const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
+const auto shelvedAlarmsListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
+
+bool includesAll(const std::map<std::string, std::string>& haystack, const PropsWithTimeTest& needles)
+{
+    return std::all_of(needles.begin(), needles.end(), [&haystack](const auto& e) {
+        auto it = haystack.find(e.first);
+        return it != haystack.end() && it->second == e.second;
+    });
+}
+
+struct ShelvedAlarm {
+    std::string resource;
+    std::string alarmType;
+    std::string alarmTypeQualifier;
+    std::string shelfName;
+
+    bool operator==(const ShelvedAlarm& other) const
+    {
+        return std::tie(resource, alarmType, alarmTypeQualifier, shelfName) == std::tie(other.resource, other.alarmType, other.alarmTypeQualifier, other.shelfName);
+    }
+};
+
+struct Alarm {
+    std::string resource;
+    std::string alarmType;
+    std::string alarmTypeQualifier;
+
+    bool operator==(const Alarm& other) const
+    {
+        return std::tie(resource, alarmType, alarmTypeQualifier) == std::tie(other.resource, other.alarmType, other.alarmTypeQualifier);
+    }
+};
+
+std::vector<ShelvedAlarm> extractShelvedAlarms(sysrepo::Session session)
+{
+    alarms::utils::ScopedDatastoreSwitch sw(session, sysrepo::Datastore::Operational);
+
+    std::vector<ShelvedAlarm> res;
+    if (auto data = session.getData(ietfAlarms)) {
+        for (const auto& node : data->findXPath(shelvedAlarmsListInstances)) {
+            res.push_back({alarms::utils::childValue(node, "resource"),
+                           alarms::utils::childValue(node, "alarm-type-id"),
+                           alarms::utils::childValue(node, "alarm-type-qualifier"),
+                           alarms::utils::childValue(node, "shelf-name")});
+        }
+    }
+
+    return res;
+}
+
+std::vector<Alarm> extractAlarms(sysrepo::Session session)
+{
+    alarms::utils::ScopedDatastoreSwitch sw(session, sysrepo::Datastore::Operational);
+
+    std::vector<Alarm> res;
+    if (auto data = session.getData(ietfAlarms)) {
+        for (const auto& node : data->findXPath(alarmListInstances)) {
+            res.push_back({alarms::utils::childValue(node, "resource"),
+                           alarms::utils::childValue(node, "alarm-type-id"),
+                           alarms::utils::childValue(node, "alarm-type-qualifier")});
+        }
+    }
+
+    return res;
+}
+}
+
+namespace doctest {
+template <>
+struct StringMaker<ShelvedAlarm> {
+    static String convert(const ShelvedAlarm& obj)
+    {
+        std::ostringstream oss;
+        oss << "{" << obj.resource << ", " << obj.alarmType << ", " << obj.alarmTypeQualifier << ", " << obj.shelfName << "}";
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<Alarm> {
+    static String convert(const Alarm& obj)
+    {
+        std::ostringstream oss;
+        oss << "{" << obj.resource << ", " << obj.alarmType << ", " << obj.alarmTypeQualifier << "}";
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<std::vector<ShelvedAlarm>> {
+    static String convert(const std::vector<ShelvedAlarm>& v)
+    {
+        std::ostringstream os;
+        os << "{" << std::endl;
+        for (const auto& e : v) {
+            os << "  \"" << StringMaker<ShelvedAlarm>::convert(e) << "\"," << std::endl;
+        }
+        os << "}";
+        return os.str().c_str();
+    };
+};
+
+template <>
+struct StringMaker<std::vector<Alarm>> {
+    static String convert(const std::vector<Alarm>& v)
+    {
+        std::ostringstream os;
+        os << "{" << std::endl;
+        for (const auto& e : v) {
+            os << "  \"" << StringMaker<Alarm>::convert(e) << "\"," << std::endl;
+        }
+        os << "}";
+        return os.str().c_str();
+    };
+};
 }
 
 TEST_CASE("Alarm shelving")
@@ -151,45 +270,10 @@ TEST_CASE("Alarm shelving")
     auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "Hey, I'm overheating.");
     std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
     if (shelved) {
-        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
-                    {"/alarm-inventory", ""},
-                    {"/alarm-list", ""},
-                    {"/alarm-list/number-of-alarms", "0"},
-                    {"/alarm-list/last-changed", initTime},
-                    {"/shelved-alarms", ""},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "false"},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", origTime},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", origTime},
-                    {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/shelf-name", "shelf"},
-                    {"/control", ""},
-                    {"/control/alarm-shelving", ""},
-                });
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{"edfa", "alarms-test:alarm-2-1", "high", "shelf"}}));
     } else {
-        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
-                    {"/alarm-inventory", ""},
-                    {"/alarm-list", ""},
-                    {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", origTime},
-                    {"/control", ""},
-                    {"/control/alarm-shelving", ""},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "false"},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/time-created", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", origTime},
-                    {"/shelved-alarms", ""},
-                });
+        REQUIRE(extractAlarms(*userSess) == std::vector<Alarm>{{"edfa", "alarms-test:alarm-2-1", "high"}});
+        REQUIRE(includesAll(dataFromSysrepo(*userSess, alarmListInstances + "[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']"s, sysrepo::Datastore::Operational), PropsWithTimeTest({{"/time-created"s, origTime}})));
     }
 
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules
