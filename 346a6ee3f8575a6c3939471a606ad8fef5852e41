@@ -33,6 +33,24 @@
       "message": "If this test fails, it will print an error message which won\u0027t tell what\u0027s broken because that testing is done inside includesAll(). Also, it\u0027s testing a single leaf. Why not just fetch that leaf and do a REQUIRE(data...(\"/blah.../time-created\") \u003d\u003d origTime)?",
       "revId": "346a6ee3f8575a6c3939471a606ad8fef5852e41",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dd1a3839_d05661a6",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-05-04T13:10:09Z",
+      "side": 1,
+      "message": "True; I have changed that (and will change in subsequent commits).",
+      "parentUuid": "3c175e09_03a85366",
+      "revId": "346a6ee3f8575a6c3939471a606ad8fef5852e41",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
