@@ -25,8 +25,8 @@ find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
 
-pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.1.0 IMPORTED_TARGET sysrepo)
-pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.1.0 IMPORTED_TARGET libyang)
+pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.1.0 sysrepo IMPORTED_TARGET)
+pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.1.0 IMPORTED_TARGET)
 
 include(GNUInstallDirs)
 
