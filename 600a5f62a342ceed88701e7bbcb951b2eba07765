@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "43152e16_8affb74c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-06-27T17:12:06Z",
+      "side": 1,
+      "message": "Feel free to override me but I think we can follow the cmake\u0027s docs example and use \n  pkg_check_modules(SY",
+      "revId": "600a5f62a342ceed88701e7bbcb951b2eba07765",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "455029aa_72268468",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-06-27T17:12:06Z",
+      "side": 1,
+      "message": "Feel free to override me but I think we should follow the syntax stated here https://cmake.org/cmake/help/latest/module/FindPkgConfig.html and use\n\n  pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp\u003e\u003d1.1.0 sysrepo)\n  pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp\u003e\u003d1.1.0)\n\nYour way works as well but the grammar says the moduleSpec should be after IMPORTED_TARGET",
+      "revId": "600a5f62a342ceed88701e7bbcb951b2eba07765",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
