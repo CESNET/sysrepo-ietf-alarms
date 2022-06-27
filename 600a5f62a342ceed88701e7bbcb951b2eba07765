@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fcc5e816_b972158a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-06-27T17:13:10Z",
+      "side": 1,
+      "message": "Sorry about that, forgot to delete the message. See the inline comment",
+      "parentUuid": "43152e16_8affb74c",
+      "revId": "600a5f62a342ceed88701e7bbcb951b2eba07765",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "455029aa_72268468",
