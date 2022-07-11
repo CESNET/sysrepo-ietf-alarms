@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1cea6901_6259075d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-11T14:30:12Z",
+      "side": 1,
+      "message": "I\u0027m confused -- the race that was reported is between a background thread which is storing something into a vector, and the main thread which checks this vector (good catch!). Both are running concurrently and there\u0027s no locking, so, race. Now, this patch simplifies the code a bit, now there are only two notification handlers, not three as before (the `eventsInventory` remains not relevant to the problem, same as before), but there\u0027s still the main thread doing the check on line 195:\n\n REQUIRE(lastChangedTimesInSysrepo \u003d\u003d lastChangedTimesFromNotifications);\n\n...and a background thread (created via the notification subscription) which pushes data into that vector. There\u0027s no locking between these two. I think this doesn\u0027t fix the race; perhaps it just masks it because there are fewer BG threads running?",
+      "revId": "7317662da77c40df18205032a4d465b81b5a41a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1f496eb1_0fed2c17",
+        "filename": "tests/events.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-11T14:30:12Z",
+      "side": 1,
+      "message": "rather than adding a new constructor, I would prefer to just add a default value (an empty std::function), and then later in the actual CB, check whether that std::function is valid, and if it is, call it",
+      "revId": "7317662da77c40df18205032a4d465b81b5a41a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
