@@ -26,6 +26,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "b9fe7fac_448e3509",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-07-11T09:02:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6a15536_8bb427ff",
+      "range": {
+        "startLine": 273,
+        "startChar": 8,
+        "endLine": 273,
+        "endChar": 150
+      },
+      "revId": "e0e0bd537d673901736afd3c7b52a99a72b62913",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "05b232fc_e045e536",
         "filename": "tests/alarm_shelving.cpp",
         "patchSetId": 16
@@ -37,6 +61,30 @@
       "writtenOn": "2022-06-27T22:13:19Z",
       "side": 1,
       "message": "Hmmm, I wanted to suggest that this looks like a \"test of a test\"; it\u0027s checking whether the shelving configuration matches what was just stored by the test `userSess`. But then I misinterpreted the call to setItem() on line 322, thinking that it\u0027s overwriting stuff, where it\u0027s actually just adding another item to a leaf-list. So these indeed have value :).\n\nBut perhaps it would make sense to not actually *check* these, but just to list the shelving configuration in some \"nicely readable\" manner? Or perhaps this current version is OK already.",
+      "range": {
+        "startLine": 305,
+        "startChar": 0,
+        "endLine": 312,
+        "endChar": 19
+      },
+      "revId": "e0e0bd537d673901736afd3c7b52a99a72b62913",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b86807b1_e4a0fb50",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-07-11T09:02:02Z",
+      "side": 1,
+      "message": "I have replaced these with almost-human-readable REQUIREs.",
+      "parentUuid": "05b232fc_e045e536",
       "range": {
         "startLine": 305,
         "startChar": 0,
@@ -60,6 +108,24 @@
       "writtenOn": "2022-06-27T22:13:19Z",
       "side": 1,
       "message": "please add a comment with a note that this is appending to a leaf-list. I know it\u0027s \"obvious\" from the XPath, but I already missed it once.",
+      "revId": "e0e0bd537d673901736afd3c7b52a99a72b62913",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f39dd86a_379d2239",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 16
+      },
+      "lineNbr": 322,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-07-11T09:02:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b3da2383_19d4bdf8",
       "revId": "e0e0bd537d673901736afd3c7b52a99a72b62913",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
