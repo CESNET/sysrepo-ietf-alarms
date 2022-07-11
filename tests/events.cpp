@@ -20,9 +20,14 @@ std::string module_from_xpath(const std::string& xpath)
 }
 
 NotificationWatcher::NotificationWatcher(sysrepo::Session& session, const std::string& xpath)
+    : NotificationWatcher(session, xpath, [](const std::optional<libyang::DataNode>&) {})
+{
+}
+
+NotificationWatcher::NotificationWatcher(sysrepo::Session& session, const std::string& xpath, std::function<void(const std::optional<libyang::DataNode>&)> cb)
     : m_sub{session.onNotification(
         module_from_xpath(xpath),
-        [this, xpath](sysrepo::Session, uint32_t, const sysrepo::NotificationType type, const std::optional<libyang::DataNode> tree, const sysrepo::NotificationTimeStamp) {
+        [this, xpath, cb](sysrepo::Session, uint32_t, const sysrepo::NotificationType type, const std::optional<libyang::DataNode> tree, const sysrepo::NotificationTimeStamp) {
             if (type != sysrepo::NotificationType::Realtime) {
                 return;
             }
@@ -33,6 +38,7 @@ NotificationWatcher::NotificationWatcher(sysrepo::Session& session, const std::s
                 }
                 data[it.path().substr(xpath.size() + 1 /* trailing slash */)] = std::visit(libyang::ValuePrinter{}, it.asTerm().value());
             }
+            cb(tree);
             notified(data);
         },
         xpath)}
