@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e7f901cb_d2926d78",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 18
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-11T14:36:49Z",
+      "side": 1,
+      "message": "I think you can use https://en.cppreference.com/w/cpp/language/default_comparisons for both of these operator\u003d\u003d()s",
+      "revId": "d61e6c05721ab253d61d1cabb6aa1e5de9096cd1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7aac05f0_0304193a",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 18
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-11T14:36:49Z",
+      "side": 1,
+      "message": "I was surprised that a struct which holds shelving configuration is only needed in the tests, not in the actual application code. Yeah, I realize that it\u0027s working directly in libyang trees and perhaps it\u0027s more efficient that way, but I was really surprised by that :).",
+      "range": {
+        "startLine": 77,
+        "startChar": 0,
+        "endLine": 122,
+        "endChar": 1
+      },
+      "revId": "d61e6c05721ab253d61d1cabb6aa1e5de9096cd1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
