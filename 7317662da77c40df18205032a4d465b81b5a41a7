@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "1cc0fcbf_2e81336c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-07-11T15:50:57Z",
+      "side": 1,
+      "message": "After call to waitForCompletionAndBitMore(seq1); there are no more writes to the vector expected. If there are then the test should fail (unexpected notification). I\u0027m thinking how to make this clear. The lock should not be required. Or is it?",
+      "parentUuid": "1cea6901_6259075d",
+      "revId": "7317662da77c40df18205032a4d465b81b5a41a7",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1f496eb1_0fed2c17",
         "filename": "tests/events.h",
         "patchSetId": 2
