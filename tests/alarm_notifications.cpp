@@ -80,6 +80,7 @@ TEST_CASE("Receiving alarm notifications")
     // because notifications are coming async (but in order), the easiest way is probably to store the times of last-changed (fetch from sysrepo after each change) and then check all in one go at the end
     std::vector<std::string> lastChangedTimesInSysrepo;
     std::vector<std::string> lastChangedTimesFromNotifications;
+    std::mutex mtx;
     auto sub = userSess->onNotification(
         ietfAlarmsModule,
         [&](auto, auto, sysrepo::NotificationType type, const std::optional<libyang::DataNode> tree, auto) {
@@ -90,9 +91,12 @@ TEST_CASE("Receiving alarm notifications")
             auto node = tree->findPath("time");
             REQUIRE(node);
             REQUIRE(node->isTerm());
+
+            std::lock_guard lck(mtx);
             lastChangedTimesFromNotifications.emplace_back(node->asTerm().valueStr());
         },
         alarmStatusNotification);
+
 
     SECTION("Alarm status changes (/ietf-alarms:alarms/alarm-notification)")
     {
@@ -149,6 +153,7 @@ TEST_CASE("Receiving alarm notifications")
 
         waitForCompletionAndBitMore(seq1);
 
+        std::lock_guard lck(mtx);
         REQUIRE(lastChangedTimesInSysrepo == lastChangedTimesFromNotifications);
     }
 
