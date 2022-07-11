@@ -1,4 +1,5 @@
 #include "trompeloeil_doctest.h"
+#include <mutex>
 #include <sysrepo-cpp/Connection.hpp>
 #include "alarms/Daemon.h"
 #include "events.h"
@@ -73,26 +74,20 @@ TEST_CASE("Receiving alarm notifications")
     trompeloeil::sequence seq1;
     std::vector<std::unique_ptr<trompeloeil::expectation>> expectations;
 
-    NotificationWatcher eventsAlarmStatus(*userSess, alarmStatusNotification);
-    NotificationWatcher eventsInventory(*userSess, inventoryNotification);
-
     // checking that time of the notification exactly equals to the time announced in leaf last-changed
     // because notifications are coming async (but in order), the easiest way is probably to store the times of last-changed (fetch from sysrepo after each change) and then check all in one go at the end
     std::vector<std::string> lastChangedTimesInSysrepo;
     std::vector<std::string> lastChangedTimesFromNotifications;
-    auto sub = userSess->onNotification(
-        ietfAlarmsModule,
-        [&](auto, auto, sysrepo::NotificationType type, const std::optional<libyang::DataNode> tree, auto) {
-            if (type != sysrepo::NotificationType::Realtime) {
-                return;
-            }
+    std::mutex mtx;
 
-            auto node = tree->findPath("time");
-            REQUIRE(node);
-            REQUIRE(node->isTerm());
-            lastChangedTimesFromNotifications.emplace_back(node->asTerm().valueStr());
-        },
-        alarmStatusNotification);
+    NotificationWatcher eventsAlarmStatus(*userSess, alarmStatusNotification, [&mtx, &lastChangedTimesFromNotifications](const std::optional<libyang::DataNode>& tree) {
+        auto node = tree->findPath("time");
+        REQUIRE(node);
+        REQUIRE(node->isTerm());
+        std::lock_guard lck(mtx);
+        lastChangedTimesFromNotifications.emplace_back(node->asTerm().valueStr());
+    });
+    NotificationWatcher eventsInventory(*userSess, inventoryNotification);
 
     SECTION("Alarm status changes (/ietf-alarms:alarms/alarm-notification)")
     {
@@ -149,6 +144,7 @@ TEST_CASE("Receiving alarm notifications")
 
         waitForCompletionAndBitMore(seq1);
 
+        std::lock_guard lck(mtx);
         REQUIRE(lastChangedTimesInSysrepo == lastChangedTimesFromNotifications);
     }
 
