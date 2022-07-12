@@ -15,10 +15,10 @@ std::string childValue(const libyang::DataNode& node, const std::string& leafNam
     auto leaf = node.findPath(leafName);
 
     if (!leaf) {
-        throw std::runtime_error("Selected child does not exist");
+        throw std::runtime_error("Selected child '" + leafName + "' does not exist");
     }
     if (!leaf->isTerm()) {
-        throw std::runtime_error("Selected child is not a leaf");
+        throw std::runtime_error("Selected child '" + leafName + "' is not a leaf");
     }
 
     return std::string(leaf->asTerm().valueStr());
