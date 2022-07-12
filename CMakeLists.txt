@@ -21,16 +21,19 @@ prepare_git_version(SYSREPO_IETF_ALARMS_VERSION "0.0")
 find_package(Doxygen)
 option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${DOXYGEN_FOUND})
 
+find_package(docopt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
 
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo)
-pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
+pkg_check_modules(SYSREPO REQUIRED sysrepo-cpp>=1.1.0 IMPORTED_TARGET sysrepo)
+pkg_check_modules(LIBYANG REQUIRED libyang-cpp>=1.1.0 IMPORTED_TARGET libyang)
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 include(GNUInstallDirs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(YANG_SRCS
     yang/ietf-alarms.yang
@@ -73,6 +76,10 @@ add_library(alarms STATIC
     src/alarms/ShelfMatch.h
     )
 target_link_libraries(alarms PUBLIC alarms-utils)
+
+add_executable(sysrepo-ietf-alarmsd src/main.cpp)
+add_dependencies(sysrepo-ietf-alarmsd target-SYSREPO_IETF_ALARMS_VERSION)
+target_link_libraries(sysrepo-ietf-alarmsd PUBLIC alarms docopt PRIVATE PkgConfig::SYSTEMD)
 
 # Testing
 include(CTest)
@@ -193,3 +200,4 @@ endif()
 
 set(YANG_DIR ${CMAKE_INSTALL_PREFIX}/share/sysrepo-ietf-alarms/yang)
 install(FILES ${YANG_SRCS} DESTINATION ${YANG_DIR})
+install(TARGETS sysrepo-ietf-alarmsd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
