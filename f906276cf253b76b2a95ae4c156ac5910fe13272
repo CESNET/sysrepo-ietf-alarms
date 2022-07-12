@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "40325f98_2f8be68e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-12T16:56:49Z",
+      "side": 1,
+      "message": "what for? This makes installation scripts more verbose for -- as far as I can tell -- no gain",
+      "revId": "f906276cf253b76b2a95ae4c156ac5910fe13272",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
