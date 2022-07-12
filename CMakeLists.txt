@@ -40,6 +40,8 @@ set(YANG_SRCS
 # Targets
 # - utils
 add_library(alarms-utils STATIC
+    src/utils/journal.cpp
+    src/utils/journal.h
     src/utils/libyang.cpp
     src/utils/libyang.h
     src/utils/log.h
