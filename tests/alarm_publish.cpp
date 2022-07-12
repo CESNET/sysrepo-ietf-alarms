@@ -39,6 +39,8 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
                 {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                {"/shelved-alarms/shelved-alarms-last-changed", initTime},
             });
 
     auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
@@ -61,6 +63,8 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
                 {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                {"/shelved-alarms/shelved-alarms-last-changed", initTime},
             });
     REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -87,6 +91,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -129,6 +135,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "psu-1", "alarms-test:alarm-2-1", ""));
 
@@ -164,6 +172,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "psu-1", "alarms-test:alarm-2-1", ""));
     }
@@ -194,6 +204,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/shelved-alarms", ""},
+                        {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                        {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -217,6 +229,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/shelved-alarms", ""},
+                        {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                        {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
         }
@@ -243,6 +257,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/shelved-alarms", ""},
+                        {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                        {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                     });
             REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
         }
@@ -270,6 +286,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -293,6 +311,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -316,6 +336,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -339,6 +361,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -362,6 +386,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
     }
@@ -409,6 +435,8 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "/ietf-interfaces:interface[name=\"eth2\"]", "alarms-test:alarm-2-2", ""));
     }

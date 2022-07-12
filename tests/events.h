@@ -18,7 +18,8 @@ of all terminals that were passed to the original notification.
 */
 struct NotificationWatcher {
     using data_t = std::map<std::string, std::string>;
-    NotificationWatcher(sysrepo::Session& session, const std::string& xpath);
+    using cb_t = std::function<void(const std::optional<libyang::DataNode>&)>;
+    NotificationWatcher(sysrepo::Session& session, const std::string& xpath, cb_t cb = cb_t());
     MAKE_MOCK1(notified, void(const data_t&));
 
 private:
