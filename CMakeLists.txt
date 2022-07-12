@@ -53,7 +53,7 @@ add_library(alarms-utils STATIC
     src/utils/time.cpp
     src/utils/time.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO date::date-tz)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO PRIVATE date::date-tz)
 
 add_library(alarms STATIC
     src/alarms/Key.h
@@ -66,7 +66,7 @@ add_library(alarms STATIC
     src/alarms/ShelfMatch.cpp
     src/alarms/ShelfMatch.h
     )
-target_link_libraries(alarms PUBLIC alarms-utils PRIVATE PkgConfig::LIBYANG)
+target_link_libraries(alarms PUBLIC alarms-utils)
 
 # Testing
 include(CTest)
