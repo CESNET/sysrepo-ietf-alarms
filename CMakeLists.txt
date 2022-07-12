@@ -36,8 +36,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(YANG_SRCS
-    yang/ietf-alarms.yang
-    yang/sysrepo-ietf-alarms.yang
+    yang/ietf-alarms@2019-09-11.yang
+    yang/sysrepo-ietf-alarms@2022-02-17.yang
     )
 
 # Targets
@@ -159,8 +159,8 @@ if(BUILD_TESTING)
     ietfalarms_test(time)
 
     set(fixture-alarms_testing
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang FEATURE alarm-shelving
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang FEATURE alarm-shelving
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
         )
 
