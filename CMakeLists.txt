@@ -54,6 +54,8 @@ add_library(alarms-utils STATIC
     src/utils/sysrepo.h
     src/utils/time.cpp
     src/utils/time.h
+    src/utils/waitUntilSignalled.cpp
+    src/utils/waitUntilSignalled.h
     )
 target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO PRIVATE date::date-tz)
 
