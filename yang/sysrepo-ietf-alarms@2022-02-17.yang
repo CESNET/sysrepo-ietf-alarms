@@ -1,7 +1,7 @@
 module sysrepo-ietf-alarms {
     yang-version 1.1;
     namespace "urn:sysrepo:ietf-alarms";
-    prefix cla-alm;
+    prefix sr-al;
 
     import ietf-alarms {
         prefix al;
