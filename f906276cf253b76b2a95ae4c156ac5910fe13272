@@ -16,6 +16,24 @@
       "message": "what for? This makes installation scripts more verbose for -- as far as I can tell -- no gain",
       "revId": "f906276cf253b76b2a95ae4c156ac5910fe13272",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2197e12a_080b17f0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2022-07-13T08:28:50Z",
+      "side": 1,
+      "message": "Well all the YANG files in the installation script has filename with revision so why should I stop doing that now?",
+      "parentUuid": "40325f98_2f8be68e",
+      "revId": "f906276cf253b76b2a95ae4c156ac5910fe13272",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
