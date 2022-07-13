@@ -21,25 +21,32 @@ prepare_git_version(SYSREPO_IETF_ALARMS_VERSION "0.0")
 find_package(Doxygen)
 option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${DOXYGEN_FOUND})
 
+find_package(docopt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
 
 pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo)
 pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
+pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 include(GNUInstallDirs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(YANG_SRCS
-    yang/ietf-alarms.yang
-    yang/sysrepo-ietf-alarms.yang
+    yang/ietf-alarms@2019-09-11.yang
+    yang/sysrepo-ietf-alarms@2022-02-17.yang
     )
 
 # Targets
 # - utils
 add_library(alarms-utils STATIC
+    src/utils/exceptions.cpp
+    src/utils/exceptions.h
+    src/utils/journal.cpp
+    src/utils/journal.h
     src/utils/libyang.cpp
     src/utils/libyang.h
     src/utils/log.h
@@ -52,8 +59,10 @@ add_library(alarms-utils STATIC
     src/utils/sysrepo.h
     src/utils/time.cpp
     src/utils/time.h
+    src/utils/waitUntilSignalled.cpp
+    src/utils/waitUntilSignalled.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PRIVATE fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO date::date-tz)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO PRIVATE date::date-tz)
 
 add_library(alarms STATIC
     src/alarms/Key.h
@@ -66,7 +75,11 @@ add_library(alarms STATIC
     src/alarms/ShelfMatch.cpp
     src/alarms/ShelfMatch.h
     )
-target_link_libraries(alarms PUBLIC alarms-utils PRIVATE PkgConfig::LIBYANG)
+target_link_libraries(alarms PUBLIC alarms-utils)
+
+add_executable(sysrepo-ietf-alarmsd src/main.cpp)
+add_dependencies(sysrepo-ietf-alarmsd target-SYSREPO_IETF_ALARMS_VERSION)
+target_link_libraries(sysrepo-ietf-alarmsd PUBLIC alarms docopt PRIVATE PkgConfig::SYSTEMD)
 
 # Testing
 include(CTest)
@@ -146,8 +159,8 @@ if(BUILD_TESTING)
     ietfalarms_test(time)
 
     set(fixture-alarms_testing
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms.yang FEATURE alarm-shelving
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms.yang
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang FEATURE alarm-shelving
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
         )
 
@@ -187,3 +200,4 @@ endif()
 
 set(YANG_DIR ${CMAKE_INSTALL_PREFIX}/share/sysrepo-ietf-alarms/yang)
 install(FILES ${YANG_SRCS} DESTINATION ${YANG_DIR})
+install(TARGETS sysrepo-ietf-alarmsd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
