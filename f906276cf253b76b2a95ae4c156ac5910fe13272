@@ -34,6 +34,24 @@
       "parentUuid": "40325f98_2f8be68e",
       "revId": "f906276cf253b76b2a95ae4c156ac5910fe13272",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "34984caf_3055bae7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-13T09:35:33Z",
+      "side": 1,
+      "message": "I wanted to avoid doing some mechanical work in br2-external, but during the call Tomas raised a good point that this might help people write migrations. I like that.",
+      "parentUuid": "2197e12a_080b17f0",
+      "revId": "f906276cf253b76b2a95ae4c156ac5910fe13272",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
