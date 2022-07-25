@@ -159,7 +159,7 @@ if(BUILD_TESTING)
     ietfalarms_test(time)
 
     set(fixture-alarms_testing
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang FEATURE alarm-shelving
+        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang FEATURE alarm-shelving FEATURE alarm-summary
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang
         YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
         )
@@ -175,6 +175,9 @@ if(BUILD_TESTING)
 
     ietfalarms_test(alarm_shelving fixture-alarms_testing)
     target_link_libraries(test-alarm_shelving alarms)
+
+    ietfalarms_test(alarm_summary fixture-alarms_testing)
+    target_link_libraries(test-alarm_summary alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
