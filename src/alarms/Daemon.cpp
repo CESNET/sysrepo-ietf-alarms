@@ -1,4 +1,5 @@
 #include <chrono>
+#include <map>
 #include <string>
 #include "Daemon.h"
 #include "Key.h"
@@ -22,6 +23,7 @@ const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
+const auto alarmSummaryPrefix = "/ietf-alarms:alarms/summary";
 
 /** @brief returns number of list instances in the list specified by xPath */
 size_t numberOfListInstances(sysrepo::Session& session, const std::string& xPath)
@@ -45,6 +47,45 @@ void updateAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std:
 void updateShelvedAlarmListStats(libyang::DataNode& edit, size_t alarmCount, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
 {
     updateStats(edit, shelvedAlarmList, "number-of-shelved-alarms", alarmCount, "shelved-alarms-last-changed", lastChanged);
+}
+
+void updateAlarmSummary(sysrepo::Session session)
+{
+    static const std::vector<std::string> SEVERITIES = {"indeterminate", "warning", "minor", "major", "critical"};
+    struct SeveritySummary {
+        unsigned total;
+        unsigned cleared;
+    };
+    using AlarmSummary = std::map<std::string, SeveritySummary>;
+
+    auto data = session.getData("/ietf-alarms:alarms");
+    assert(data);
+
+    AlarmSummary alarmSummary;
+    for (const auto& severity : SEVERITIES) {
+        alarmSummary[severity];
+    }
+
+    for (const auto& alarmNode : data->findXPath(alarmListInstances)) {
+        const auto severity = alarms::utils::childValue(alarmNode, "perceived-severity");
+        const auto isCleared = alarms::utils::childValue(alarmNode, "is-cleared");
+
+        alarmSummary[severity].total++;
+        if (isCleared == "true") {
+            alarmSummary[severity].cleared++;
+        }
+    }
+
+    auto edit = session.getContext().newPath(alarmSummaryPrefix);
+    for (const auto& [severity, summ] : alarmSummary) {
+        const auto prefix = alarmSummaryPrefix + "/alarm-summary[severity='"s + severity + "']";
+        edit.newPath(prefix + "/total", std::to_string(summ.total));
+        edit.newPath(prefix + "/not-cleared", std::to_string(summ.total - summ.cleared));
+        edit.newPath(prefix + "/cleared", std::to_string(summ.cleared));
+    }
+
+    session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+    session.applyChanges();
 }
 
 /** @brief Returns node specified by xpath in the tree */
@@ -130,7 +171,7 @@ Daemon::Daemon()
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
     , m_log(spdlog::get("main"))
 {
-    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving"});
+    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving", "alarm-summary"});
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     {
@@ -140,6 +181,8 @@ Daemon::Daemon()
         updateShelvedAlarmListStats(edit, 0, now);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
+
+        updateAlarmSummary(m_session);
     }
 
     m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
@@ -235,6 +278,8 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
     m_session.applyChanges();
 
+    updateAlarmSummary(m_session);
+
     if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
         m_session.sendNotification(createStatusChangeNotification(alarmNodePath), sysrepo::Wait::No);
     }
@@ -291,6 +336,8 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
 
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
+
+        updateAlarmSummary(m_session);
     }
 
     output.newPath(rpcPath + "/purged-alarms", std::to_string(toDelete.size()), libyang::CreationOptions::Output);
@@ -380,6 +427,8 @@ void Daemon::reshelve()
         utils::removeFromOperationalDS(m_connection, toErase);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
+
+        updateAlarmSummary(m_session);
     }
 }
 }
