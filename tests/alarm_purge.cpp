@@ -19,6 +19,7 @@ const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
 const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
 const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 }
 
 bool includesAll(const std::map<std::string, std::string>& haystack, const PropsWithTimeTest& needles)
@@ -42,6 +43,9 @@ TEST_CASE("Purge alarms RPC")
 
     userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
     userSess->applyChanges();
+
+    CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "", {}, {}, "Alarm 1");
+    CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2", "", {}, {}, "Alarm 2");
 
     CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "", "edfa", "warning", "A warning");
     CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "edfa", "major", "A major issue");

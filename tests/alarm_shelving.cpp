@@ -18,7 +18,7 @@ const auto ietfAlarms = "/ietf-alarms:alarms";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
 const auto shelvedAlarmsListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 const auto controlShelf = "/ietf-alarms:alarms/control/alarm-shelving/shelf";
-
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 
 struct ShelvedAlarm {
     std::string resource;
@@ -201,8 +201,24 @@ TEST_CASE("Alarm shelving")
     TEST_SYSREPO_CLIENT_INIT(cli2Sess);
     TEST_SYSREPO_CLIENT_INIT(userSess);
 
+    CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2-1", "high", {}, {}, "Alarm 1");
+    CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2-1", "low", {}, {}, "Alarm 1");
+    CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-1", "high", {}, {}, "Alarm 1");
+
     REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
                 {"/alarm-inventory", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "0"},
                 {"/alarm-list/last-changed", initTime},

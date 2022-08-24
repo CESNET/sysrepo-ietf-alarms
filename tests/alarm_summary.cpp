@@ -13,6 +13,7 @@ namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 
 using summary_t = std::map<std::string, std::map<std::string, unsigned>>;
 
@@ -40,6 +41,9 @@ TEST_CASE("Basic alarm publishing and updating")
     auto daemon = std::make_unique<alarms::Daemon>();
 
     TEST_SYSREPO_CLIENT_INIT(userSess);
+
+    CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-1", "high", {}, {}, "Alarm 1");
+    CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-1", "blabla", {}, {}, "Alarm 1");
 
     REQUIRE(getSummary(*userSess) == summary_t{
                 {"indeterminate", {{"total", 0}, {"cleared", 0}, {"not-cleared", 0}}},

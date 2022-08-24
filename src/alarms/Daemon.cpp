@@ -219,12 +219,72 @@ Daemon::Daemon()
         sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
 }
 
+/** @brief Check whether published alarm is in alarm-inventory container
+ *
+ * According to RFC 8632 the system MUST publish all possible alarm types in the alarm inventory.
+ * This is to ensure that alarm operators know what alarms might appear.
+ *
+ * See RFC 8632, section 4.2
+ *
+ * @return optional<string> containing the error message if validation fails
+ * */
+std::optional<std::string> Daemon::validateInventory(const Key& key, const std::string& severity)
+{
+    const std::string msgPrefix = "Published or cleared alarm id='" + key.alarmTypeId + "' qualifier='" + key.alarmTypeQualifier + "' resource='" + key.resource + "' severity='" + severity + "'";
+
+    auto data = m_session.getData(alarmInventoryPrefix);
+    if (!data) {
+        return msgPrefix + " but this alarm is not listed in the alarm inventory";
+    }
+
+    const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type[alarm-type-id='"s + key.alarmTypeId + "'][alarm-type-qualifier='" + key.alarmTypeQualifier + "']";
+    auto inventoryNodes = data->findXPath(inventoryNodesXPath);
+    if (inventoryNodes.empty()) {
+        return msgPrefix + " but this alarm is not listed in the alarm inventory";
+    } else if (inventoryNodes.size() > 1) {
+        throw std::runtime_error("Unexpected result size ("s + std::to_string(inventoryNodes.size()) + ") for findXPath(" + inventoryNodesXPath + "), expected 0 or 1.");
+    }
+
+    std::vector<std::string> resources;
+    if (auto resourcesInventory = inventoryNodes.begin()->findXPath("resource"); !resourcesInventory.empty()) {
+        std::transform(resourcesInventory.begin(), resourcesInventory.end(), std::back_inserter(resources), [&](const auto& node) { return std::string{node.asTerm().valueStr()}; });
+
+        if (auto it = std::find(resources.begin(), resources.end(), key.resource); it == resources.end()) {
+            return msgPrefix + " but the resource is not listed in the alarm inventory for this alarm";
+        }
+    }
+
+    std::vector<std::string> severities;
+    if (severity != "cleared") {
+        if (auto severitiesInventory = inventoryNodes.begin()->findXPath("severity-level"); !severitiesInventory.empty()) {
+            std::transform(severitiesInventory.begin(), severitiesInventory.end(), std::back_inserter(severities), [](const auto& node) { return std::string{node.asTerm().valueStr()}; });
+
+            if (auto it = std::find(severities.begin(), severities.end(), severity); it == severities.end()) {
+                return msgPrefix + " but the severity is not listed in the alarm inventory for this alarm";
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
     const auto& alarmKey = Key::fromNode(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
+
+    if (auto inventoryError = validateInventory(alarmKey, severity)) {
+        rpcSession.setNetconfError({.type = "application",
+                                    .tag = "operation-failed",
+                                    .appTag = std::nullopt,
+                                    .path = std::nullopt,
+                                    .message = (inventoryError.value() + " Violation of RFC8632 (sec. 4.1).").c_str(),
+                                    .infoElements = {{"MyElement", "MyValue"}, {"AnotherElement", "AnotherValue"}}}); // TODO
+        m_log->warn(inventoryError.value());
+        return sysrepo::ErrorCode::OperationFailed;
+    }
 
     auto matchedShelf = shouldBeShelved(m_session, alarmKey);
     std::string alarmNodePath;

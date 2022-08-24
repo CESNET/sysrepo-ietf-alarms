@@ -9,6 +9,7 @@
 namespace {
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 
 bool checkAlarmListLastChanged(const auto& dataFromSysrepo, const std::string& resource, const char* alarmTypeId, const char* alarmTypeQualifier)
 {
@@ -69,10 +70,15 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/summary/alarm-summary[severity='warning']/total", "0"},
             });
 
+    CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "high", {}, {}, "High temperature on any resource with any severity");
     auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating.");
     std::map<std::string, std::string> actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
     REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                 {"/alarm-inventory", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                 {"/alarm-list", ""},
                 {"/alarm-list/number-of-alarms", "1"},
                 {"/alarm-list/last-changed", origTime},
@@ -184,10 +190,22 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Another client creates an alarm")
     {
+        CLIENT_INTRODUCE_ALARM(cli2Sess, "alarms-test:alarm-2-1", "", ({"psu-1"}), ({"minor", "major"}), "Alarm with specific severity and resource.");
         auto origTime1 = CLIENT_ALARM_RPC(cli2Sess, "alarms-test:alarm-2-1", "", "psu-1", "major", "More juice pls.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/resource[1]", "psu-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/severity-level[1]", "minor"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/severity-level[2]", "major"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/description", "Alarm with specific severity and resource."},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "2"},
                     {"/alarm-list/last-changed", origTime1},
@@ -312,6 +330,7 @@ TEST_CASE("Basic alarm publishing and updating")
     SECTION("Client disconnects, then connects again and clears the alarm")
     {
         TEST_SYSREPO_CLIENT_DISCONNECT_AND_RESTORE(cli1Sess);
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "high", {}, {}, "High temperature on any resource with any severity");
 
         SECTION("Clears the alarm that was set before and then sets it back")
         {
@@ -319,6 +338,10 @@ TEST_CASE("Basic alarm publishing and updating")
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-inventory", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", clearedTime},
@@ -370,6 +393,10 @@ TEST_CASE("Basic alarm publishing and updating")
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-inventory", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", raisedTime},
@@ -420,10 +447,19 @@ TEST_CASE("Basic alarm publishing and updating")
 
         SECTION("Clearing a non-existent alarm results in no-op")
         {
+            CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2", "", {}, {}, "Just for this test...");
             CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2", "", "psu", "cleared", "Functioning within normal parameters.");
             actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
             REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                         {"/alarm-inventory", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                        {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/description", "Just for this test..."},
                         {"/alarm-list", ""},
                         {"/alarm-list/number-of-alarms", "1"},
                         {"/alarm-list/last-changed", origTime},
@@ -479,6 +515,10 @@ TEST_CASE("Basic alarm publishing and updating")
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -530,6 +570,10 @@ TEST_CASE("Basic alarm publishing and updating")
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -581,6 +625,10 @@ TEST_CASE("Basic alarm publishing and updating")
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -632,6 +680,10 @@ TEST_CASE("Basic alarm publishing and updating")
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", reraisedTime},
@@ -683,6 +735,10 @@ TEST_CASE("Basic alarm publishing and updating")
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
                     {"/alarm-list/last-changed", changedTime},
@@ -733,11 +789,27 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Properly escaped resource string")
     {
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-1", "", {"/ietf-interfaces:interface[name='eth1']"}, {}, "For escaping test");
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", {"/ietf-interfaces:interface[name=\"eth2\"]"}, {}, "For escaping test");
         auto origTime1 = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "", "/ietf-interfaces:interface[name='eth1']", "minor", "Link operationally down but administratively up.");
         auto origTime2 = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "/ietf-interfaces:interface[name=\"eth2\"]", "minor", "Link operationally down but administratively up.");
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/description", "For escaping test"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/resource[1]", "/ietf-interfaces:interface[name='eth1']"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-2"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/description", "For escaping test"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/resource[1]", "/ietf-interfaces:interface[name=\"eth2\"]"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "3"},
                     {"/alarm-list/last-changed", origTime2},
@@ -808,6 +880,21 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Not properly escaped resource string throws")
     {
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", {}, {}, "For escaping test");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "/some:hardware/entry[n1='ahoj\"'][n2=\"cau']`", "minor", "A text") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+    }
+
+    SECTION("Validation against inventory")
+    {
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "minor", "A text") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", ({"a-resource", "another-resource"}), ({"minor", "major", "critical"}), "test");
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "a-resource", "minor", "A text");
+
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "minor", "Invalid qualifier") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "major", "Invalid qualifier") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "invalid-resource", "major", "Invalid resource") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "indeterminate", "Invalid severity") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "critical", "valid");
     }
 }

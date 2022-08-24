@@ -17,6 +17,7 @@ const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmStatusNotification = "/"s + ietfAlarmsModule + ":alarm-notification";
 const auto inventoryNotification = "/"s + ietfAlarmsModule + ":alarm-inventory-changed";
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 }
 
 #define EXPECT_NOTIFICATION(PROPS) NAMED_REQUIRE_CALL(eventsAlarmStatus, notified(trompeloeil::eq(PROPS))).IN_SEQUENCE(seq1)
@@ -50,16 +51,6 @@ const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
         lastChangedTimesInSysrepo.push_back(FETCH_TIME_CHANGED(ID, QUALIFIER, RESOURCE));       \
     }
 
-#define CLIENT_ALARM_INVENTORY(SESS, ID, QUALIFIER, WILL_CLEAR, DESCRIPTION, RESOURCES, SEVERITY_LEVELS)                                                         \
-    SESS->setItem("/ietf-alarms:alarms/alarm-inventory/alarm-type[alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/will-clear", WILL_CLEAR);        \
-    SESS->setItem("/ietf-alarms:alarms/alarm-inventory/alarm-type[alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/description", DESCRIPTION);      \
-    for (const auto& e : std::vector<std::string> RESOURCES) {                                                                                                   \
-        SESS->setItem("/ietf-alarms:alarms/alarm-inventory/alarm-type[alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/resource", e.c_str());       \
-    }                                                                                                                                                            \
-    for (const auto& e : std::vector<std::string> SEVERITY_LEVELS) {                                                                                             \
-        SESS->setItem("/ietf-alarms:alarms/alarm-inventory/alarm-type[alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/severity-level", e.c_str()); \
-    }
-
 TEST_CASE("Receiving alarm notifications")
 {
     TEST_SYSREPO_INIT_LOGS;
@@ -80,17 +71,19 @@ TEST_CASE("Receiving alarm notifications")
     std::vector<std::string> lastChangedTimesFromNotifications;
     std::mutex mtx;
 
-    NotificationWatcher eventsAlarmStatus(*userSess, alarmStatusNotification, [&mtx, &lastChangedTimesFromNotifications](const std::optional<libyang::DataNode>& tree) {
-        auto node = tree->findPath("time");
-        REQUIRE(node);
-        REQUIRE(node->isTerm());
-        std::lock_guard lck(mtx);
-        lastChangedTimesFromNotifications.emplace_back(node->asTerm().valueStr());
-    });
-    NotificationWatcher eventsInventory(*userSess, inventoryNotification);
-
     SECTION("Alarm status changes (/ietf-alarms:alarms/alarm-notification)")
     {
+        NotificationWatcher eventsAlarmStatus(*userSess, alarmStatusNotification, [&mtx, &lastChangedTimesFromNotifications](const std::optional<libyang::DataNode>& tree) {
+            auto node = tree->findPath("time");
+            REQUIRE(node);
+            REQUIRE(node->isTerm());
+            std::lock_guard lck(mtx);
+            lastChangedTimesFromNotifications.emplace_back(node->asTerm().valueStr());
+        });
+
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "", {}, {}, "");
+        CLIENT_INTRODUCE_ALARM(cli2Sess, "alarms-test:alarm-1", "", {}, {}, "");
+        CLIENT_INTRODUCE_ALARM(cli2Sess, "alarms-test:alarm-1", "qual", {}, {}, "");
         SECTION("notifications: all-status-changes")
         {
             CLIENT_ALARM_RPC_AND_EXPECT_NOTIFICATION(cli1Sess, "alarms-test:alarm-1", "", "edfa", "warning", "Hey, I'm overheating.");
@@ -150,12 +143,11 @@ TEST_CASE("Receiving alarm notifications")
 
     SECTION("Inventory status changes (/ietf-alarms:alarms/alarm-inventory-changed)")
     {
-        cli1Sess->switchDatastore(sysrepo::Datastore::Operational);
-        CLIENT_ALARM_INVENTORY(cli1Sess, "alarms-test:alarm-1", "high", "true", "Some description", {}, ({"minor"}));
-        CLIENT_ALARM_INVENTORY(cli1Sess, "alarms-test:alarm-2", "", "false", "Another description", ({"edfa", "wss"}), ({"minor", "major"}));
-        REQUIRE_CALL(eventsInventory, notified(NotificationWatcher::data_t{})).IN_SEQUENCE(seq1);
-        cli1Sess->applyChanges();
-        cli1Sess->switchDatastore(sysrepo::Datastore::Running);
+        NotificationWatcher eventsInventory(*userSess, inventoryNotification);
+
+        REQUIRE_CALL(eventsInventory, notified(NotificationWatcher::data_t{})).IN_SEQUENCE(seq1).TIMES(2);
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "high", {}, ({"minor"}), "Some description");
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2", "", ({"edfa", "wss"}), ({"minor", "major"}), "Another description");
 
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-inventory", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
@@ -163,7 +155,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Some description"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/severity-level[1]", "minor"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -172,14 +163,10 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource[2]", "wss"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[1]", "minor"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[2]", "major"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/will-clear", "false"},
                 });
 
-        cli2Sess->switchDatastore(sysrepo::Datastore::Operational);
-        CLIENT_ALARM_INVENTORY(cli2Sess, "alarms-test:alarm-2-1", "", "false", "Another description", ({"edfa"}), {});
         REQUIRE_CALL(eventsInventory, notified(NotificationWatcher::data_t{})).IN_SEQUENCE(seq1);
-        cli2Sess->applyChanges();
-        cli2Sess->switchDatastore(sysrepo::Datastore::Running);
+        CLIENT_INTRODUCE_ALARM(cli2Sess, "alarms-test:alarm-2-1", "", ({"edfa"}), {}, "Another description");
 
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-inventory", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
@@ -187,7 +174,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Some description"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/severity-level[1]", "minor"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -196,13 +182,11 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource[2]", "wss"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[1]", "minor"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[2]", "major"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/will-clear", "false"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/description", "Another description"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/resource[1]", "edfa"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/will-clear", "false"},
                 });
 
         REQUIRE_CALL(eventsInventory, notified(NotificationWatcher::data_t{})).IN_SEQUENCE(seq1);
@@ -213,7 +197,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Some description"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/severity-level[1]", "minor"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -222,7 +205,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource[2]", "wss"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[1]", "minor"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[2]", "major"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/will-clear", "false"},
                 });
 
         cli2Sess = TEST_INIT_SESSION;
@@ -232,7 +214,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Some description"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/severity-level[1]", "minor"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']", ""},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -241,7 +222,6 @@ TEST_CASE("Receiving alarm notifications")
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/resource[2]", "wss"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[1]", "minor"},
                     {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/severity-level[2]", "major"},
-                    {"/alarm-type[alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']/will-clear", "false"},
                 });
 
         waitForCompletionAndBitMore(seq1);
