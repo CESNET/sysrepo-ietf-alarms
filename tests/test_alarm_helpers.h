@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <test_time_interval.h>
+#include "utils/sysrepo.h"
 
 #define CLIENT_ALARM_RPC(SESS, ID, QUALIFIER, RESOURCE, SEVERITY, TEXT) \
     [&]() {                                                             \
@@ -24,6 +25,20 @@
         auto intervalEnd = std::chrono::system_clock::now();            \
         return AnyTimeBetween{intervalStart, intervalEnd};              \
     }();
+
+#define CLIENT_INTRODUCE_ALARM(SESS, ID, QUALIFIER, RESOURCES, SEVERITIES, DESCRIPTION)                                                                                              \
+    {                                                                                                                                                                                \
+        alarms::utils::ScopedDatastoreSwitch s(*SESS, sysrepo::Datastore::Operational);                                                                                              \
+                                                                                                                                                                                     \
+        SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/description", DESCRIPTION);             \
+        for (const auto& resource : std::vector<std::string> RESOURCES) {                                                                                                            \
+            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource", resource.c_str());       \
+        }                                                                                                                                                                            \
+        for (const auto& severity : std::vector<std::string> SEVERITIES) {                                                                                                           \
+            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level", severity.c_str()); \
+        }                                                                                                                                                                            \
+        SESS->applyChanges();                                                                                                                                                        \
+    }
 
 #define CLIENT_PURGE_RPC_IMPL(SESS, RPCPATH, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS)                                               \
     [&]() {                                                                                                                                                       \

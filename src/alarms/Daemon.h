@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <sysrepo-cpp/Connection.hpp>
+#include "Key.h"
 #include "utils/log-fwd.h"
 
 namespace alarms {
@@ -19,6 +20,7 @@ private:
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const std::string& alarmNodePath);
+    std::optional<std::string> validateInventory(const Key& key, const std::string& severity);
     void reshelve();
 };
 
