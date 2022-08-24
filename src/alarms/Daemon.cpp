@@ -162,6 +162,21 @@ std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarm
 
     return shelfName;
 }
+
+/** @brief Helper for validating alarm against alarm-inventory */
+bool validateInventoryField(const libyang::DataNode& node, const std::string& list, const std::string& searchFor)
+{
+    if (auto listNodes = node.findXPath(list); !listNodes.empty()) {
+        std::vector<std::string> elements;
+        std::transform(listNodes.begin(), listNodes.end(), std::back_inserter(elements), [&](const auto& node) { return std::string{node.asTerm().valueStr()}; });
+
+        if (auto it = std::find(elements.begin(), elements.end(), searchFor); it == elements.end()) {
+            return false;
+        }
+    }
+
+    return true;
+}
 }
 
 namespace alarms {
@@ -212,12 +227,58 @@ Daemon::Daemon()
         sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
 }
 
+/** @brief Check whether published alarm is in alarm-inventory container
+ *
+ * According to RFC 8632 the system MUST publish all possible alarm types in the alarm inventory.
+ * This is to ensure that alarm operators know what alarms might appear.
+ *
+ * See RFC 8632, section 4.2
+ *
+ * @return optional<string> containing the error message if validation fails
+ * */
+std::optional<std::string> Daemon::inventoryValidationError(const Key& key, const std::string& severity)
+{
+    const std::string msgPrefix = "Published or cleared alarm id='" + key.alarmTypeId + "' qualifier='" + key.alarmTypeQualifier + "' resource='" + key.resource + "' severity='" + severity + "'";
+
+    auto data = m_session.getData(alarmInventoryPrefix);
+    assert(data);
+
+    const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type[alarm-type-id='"s + key.alarmTypeId + "'][alarm-type-qualifier='" + key.alarmTypeQualifier + "']";
+    auto inventoryNodes = data->findXPath(inventoryNodesXPath);
+    if (inventoryNodes.empty()) {
+        return msgPrefix + " but this alarm is not listed in the alarm inventory";
+    } else if (inventoryNodes.size() > 1) {
+        throw std::runtime_error("Internal error: too many matching alarms in alarm-inventory");
+    }
+
+    if (!validateInventoryField(*inventoryNodes.begin(), "resource", key.resource)) {
+        return msgPrefix + " but the resource is not listed in the alarm inventory for this alarm";
+    }
+
+    if (!validateInventoryField(*inventoryNodes.begin(), "severity-level", severity)) {
+        return msgPrefix + " but the severity is not listed in the alarm inventory for this alarm";
+    }
+
+    return std::nullopt;
+}
+
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
     const auto& alarmKey = Key::fromNode(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
+
+    if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
+        rpcSession.setNetconfError({.type = "application",
+                                    .tag = "data-missing",
+                                    .appTag = std::nullopt,
+                                    .path = std::nullopt,
+                                    .message = (inventoryError.value() + " Violation of RFC8632 (sec. 4.1).").c_str(),
+                                    .infoElements = {}});
+        m_log->warn(inventoryError.value());
+        return sysrepo::ErrorCode::OperationFailed;
+    }
 
     auto matchedShelf = shouldBeShelved(m_session, alarmKey);
     std::string alarmNodePath;
