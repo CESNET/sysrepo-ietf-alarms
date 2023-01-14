@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a7b13356_0e58b8b3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-14T01:01:17Z",
+      "side": 1,
+      "message": "good to go after that leftover debug print is removed",
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "322f1350_d23ef5cf",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-14T01:01:17Z",
+      "side": 1,
+      "message": "Since `total` is always the sum of `cleared` and `notCleared`, I don\u0027t know if it\u0027s worth trakcing it separately. But it works as well, so nothing has to change here.",
+      "range": {
+        "startLine": 76,
+        "startChar": 8,
+        "endLine": 76,
+        "endChar": 42
+      },
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4c4a40d7_f4de0461",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-14T01:01:17Z",
+      "side": 1,
+      "message": "nit: any reason for not using `foo++` instead of `foo +\u003d 1`?",
+      "range": {
+        "startLine": 78,
+        "startChar": 42,
+        "endLine": 78,
+        "endChar": 47
+      },
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1fefc798_8609e1ef",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-14T01:01:17Z",
+      "side": 1,
+      "message": "please remove this",
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
