@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "f8d37d54_a3f2cf1c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-25T07:31:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a7b13356_0e58b8b3",
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "322f1350_d23ef5cf",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 3
@@ -31,6 +49,30 @@
       "writtenOn": "2023-01-14T01:01:17Z",
       "side": 1,
       "message": "Since `total` is always the sum of `cleared` and `notCleared`, I don\u0027t know if it\u0027s worth trakcing it separately. But it works as well, so nothing has to change here.",
+      "range": {
+        "startLine": 76,
+        "startChar": 8,
+        "endLine": 76,
+        "endChar": 42
+      },
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "db2af5cd_5006cf35",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-25T07:31:45Z",
+      "side": 1,
+      "message": "Yes, you are right, tracking both is redundant. I have removed notCleared and now it is computed from expression `total - cleared`.",
+      "parentUuid": "322f1350_d23ef5cf",
       "range": {
         "startLine": 76,
         "startChar": 8,
@@ -64,6 +106,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "10ba23f5_67c56533",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-25T07:31:45Z",
+      "side": 1,
+      "message": "Python habit. Replaced in favour of post-increment.",
+      "parentUuid": "4c4a40d7_f4de0461",
+      "range": {
+        "startLine": 78,
+        "startChar": 42,
+        "endLine": 78,
+        "endChar": 47
+      },
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "1fefc798_8609e1ef",
@@ -77,6 +143,24 @@
       "writtenOn": "2023-01-14T01:01:17Z",
       "side": 1,
       "message": "please remove this",
+      "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "efd1be6a_7b3a4e1f",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-25T07:31:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1fefc798_8609e1ef",
       "revId": "0eb65e99091f9ef52efd4cccea99972c53fd5d48",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
