@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6b683472_4adbae6d",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "I think that this error message is a bit confusing. These are actually non-presence containers, and therefore always present unless there\u0027s been a sysrepo API change, right? Let\u0027s just assert().",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f7178ba9_cb6769c3",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "what about \"Internal error: too many matching alarms in alarm-inventory\"",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8e429a71_9190007a",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "please provide a helper for this because the code for `resources` and `severity-levels` is very similar",
+      "range": {
+        "startLine": 254,
+        "startChar": 0,
+        "endLine": 260,
+        "endChar": 9
+      },
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3aa92e80_a2d11f33",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 887,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "I missed this validation because I was greping for the actual error strings, and these exceptions only \"see\" sysrepo\u0027s generic error message. That\u0027s not really a bug in this test, it\u0027s a sysrepo-specific thing, but I wanted to mention it here.",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f33b1cc4_88619704",
+        "filename": "tests/alarm_summary.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "nit: let\u0027s move all these (and at all places) into tests/test_alarm_helpers.h in an extra commit, please",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

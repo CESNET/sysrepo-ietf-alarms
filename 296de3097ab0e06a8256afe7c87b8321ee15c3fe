@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "70fc5471_24088111",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-26T12:35:03Z",
+      "side": 1,
+      "message": "this means that the following code will \"read correctly\" to a reviewer, but in fact it will do the wrong thing:\n if (daemon.validateInventory()) {\n     // stuff is correct\n }\n\nI like the return value, but let\u0027s call it something like `inventoryErrors()`.",
+      "revId": "296de3097ab0e06a8256afe7c87b8321ee15c3fe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
