@@ -11,10 +11,6 @@ using namespace std::string_literals;
 
 namespace {
 
-const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
-
 using summary_t = std::map<std::string, std::map<std::string, unsigned>>;
 
 summary_t getSummary(sysrepo::Session sess)

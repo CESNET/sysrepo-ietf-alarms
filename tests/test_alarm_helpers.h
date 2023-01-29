@@ -10,6 +10,25 @@
 #include <test_time_interval.h>
 #include "utils/sysrepo.h"
 
+namespace {
+
+const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
+
+const auto ietfAlarmsModule = "ietf-alarms";
+const auto ietfAlarms = "/ietf-alarms:alarms";
+const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
+const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
+const auto alarmList = "/ietf-alarms:alarms/alarm-list";
+const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
+const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
+const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
+const auto controlShelf = "/ietf-alarms:alarms/control/alarm-shelving/shelf";
+const auto alarmStatusNotification = "/ietf-alarms:alarm-notification";
+const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
+
+}
+
 #define CLIENT_ALARM_RPC(SESS, ID, QUALIFIER, RESOURCE, SEVERITY, TEXT) \
     [&]() {                                                             \
         auto inp = std::map<std::string, std::string>{                  \

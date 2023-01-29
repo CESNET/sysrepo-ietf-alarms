@@ -10,18 +10,6 @@
 
 using namespace std::chrono_literals;
 
-namespace {
-
-const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
-const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
-const auto alarmList = "/ietf-alarms:alarms/alarm-list";
-const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
-const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
-const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
-}
-
 bool includesAll(const std::map<std::string, std::string>& haystack, const PropsWithTimeTest& needles)
 {
     return std::all_of(needles.begin(), needles.end(), [&haystack](const auto& e) {

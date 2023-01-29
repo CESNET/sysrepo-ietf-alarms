@@ -8,9 +8,6 @@
 
 namespace {
 
-const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
-
 bool checkAlarmListLastChanged(const auto& dataFromSysrepo, const std::string& resource, const char* alarmTypeId, const char* alarmTypeQualifier)
 {
     return dataFromSysrepo.at("/alarm-list/last-changed") == dataFromSysrepo.at("/alarm-list/alarm[resource='" + resource + "'][alarm-type-id='" + alarmTypeId + "'][alarm-type-qualifier='" + alarmTypeQualifier + "']/last-changed");

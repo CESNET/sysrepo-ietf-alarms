@@ -13,13 +13,6 @@ using namespace std::string_literals;
 
 namespace {
 
-const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto ietfAlarms = "/ietf-alarms:alarms";
-const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
-const auto shelvedAlarmsListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
-const auto controlShelf = "/ietf-alarms:alarms/control/alarm-shelving/shelf";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
-
 struct ShelvedAlarm {
     std::string resource;
     std::string alarmType;
@@ -43,7 +36,7 @@ std::vector<ShelvedAlarm> extractShelvedAlarms(sysrepo::Session session)
 
     std::vector<ShelvedAlarm> res;
     if (auto data = session.getData(ietfAlarms)) {
-        for (const auto& node : data->findXPath(shelvedAlarmsListInstances)) {
+        for (const auto& node : data->findXPath(shelvedAlarmListInstances)) {
             res.push_back({alarms::utils::childValue(node, "resource"),
                            alarms::utils::childValue(node, "alarm-type-id"),
                            alarms::utils::childValue(node, "alarm-type-qualifier"),

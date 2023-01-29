@@ -9,16 +9,6 @@
 #include "test_time_interval.h"
 
 using namespace std::chrono_literals;
-using namespace std::string_literals;
-
-namespace {
-
-const auto ietfAlarmsModule = "ietf-alarms";
-const auto alarmStatusNotification = "/"s + ietfAlarmsModule + ":alarm-notification";
-const auto inventoryNotification = "/"s + ietfAlarmsModule + ":alarm-inventory-changed";
-const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
-}
 
 #define EXPECT_NOTIFICATION(PROPS) NAMED_REQUIRE_CALL(eventsAlarmStatus, notified(trompeloeil::eq(PROPS))).IN_SEQUENCE(seq1)
 
