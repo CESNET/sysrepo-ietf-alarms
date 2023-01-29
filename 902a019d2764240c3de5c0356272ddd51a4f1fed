@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e1c73da0_1f142611",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-29T16:21:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6b683472_4adbae6d",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f7178ba9_cb6769c3",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "6fe65af4_8fb3d589",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-29T16:21:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f7178ba9_cb6769c3",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "8e429a71_9190007a",
@@ -48,6 +84,30 @@
       "writtenOn": "2023-01-26T12:35:03Z",
       "side": 1,
       "message": "please provide a helper for this because the code for `resources` and `severity-levels` is very similar",
+      "range": {
+        "startLine": 254,
+        "startChar": 0,
+        "endLine": 260,
+        "endChar": 9
+      },
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6ba83691_3907b5d5",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-29T16:21:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8e429a71_9190007a",
       "range": {
         "startLine": 254,
         "startChar": 0,
@@ -88,6 +148,24 @@
       "writtenOn": "2023-01-26T12:35:03Z",
       "side": 1,
       "message": "nit: let\u0027s move all these (and at all places) into tests/test_alarm_helpers.h in an extra commit, please",
+      "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0617e223_f3b21837",
+        "filename": "tests/alarm_summary.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-01-29T16:21:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f33b1cc4_88619704",
       "revId": "902a019d2764240c3de5c0356272ddd51a4f1fed",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
