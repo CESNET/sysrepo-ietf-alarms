@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "13b6b456_796bdc28",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-01-30T09:24:01Z",
+      "side": 1,
+      "message": "I\u0027m not sure about this one (the examples in the RFC talk more about trying to delete something which is not present), but it\u0027s fine.",
+      "revId": "1a0ff970dc7c2c6c410a20ff36e7fab3ee40bcb0",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
