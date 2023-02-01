@@ -23,3 +23,9 @@
         name: sssd-client
         state: absent
       become: true
+
+    - name: install docopt-cpp
+      package:
+        name: docopt-cpp-devel
+        state: present
+      become: true
