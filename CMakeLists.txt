@@ -21,11 +21,11 @@ prepare_git_version(SYSREPO_IETF_ALARMS_VERSION "0.0")
 find_package(Doxygen)
 option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${DOXYGEN_FOUND})
 
-find_package(docopt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
 
+pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
 pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo)
 pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
@@ -79,7 +79,7 @@ target_link_libraries(alarms PUBLIC alarms-utils)
 
 add_executable(sysrepo-ietf-alarmsd src/main.cpp)
 add_dependencies(sysrepo-ietf-alarmsd target-SYSREPO_IETF_ALARMS_VERSION)
-target_link_libraries(sysrepo-ietf-alarmsd PUBLIC alarms docopt PRIVATE PkgConfig::SYSTEMD)
+target_link_libraries(sysrepo-ietf-alarmsd PUBLIC alarms PkgConfig::DOCOPT PRIVATE PkgConfig::SYSTEMD)
 
 # Testing
 include(CTest)
