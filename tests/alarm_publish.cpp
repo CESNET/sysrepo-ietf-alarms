@@ -908,5 +908,6 @@ TEST_CASE("Basic alarm publishing and updating")
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "invalid-resource", "major", "Invalid resource") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "indeterminate", "Invalid severity") }(), "Couldn't send RPC: SR_ERR_CALLBACK_FAILED");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "critical", "valid");
+        CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "cleared", "valid");
     }
 }

@@ -255,7 +255,7 @@ std::optional<std::string> Daemon::inventoryValidationError(const Key& key, cons
         return msgPrefix + " but the resource is not listed in the alarm inventory for this alarm";
     }
 
-    if (!validateInventoryField(*inventoryNodes.begin(), "severity-level", severity)) {
+    if (severity != "cleared" && !validateInventoryField(*inventoryNodes.begin(), "severity-level", severity)) {
         return msgPrefix + " but the severity is not listed in the alarm inventory for this alarm";
     }
 
