@@ -1,5 +1,5 @@
-project(sysrepo-ietf-alarms LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.19)
+project(sysrepo-ietf-alarms LANGUAGES CXX)
 
 # Build options
 set(CMAKE_CXX_STANDARD 20)
