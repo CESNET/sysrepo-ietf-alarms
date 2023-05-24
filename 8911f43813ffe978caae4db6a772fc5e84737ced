@@ -33,6 +33,24 @@
       "message": "Why was this line moved under the if-else stmt?",
       "revId": "8911f43813ffe978caae4db6a772fc5e84737ced",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "68da2dff_3ef5493c",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2023-05-24T22:40:17Z",
+      "side": 1,
+      "message": "Previously, that helper used to work on a sysrepo::Connection directly. Instead of that, now it needs the `edit` already set to some libyang::DataNode, not a std::nullopt. That makes the code easier to write because it doesn\u0027t have to swap the content of a std::optional\u003clibyang::DataNode\u003e -- check the patches for all the other projects where it has to be done in a little more complex way. Here, it\u0027s a simple manner of calling edit.insertSibling().",
+      "parentUuid": "a264fac7_021fd14d",
+      "revId": "8911f43813ffe978caae4db6a772fc5e84737ced",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
