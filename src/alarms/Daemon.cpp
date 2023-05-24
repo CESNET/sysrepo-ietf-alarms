@@ -382,11 +382,6 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
     }
 
     if (!toDelete.empty()) {
-        /* FIXME: This does not ensure atomicity of the operation, i.e., keeping alarm-list's number-of-alarms leaf up to date is not synced with the deletion.
-         * At first, the alarms are removed one-by-one and only after all alarms are deleted we update the alarm counter and commit the edit with updated counter.
-         */
-        utils::removeFromOperationalDS(m_connection, toDelete);
-
         auto edit = m_session.getContext().newPath(alarmList);
 
         if (rpcPath == purgeRpcPrefix) {
@@ -395,6 +390,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
             updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances), now);
         }
 
+        utils::removeFromOperationalDS(m_session.getContext(), edit, toDelete);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
 
@@ -477,7 +473,6 @@ void Daemon::reshelve()
     }
 
     if (change) {
-        // FIXME: These are 2 individual operations; not an atomic change.
         if (shelvedCount > 0 || unshelvedCount > 0) {
             updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) - shelvedCount + unshelvedCount, now);
         }
@@ -485,7 +480,7 @@ void Daemon::reshelve()
             updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) + shelvedCount - unshelvedCount, now);
         }
 
-        utils::removeFromOperationalDS(m_connection, toErase);
+        utils::removeFromOperationalDS(m_session.getContext(), edit, toErase);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
 
