@@ -16,6 +16,23 @@
       "message": "recheck after deps update",
       "revId": "8911f43813ffe978caae4db6a772fc5e84737ced",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a264fac7_021fd14d",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 393,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2023-05-24T17:48:29Z",
+      "side": 1,
+      "message": "Why was this line moved under the if-else stmt?",
+      "revId": "8911f43813ffe978caae4db6a772fc5e84737ced",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
