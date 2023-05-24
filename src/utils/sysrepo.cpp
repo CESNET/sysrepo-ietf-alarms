@@ -67,13 +67,14 @@ void ensureModuleImplemented(const sysrepo::Session& session, const std::string&
     }
 }
 
-void removeFromOperationalDS(::sysrepo::Connection connection, const std::vector<std::string>& removePaths)
+void removeFromOperationalDS(::libyang::Context ctx, ::libyang::DataNode& edit, const std::vector<std::string>& removePaths)
 {
     auto log = spdlog::get("main");
 
     for (const auto& path : removePaths) {
         log->trace("Processing node removal from operational DS: {}", path);
-        connection.discardOperationalChanges(path);
+        auto discard = ctx.newOpaqueJSON("sysrepo", "discard-items", libyang::JSON{path});
+        edit.insertSibling(*discard);
     }
 }
 
