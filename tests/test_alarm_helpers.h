@@ -51,11 +51,14 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
                                                                                                                                                                                      \
         SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/description", DESCRIPTION);             \
         SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/will-clear", "true");                   \
-        for (const auto& resource : std::vector<std::string> RESOURCES) {                                                                                                            \
-            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource", resource.c_str());       \
+        /* YANG indexing starts at 1 */ \
+        auto resources = std::vector<std::string> RESOURCES; \
+        for (size_t i = 0; i < resources.size(); ++i) { \
+            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource[" + std::to_string(i + 1) + "]", resources[i].c_str());       \
         }                                                                                                                                                                            \
-        for (const auto& severity : std::vector<std::string> SEVERITIES) {                                                                                                           \
-            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level", severity.c_str()); \
+        auto severities = std::vector<std::string> SEVERITIES; \
+        for (size_t i = 0; i < severities.size(); ++i) { \
+            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level[" + std::to_string(i + 1) + "]", severities[i].c_str()); \
         }                                                                                                                                                                            \
         SESS->applyChanges();                                                                                                                                                        \
     }
