@@ -181,8 +181,12 @@ TEST_CASE("Basic alarm publishing and updating")
 
         daemon.reset();
         REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == std::map<std::string, std::string>{
+                    {"/alarm-inventory", ""},
+                    {"/alarm-list", ""},
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
+                    {"/shelved-alarms", ""},
+                    {"/summary", ""},
                 });
     }
 

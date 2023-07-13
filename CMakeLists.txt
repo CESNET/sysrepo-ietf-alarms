@@ -26,7 +26,7 @@ find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo)
+pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo>=2.2.97)
 pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=1.1.0)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
