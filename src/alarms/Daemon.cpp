@@ -200,7 +200,18 @@ Daemon::Daemon()
         updateAlarmSummary(m_session);
     }
 
-    m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) { return submitAlarm(session, input); });
+    m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) {
+        if (session.getOriginatorName() == "netopeer2") {
+            session.setNetconfError({.type = "application",
+                                     .tag = "operation-not-supported",
+                                     .appTag = std::nullopt,
+                                     .path = std::nullopt,
+                                     .message = "Internal RPCs cannot be called.",
+                                     .infoElements = {}});
+            return sysrepo::ErrorCode::OperationFailed;
+        }
+        return submitAlarm(session, input);
+    });
     m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeRpcPrefix, alarmListInstances, input, output); });
     m_alarmSub->onRPCAction(purgeShelvedRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeShelvedRpcPrefix, shelvedAlarmListInstances, input, output); });
 

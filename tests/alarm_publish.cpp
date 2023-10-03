@@ -944,3 +944,66 @@ TEST_CASE("Basic alarm publishing and updating")
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "cleared", "valid");
     }
 }
+
+TEST_CASE("Netopeer2 clients can't publish alarms")
+{
+    TEST_SYSREPO_INIT_LOGS;
+
+    copyStartupDatastore("ietf-alarms");
+
+    auto daemon = std::make_unique<alarms::Daemon>();
+
+    TEST_SYSREPO_CLIENT_INIT(cliSess);
+    CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-1", "", {}, {"warning"}, "High temperature on any resource with any severity");
+
+    SECTION("Netopeer2 client")
+    {
+        cliSess->setOriginatorName("netopeer2");
+        REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "", "", "warning", "High temperature on any resource with any severity") }(),
+                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
+                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
+                            " NETCONF: application: operation-not-supported: Internal RPCs cannot be called.");
+    }
+
+    SECTION("Other clients")
+    {
+        SECTION("Originator name set to something non-netopeerish")
+        {
+            cliSess->setOriginatorName("net'o'peer2");
+        }
+        SECTION("No originator name")
+        {
+        }
+
+        CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "", "", "warning", "High temperature on any resource with any severity");
+        auto actualDataFromSysrepo = dataFromSysrepo(*cliSess, "/ietf-alarms:alarms/summary", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-summary[severity='critical']", ""},
+                    {"/alarm-summary[severity='critical']/cleared", "0"},
+                    {"/alarm-summary[severity='critical']/not-cleared", "0"},
+                    {"/alarm-summary[severity='critical']/severity", "critical"},
+                    {"/alarm-summary[severity='critical']/total", "0"},
+                    {"/alarm-summary[severity='indeterminate']", ""},
+                    {"/alarm-summary[severity='indeterminate']/cleared", "0"},
+                    {"/alarm-summary[severity='indeterminate']/not-cleared", "0"},
+                    {"/alarm-summary[severity='indeterminate']/severity", "indeterminate"},
+                    {"/alarm-summary[severity='indeterminate']/total", "0"},
+                    {"/alarm-summary[severity='major']", ""},
+                    {"/alarm-summary[severity='major']/cleared", "0"},
+                    {"/alarm-summary[severity='major']/not-cleared", "0"},
+                    {"/alarm-summary[severity='major']/severity", "major"},
+                    {"/alarm-summary[severity='major']/total", "0"},
+                    {"/alarm-summary[severity='minor']", ""},
+                    {"/alarm-summary[severity='minor']/cleared", "0"},
+                    {"/alarm-summary[severity='minor']/not-cleared", "0"},
+                    {"/alarm-summary[severity='minor']/severity", "minor"},
+                    {"/alarm-summary[severity='minor']/total", "0"},
+                    {"/alarm-summary[severity='warning']", ""},
+                    {"/alarm-summary[severity='warning']/cleared", "0"},
+                    {"/alarm-summary[severity='warning']/not-cleared", "1"},
+                    {"/alarm-summary[severity='warning']/severity", "warning"},
+                    {"/alarm-summary[severity='warning']/total", "1"},
+                });
+    }
+}
