@@ -201,7 +201,9 @@ Daemon::Daemon()
     }
 
     m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) {
-        if (session.getOriginatorName() == "netopeer2") {
+        if (session.getOriginatorName() == "netopeer2"
+                || session.getOriginatorName() == "rousette"
+                || session.getOriginatorName() == "sysrepo-cli") {
             session.setNetconfError({.type = "application",
                                      .tag = "operation-not-supported",
                                      .appTag = std::nullopt,

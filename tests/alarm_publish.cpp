@@ -956,9 +956,23 @@ TEST_CASE("Netopeer2 clients can't publish alarms")
     TEST_SYSREPO_CLIENT_INIT(cliSess);
     CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-1", "", {}, {"warning"}, "High temperature on any resource with any severity");
 
-    SECTION("Netopeer2 client")
+    SECTION("remote clients")
     {
-        cliSess->setOriginatorName("netopeer2");
+        SECTION("netopeer2")
+        {
+            cliSess->setOriginatorName("netopeer2");
+        }
+
+        SECTION("rousette")
+        {
+            cliSess->setOriginatorName("rousette");
+        }
+
+        SECTION("sysrpeo-cli")
+        {
+            cliSess->setOriginatorName("sysrepo-cli");
+        }
+
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "", "", "warning", "High temperature on any resource with any severity") }(),
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
