@@ -45,20 +45,23 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
         return AnyTimeBetween{intervalStart, intervalEnd}; \
     }();
 
-#define CLIENT_INTRODUCE_ALARM(SESS, ID, QUALIFIER, RESOURCES, SEVERITIES, DESCRIPTION) \
+#define CLIENT_INTRODUCE_ALARM_VECTOR(SESS, ID, QUALIFIER, RESOURCES, SEVERITIES, DESCRIPTION) \
     { \
         alarms::utils::ScopedDatastoreSwitch s(*SESS, sysrepo::Datastore::Operational); \
 \
         SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/description", DESCRIPTION); \
         SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/will-clear", "true"); \
-        for (const auto& resource : std::vector<std::string> RESOURCES) { \
+        for (const auto& resource : RESOURCES) { \
             SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource", resource.c_str()); \
         } \
-        for (const auto& severity : std::vector<std::string> SEVERITIES) { \
+        for (const auto& severity : SEVERITIES) { \
             SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level", severity.c_str()); \
         } \
         SESS->applyChanges(); \
     }
+
+#define CLIENT_INTRODUCE_ALARM(SESS, ID, QUALIFIER, RESOURCES, SEVERITIES, DESCRIPTION) \
+    CLIENT_INTRODUCE_ALARM_VECTOR(SESS, ID, QUALIFIER, std::vector<std::string> RESOURCES, std::vector<std::string> SEVERITIES, DESCRIPTION)
 
 #define CLIENT_PURGE_RPC_IMPL(SESS, RPCPATH, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS) \
     [&]() { \

@@ -137,6 +137,7 @@ if(BUILD_TESTING)
     ietfalarms_test(NAME alarm_notifications FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_shelving FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_summary FIXTURE fixture-alarms_testing)
+    ietfalarms_test(NAME benchmark FIXTURE fixture-alarms_testing)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
