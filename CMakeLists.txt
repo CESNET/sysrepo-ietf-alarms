@@ -119,7 +119,7 @@ if(BUILD_TESTING)
     function(ietfalarms_test)
         cmake_parse_arguments(TEST "" "NAME" "" ${ARGN})
         sysrepo_test(NAME ${TEST_NAME} ${TEST_UNPARSED_ARGUMENTS})
-        target_link_libraries(test-${TEST_NAME} DoctestIntegration Testing)
+        target_link_libraries(test-${TEST_NAME} DoctestIntegration Testing alarms)
     endfunction()
 
     ietfalarms_test(NAME time)
@@ -133,19 +133,10 @@ if(BUILD_TESTING)
         )
 
     ietfalarms_test(NAME alarm_publish FIXTURE fixture-alarms_testing)
-    target_link_libraries(test-alarm_publish alarms)
-
     ietfalarms_test(NAME alarm_purge FIXTURE fixture-alarms_testing)
-    target_link_libraries(test-alarm_purge alarms)
-
     ietfalarms_test(NAME alarm_notifications FIXTURE fixture-alarms_testing)
-    target_link_libraries(test-alarm_notifications alarms)
-
     ietfalarms_test(NAME alarm_shelving FIXTURE fixture-alarms_testing)
-    target_link_libraries(test-alarm_shelving alarms)
-
     ietfalarms_test(NAME alarm_summary FIXTURE fixture-alarms_testing)
-    target_link_libraries(test-alarm_summary alarms)
 
     find_program(YANGLINT_PATH yanglint)
     if (NOT YANGLINT_PATH)
