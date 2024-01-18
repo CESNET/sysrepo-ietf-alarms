@@ -110,73 +110,41 @@ if(BUILD_TESTING)
     target_link_libraries(Testing PRIVATE spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO alarms-utils)
     target_include_directories(Testing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
 
-    find_program(SYSREPOCTL sysrepoctl)
-    find_program(SYSREPOCFG sysrepocfg)
+    include(cmake/SysrepoTest.cmake)
 
     set(YANG_TEST_SRCS
         tests/yang/alarms-test.yang
         )
 
-    function(ietfalarms_test name)
-        add_executable(test-${name} ${CMAKE_SOURCE_DIR}/tests/${name}.cpp)
-        target_link_libraries(test-${name} DoctestIntegration Testing)
-        target_include_directories(test-${name}
-            PUBLIC
-                ${CMAKE_CURRENT_SOURCE_DIR}
-            PRIVATE
-                ${CMAKE_BINARY_DIR}
-        )
-
-        if(NOT CMAKE_CROSSCOMPILING)
-            add_test(test-${name} test-${name})
-        endif()
-
-        set(test_name_init sysrepo:prep:${name})
-        set(test_name_cleanup sysrepo:clean:${name})
-        set(fixture_name sysrepo:env:${name})
-
-        # How to do this:
-        # Check ARGN for name of fixture
-        # then take the args for manage module from variable "fixture{fixture_name}"
-        # and then add set env vars for sysrepo
-        # set them ALSO for the init/cleanup tests
-        if(ARGC GREATER 1)
-            set(wanted_fixture ${ARGV1})
-            add_test(NAME ${test_name_init} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} prepare ${${wanted_fixture}})
-            set_tests_properties(${test_name_init} PROPERTIES FIXTURES_SETUP ${fixture_name})
-            add_test(NAME ${test_name_cleanup} COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/sysrepoctl-manage-module.sh ${SYSREPOCTL} ${SYSREPOCFG} uninstall ${${wanted_fixture}})
-            set_tests_properties(${test_name_cleanup} PROPERTIES FIXTURES_CLEANUP ${fixture_name})
-
-            set_tests_properties(test-${name} PROPERTIES FIXTURES_REQUIRED ${fixture_name})
-            set_property(TEST test-${name} ${test_name_init} ${test_name_cleanup} APPEND PROPERTY ENVIRONMENT
-                "SYSREPO_REPOSITORY_PATH=${CMAKE_CURRENT_BINARY_DIR}/test_repositories/test_${name}"
-                "SYSREPO_SHM_PREFIX=alarms_test_${name}"
-                )
-
-        endif()
+    function(ietfalarms_test)
+        cmake_parse_arguments(TEST "" "NAME" "" ${ARGN})
+        sysrepo_test(NAME ${TEST_NAME} ${TEST_UNPARSED_ARGUMENTS})
+        target_link_libraries(test-${TEST_NAME} DoctestIntegration Testing)
     endfunction()
 
-    ietfalarms_test(time)
+    ietfalarms_test(NAME time)
 
     set(fixture-alarms_testing
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang FEATURE alarm-shelving FEATURE alarm-summary
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang
-        YANG ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang
+            --enable-feature alarm-shelving
+            --enable-feature alarm-summary
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang
+        --install ${CMAKE_CURRENT_SOURCE_DIR}/tests/yang/alarms-test.yang
         )
 
-    ietfalarms_test(alarm_publish fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_publish FIXTURE fixture-alarms_testing)
     target_link_libraries(test-alarm_publish alarms)
 
-    ietfalarms_test(alarm_purge fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_purge FIXTURE fixture-alarms_testing)
     target_link_libraries(test-alarm_purge alarms)
 
-    ietfalarms_test(alarm_notifications fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_notifications FIXTURE fixture-alarms_testing)
     target_link_libraries(test-alarm_notifications alarms)
 
-    ietfalarms_test(alarm_shelving fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_shelving FIXTURE fixture-alarms_testing)
     target_link_libraries(test-alarm_shelving alarms)
 
-    ietfalarms_test(alarm_summary fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_summary FIXTURE fixture-alarms_testing)
     target_link_libraries(test-alarm_summary alarms)
 
     find_program(YANGLINT_PATH yanglint)
