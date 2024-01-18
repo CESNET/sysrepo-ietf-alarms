@@ -15,30 +15,30 @@ using namespace std::chrono_literals;
 #define FETCH_TIME_CHANGED(ID, QUALIFIER, RESOURCE) dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational)["/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ID "'][alarm-type-qualifier='" QUALIFIER "']/last-changed"]
 
 #define CLIENT_ALARM_RPC_AND_EXPECT_NOTIFICATION(SESS, ID, QUALIFIER, RESOURCE, SEVERITY, TEXT) \
-    {                                                                                           \
-        auto rpcInput = std::map<std::string, std::string>{                                     \
-            {"resource", RESOURCE},                                                             \
-            {"alarm-type-id", ID},                                                              \
-            {"alarm-type-qualifier", QUALIFIER},                                                \
-            {"severity", SEVERITY},                                                             \
-            {"alarm-text", TEXT},                                                               \
-        };                                                                                      \
-                                                                                                \
-        auto now = std::chrono::system_clock::now();                                            \
-        PropsWithTimeTest expectProps = {                                                       \
-            {"alarm-type-id", ID},                                                              \
-            {"resource", RESOURCE},                                                             \
-            {"alarm-text", TEXT},                                                               \
-            {"perceived-severity", SEVERITY},                                                   \
-            {"time", AnyTimeBetween{now, now + 300ms}},                                         \
-        };                                                                                      \
-        if (!std::string(QUALIFIER).empty()) {                                                  \
-            expectProps["alarm-type-qualifier"] = QUALIFIER;                                    \
-        }                                                                                       \
-        expectations.push_back(EXPECT_NOTIFICATION(expectProps));                               \
-                                                                                                \
-        rpcFromSysrepo(*SESS, rpcPrefix, rpcInput);                                             \
-        lastChangedTimesInSysrepo.push_back(FETCH_TIME_CHANGED(ID, QUALIFIER, RESOURCE));       \
+    { \
+        auto rpcInput = std::map<std::string, std::string>{ \
+            {"resource", RESOURCE}, \
+            {"alarm-type-id", ID}, \
+            {"alarm-type-qualifier", QUALIFIER}, \
+            {"severity", SEVERITY}, \
+            {"alarm-text", TEXT}, \
+        }; \
+\
+        auto now = std::chrono::system_clock::now(); \
+        PropsWithTimeTest expectProps = { \
+            {"alarm-type-id", ID}, \
+            {"resource", RESOURCE}, \
+            {"alarm-text", TEXT}, \
+            {"perceived-severity", SEVERITY}, \
+            {"time", AnyTimeBetween{now, now + 300ms}}, \
+        }; \
+        if (!std::string(QUALIFIER).empty()) { \
+            expectProps["alarm-type-qualifier"] = QUALIFIER; \
+        } \
+        expectations.push_back(EXPECT_NOTIFICATION(expectProps)); \
+\
+        rpcFromSysrepo(*SESS, rpcPrefix, rpcInput); \
+        lastChangedTimesInSysrepo.push_back(FETCH_TIME_CHANGED(ID, QUALIFIER, RESOURCE)); \
     }
 
 TEST_CASE("Receiving alarm notifications")

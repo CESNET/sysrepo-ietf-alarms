@@ -25,4 +25,5 @@ bool operator==(const std::map<std::string, std::string>& lhs, const std::map<st
 
 using PropsWithTimeTest = std::map<std::string, std::variant<std::string, AnyTimeBetween>>;
 
-#define BEFORE_INTERVAL(interval) AnyTimeBetween{{}, interval.start}
+#define BEFORE_INTERVAL(interval) \
+    AnyTimeBetween { {}, interval.start }

@@ -168,11 +168,11 @@ AnyTimeBetween getExecutionTimeInterval(const std::function<void()>& foo)
     return AnyTimeBetween{start, std::chrono::system_clock::now()};
 }
 
-#define SHELF_SUMMARY(SESS, NUMBER_OF_SHELVED_ALARMS, SHELVED_ALARMS_LAST_CHANGE)                                 \
-    {                                                                                                             \
+#define SHELF_SUMMARY(SESS, NUMBER_OF_SHELVED_ALARMS, SHELVED_ALARMS_LAST_CHANGE) \
+    { \
         auto data = dataFromSysrepo(SESS, "/ietf-alarms:alarms/shelved-alarms", sysrepo::Datastore::Operational); \
-        REQUIRE(data["/number-of-shelved-alarms"] == std::to_string(NUMBER_OF_SHELVED_ALARMS));                   \
-        REQUIRE(data["/shelved-alarms-last-changed"] == SHELVED_ALARMS_LAST_CHANGE);                              \
+        REQUIRE(data["/number-of-shelved-alarms"] == std::to_string(NUMBER_OF_SHELVED_ALARMS)); \
+        REQUIRE(data["/shelved-alarms-last-changed"] == SHELVED_ALARMS_LAST_CHANGE); \
     }
 
 TEST_CASE("Alarm shelving")
@@ -493,4 +493,3 @@ TEST_CASE("Alarm shelving")
 
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules
 }
-
