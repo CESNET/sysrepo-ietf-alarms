@@ -356,16 +356,15 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     updateAlarmSummary(m_session);
 
     if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
-        m_session.sendNotification(createStatusChangeNotification(alarmNodePath), sysrepo::Wait::No);
+        m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
     }
 
     return sysrepo::ErrorCode::Ok;
 }
 
-libyang::DataNode Daemon::createStatusChangeNotification(const std::string& alarmNodePath)
+libyang::DataNode Daemon::createStatusChangeNotification(const libyang::DataNode& alarmNode)
 {
     static const std::string prefix = "/ietf-alarms:alarm-notification";
-    libyang::DataNode alarmNode = activeAlarmExist(m_session, alarmNodePath).value();
 
     auto notification = m_session.getContext().newPath(prefix + "/resource", utils::childValue(alarmNode, "resource"));
     notification.newPath(prefix + "/alarm-type-id", utils::childValue(alarmNode, "alarm-type-id"));
