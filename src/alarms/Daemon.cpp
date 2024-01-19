@@ -27,10 +27,9 @@ const auto controlPrefix = "/ietf-alarms:alarms/control";
 const auto alarmSummaryPrefix = "/ietf-alarms:alarms/summary";
 
 /** @brief returns number of list instances in the list specified by xPath */
-size_t numberOfListInstances(sysrepo::Session& session, const std::string& xPath)
+size_t numberOfListInstances(const libyang::DataNode& alarmRoot, const std::string& xPath)
 {
-    auto data = session.getData(xPath);
-    return data ? data->findXPath(xPath).size() : 0;
+    return alarmRoot.findXPath(xPath).size();
 }
 
 void updateStats(libyang::DataNode& edit, const std::string& prefix, const std::string& alarmsCountLeafName, size_t alarmCount, const std::string& lastChangedLeafName, const std::chrono::time_point<std::chrono::system_clock>& lastChanged)
@@ -333,11 +332,11 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
 
     if (!matchedShelf) {
-        updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) + static_cast<int>(editAlarmNode->findPath("time-created").has_value()), now);
+        updateAlarmListStats(edit, numberOfListInstances(*alarmRoot, alarmListInstances) + static_cast<int>(editAlarmNode->findPath("time-created").has_value()), now);
     } else {
         edit.newPath(alarmNodePath + "/shelf-name", matchedShelf);
         if (!existingAlarmNode) {
-            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) + 1, now);
+            updateShelvedAlarmListStats(edit, numberOfListInstances(*alarmRoot, shelvedAlarmListInstances) + 1, now);
         }
     }
 
@@ -390,9 +389,9 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
         auto edit = m_session.getContext().newPath(alarmList);
 
         if (rpcPath == purgeRpcPrefix) {
-            updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) - toDelete.size(), now);
+            updateAlarmListStats(edit, numberOfListInstances(*alarmRoot, alarmListInstances) - toDelete.size(), now);
         } else {
-            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) - toDelete.size(), now);
+            updateShelvedAlarmListStats(edit, numberOfListInstances(*alarmRoot, shelvedAlarmListInstances) - toDelete.size(), now);
         }
 
         utils::removeFromOperationalDS(m_session.getContext(), edit, toDelete);
@@ -477,10 +476,10 @@ void Daemon::reshelve()
 
     if (change) {
         if (shelvedCount > 0 || unshelvedCount > 0) {
-            updateAlarmListStats(edit, numberOfListInstances(m_session, alarmListInstances) - shelvedCount + unshelvedCount, now);
+            updateAlarmListStats(edit, numberOfListInstances(*alarmRoot, alarmListInstances) - shelvedCount + unshelvedCount, now);
         }
         if (shelvedCount > 0 || unshelvedCount > 0 || movedBetweenShelfs) {
-            updateShelvedAlarmListStats(edit, numberOfListInstances(m_session, shelvedAlarmListInstances) + shelvedCount - unshelvedCount, now);
+            updateShelvedAlarmListStats(edit, numberOfListInstances(*alarmRoot, shelvedAlarmListInstances) + shelvedCount - unshelvedCount, now);
         }
 
         utils::removeFromOperationalDS(m_session.getContext(), edit, toErase);
