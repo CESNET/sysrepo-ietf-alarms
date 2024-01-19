@@ -89,15 +89,6 @@ void updateAlarmSummary(sysrepo::Session session)
     session.applyChanges();
 }
 
-/** @brief Returns node specified by xpath in the tree */
-std::optional<libyang::DataNode> activeAlarmExist(sysrepo::Session& session, const std::string& path)
-{
-    if (auto data = session.getData(path)) {
-        return data->findPath(path);
-    }
-    return std::nullopt;
-}
-
 bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& newNode, const char* leafName)
 {
     bool oldLeafExists = oldNode && oldNode->findPath(leafName);
@@ -312,7 +303,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         return sysrepo::ErrorCode::InvalidArgument;
     }
 
-    const auto existingAlarmNode = activeAlarmExist(m_session, alarmNodePath);
+    const auto existingAlarmNode = alarmRoot->findPath(alarmNodePath);
 
     auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
 
