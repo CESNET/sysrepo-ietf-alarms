@@ -250,15 +250,12 @@ Daemon::Daemon()
  *
  * @return optional<string> containing the error message if validation fails
  * */
-std::optional<std::string> Daemon::inventoryValidationError(const Key& key, const std::string& severity)
+std::optional<std::string> Daemon::inventoryValidationError(const libyang::DataNode& alarmRoot, const Key& key, const std::string& severity)
 {
     const std::string msgPrefix = "Published or cleared alarm id='" + key.alarmTypeId + "' qualifier='" + key.alarmTypeQualifier + "' resource='" + key.resource + "' severity='" + severity + "'";
 
-    auto data = m_session.getData(alarmInventoryPrefix);
-    assert(data);
-
     const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type[alarm-type-id='"s + key.alarmTypeId + "'][alarm-type-qualifier='" + key.alarmTypeQualifier + "']";
-    auto inventoryNodes = data->findXPath(inventoryNodesXPath);
+    auto inventoryNodes = alarmRoot.findXPath(inventoryNodesXPath);
     if (inventoryNodes.empty()) {
         return msgPrefix + " but this alarm is not listed in the alarm inventory";
     } else if (inventoryNodes.size() > 1) {
@@ -283,7 +280,10 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
 
-    if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
+    const auto alarmRoot = m_session.getData(rootPath);
+    assert(alarmRoot);
+
+    if (auto inventoryError = inventoryValidationError(*alarmRoot, alarmKey, severity)) {
         rpcSession.setNetconfError({.type = "application",
                                     .tag = "data-missing",
                                     .appTag = std::nullopt,
