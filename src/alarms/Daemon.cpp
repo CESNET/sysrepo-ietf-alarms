@@ -13,6 +13,7 @@
 using namespace std::string_literals;
 
 namespace {
+const auto rootPath = "/ietf-alarms:alarms"s;
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 const auto ietfAlarmsModule = "ietf-alarms";
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
@@ -58,15 +59,15 @@ void updateAlarmSummary(sysrepo::Session session)
     };
     using AlarmSummary = std::map<std::string, SeveritySummary>;
 
-    auto data = session.getData("/ietf-alarms:alarms");
-    assert(data);
+    auto alarmRoot = session.getData(rootPath);
+    assert(alarmRoot);
 
     AlarmSummary alarmSummary;
     for (const auto& severity : SEVERITIES) {
         alarmSummary[severity];
     }
 
-    for (const auto& alarmNode : data->findXPath(alarmListInstances)) {
+    for (const auto& alarmNode : alarmRoot->findXPath(alarmListInstances)) {
         const auto severity = alarms::utils::childValue(alarmNode, "perceived-severity");
         const auto isCleared = alarms::utils::childValue(alarmNode, "is-cleared");
 
@@ -386,7 +387,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
     PurgeFilter filter(rpcInput);
     std::vector<std::string> toDelete;
 
-    if (auto rootNode = m_session.getData("/ietf-alarms:alarms")) {
+    if (auto rootNode = m_session.getData(rootPath)) {
         for (const auto& alarmNode : rootNode->findXPath(alarmListXPath)) {
             if (filter.matches(alarmNode)) {
                 toDelete.push_back(std::string(alarmNode.path()));
@@ -443,12 +444,12 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 
 void Daemon::reshelve()
 {
-    auto data = m_session.getData("/ietf-alarms:alarms");
-    if (!data) {
+    auto alarmRoot = m_session.getData(rootPath);
+    if (!alarmRoot) {
         return;
     }
 
-    auto edit = m_session.getContext().newPath("/ietf-alarms:alarms", std::nullopt);
+    auto edit = m_session.getContext().newPath(rootPath, std::nullopt);
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
     bool change = false;
@@ -456,7 +457,7 @@ void Daemon::reshelve()
     size_t shelvedCount = 0;
     size_t unshelvedCount = 0;
 
-    for (const auto& node : data->findXPath(alarmListInstances)) {
+    for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
         const auto alarmKey = Key::fromNode(node);
         if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
             createShelvedAlarmNodeFromExistingNode(edit, node, alarmKey, *shelf);
@@ -467,7 +468,7 @@ void Daemon::reshelve()
         }
     }
 
-    for (const auto& node : data->findXPath(shelvedAlarmListInstances)) {
+    for (const auto& node : alarmRoot->findXPath(shelvedAlarmListInstances)) {
         const auto alarmKey = Key::fromNode(node);
         if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
             if (*shelf != utils::childValue(node, "shelf-name")) {
