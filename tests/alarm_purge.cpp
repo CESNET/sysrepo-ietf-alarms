@@ -29,6 +29,9 @@ TEST_CASE("Purge alarms RPC")
     TEST_SYSREPO_CLIENT_INIT(cli2Sess);
     TEST_SYSREPO_CLIENT_INIT(userSess);
 
+    // check that we can ask for purge even without any config
+    CLIENT_PURGE_RPC(userSess, 0, "cleared", {});
+
     userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='wss']", std::nullopt);
     userSess->applyChanges();
 

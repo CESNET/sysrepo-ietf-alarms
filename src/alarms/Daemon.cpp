@@ -377,11 +377,12 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
     PurgeFilter filter(rpcInput);
     std::vector<std::string> toDelete;
 
-    if (auto rootNode = m_session.getData(rootPath)) {
-        for (const auto& alarmNode : rootNode->findXPath(alarmListXPath)) {
-            if (filter.matches(alarmNode)) {
-                toDelete.push_back(std::string(alarmNode.path()));
-            }
+    auto alarmRoot = m_session.getData(rootPath);
+    assert(alarmRoot);
+
+    for (const auto& alarmNode : alarmRoot->findXPath(alarmListXPath)) {
+        if (filter.matches(alarmNode)) {
+            toDelete.push_back(std::string(alarmNode.path()));
         }
     }
 
@@ -435,9 +436,7 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 void Daemon::reshelve()
 {
     auto alarmRoot = m_session.getData(rootPath);
-    if (!alarmRoot) {
-        return;
-    }
+    assert(alarmRoot);
 
     auto edit = m_session.getContext().newPath(rootPath, std::nullopt);
     auto now = std::chrono::system_clock::now();
