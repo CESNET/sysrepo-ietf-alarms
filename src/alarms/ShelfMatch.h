@@ -10,8 +10,8 @@
 
 namespace alarms {
 
-struct Key;
+struct InstanceKey;
 
-std::optional<std::string> findMatchingShelf(const Key& key, const libyang::Set<libyang::DataNode>& shelves);
+std::optional<std::string> findMatchingShelf(const InstanceKey& key, const libyang::Set<libyang::DataNode>& shelves);
 
 }
