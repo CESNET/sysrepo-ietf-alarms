@@ -24,29 +24,36 @@ std::string escapeListKey(const std::string& str)
     }
 }
 
-std::string alarmListKeyPredicates(const alarms::Key& alarmKey)
+std::string alarmListKeyPredicates(const alarms::InstanceKey& alarmKey)
 {
-    return "[alarm-type-id='"s + alarmKey.alarmTypeId + "'][alarm-type-qualifier='" + alarmKey.alarmTypeQualifier + "'][resource=" + escapeListKey(alarmKey.resource) + "]";
+    return alarmKey.type.xpathIndex() + "[resource=" + escapeListKey(alarmKey.resource) + "]";
 }
 
 }
 
 namespace alarms {
 
-Key Key::fromNode(const libyang::DataNode& node)
+std::string Type::xpathIndex() const
+{
+    return "[alarm-type-id='"s + id + "'][alarm-type-qualifier='" + qualifier + "']";
+}
+
+InstanceKey InstanceKey::fromNode(const libyang::DataNode& node)
 {
     return {
-        alarms::utils::childValue(node, "alarm-type-id"),
-        alarms::utils::childValue(node, "alarm-type-qualifier"),
+        {
+            alarms::utils::childValue(node, "alarm-type-id"),
+            alarms::utils::childValue(node, "alarm-type-qualifier")
+        },
         alarms::utils::childValue(node, "resource")};
 }
 
-std::string Key::alarmPath() const
+std::string InstanceKey::alarmPath() const
 {
     return "/ietf-alarms:alarms/alarm-list/alarm" + alarmListKeyPredicates(*this);
 }
 
-std::string Key::shelvedAlarmPath() const
+std::string InstanceKey::shelvedAlarmPath() const
 {
     return "/ietf-alarms:alarms/shelved-alarms/shelved-alarm" + alarmListKeyPredicates(*this);
 }
