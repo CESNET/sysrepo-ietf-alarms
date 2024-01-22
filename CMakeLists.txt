@@ -24,7 +24,7 @@ option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${D
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED)
-find_package(Boost 1.78 COMPONENTS algorithm)
+find_package(Boost 1.78 COMPONENTS algorithm container_hash)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
 pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=1.1.0 sysrepo>=2.2.97)

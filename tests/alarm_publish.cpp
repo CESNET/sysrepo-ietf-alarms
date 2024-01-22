@@ -937,7 +937,7 @@ TEST_CASE("Basic alarm publishing and updating")
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
                             " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
-                            " NETCONF: application: data-missing: Published or cleared alarm id='alarms-test:alarm-2-2' qualifier='a-qual' resource='a-resource' severity='minor' but this alarm is not listed in the alarm inventory Violation of RFC8632 (sec. 4.1).");
+                            " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
 
         CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", ({"a-resource", "another-resource"}), ({"minor", "major", "critical"}), "test");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "a-resource", "minor", "A text");
@@ -946,22 +946,22 @@ TEST_CASE("Basic alarm publishing and updating")
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
                             " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
-                            " NETCONF: application: data-missing: Published or cleared alarm id='alarms-test:alarm-2-2' qualifier='a-qual' resource='a-resource' severity='minor' but this alarm is not listed in the alarm inventory Violation of RFC8632 (sec. 4.1).");
+                            " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "major", "Invalid qualifier") }(),
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
                             " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
-                            " NETCONF: application: data-missing: Published or cleared alarm id='alarms-test:alarm-2-2' qualifier='a-qual' resource='a-resource' severity='major' but this alarm is not listed in the alarm inventory Violation of RFC8632 (sec. 4.1).");
+                            " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "invalid-resource", "major", "Invalid resource") }(),
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
                             " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
-                            " NETCONF: application: data-missing: Published or cleared alarm id='alarms-test:alarm-2-2' qualifier='' resource='invalid-resource' severity='major' but the resource is not listed in the alarm inventory for this alarm Violation of RFC8632 (sec. 4.1).");
+                            " NETCONF: application: data-missing: Alarm inventory doesn't allow resource 'invalid-resource' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "indeterminate", "Invalid severity") }(),
                             "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
                             " NETCONF error occurred. (SR_ERR_OPERATION_FAILED)\n"
                             " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
-                            " NETCONF: application: data-missing: Published or cleared alarm id='alarms-test:alarm-2-2' qualifier='' resource='another-resource' severity='indeterminate' but the severity is not listed in the alarm inventory for this alarm Violation of RFC8632 (sec. 4.1).");
+                            " NETCONF: application: data-missing: Alarm inventory doesn't allow severity 'indeterminate' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1).");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "critical", "valid");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "cleared", "valid");
     }

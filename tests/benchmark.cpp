@@ -28,7 +28,14 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("inventory: sequential resources") {
         auto start = std::chrono::system_clock::now();
-        for (int i = 0; i < NUM_RESOURCES; ++i) {
+        int i = 0;
+        CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2", "" /* qualifier is useless */, ({"r1", "r2"}), {}, "desc");
+        ++i;
+        CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2-1", "something very dynamic", {}, {}, "desc");
+        ++i;
+        CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2-2", "" /* qualifier is useless */, {}, ({"critical", "major", "minor"}), "desc");
+        ++i;
+        for (; i < NUM_RESOURCES; ++i) {
             CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-1", "" /* qualifier is useless */, {"resource-" + std::to_string(i)}, {"critical"}, "desc");
         }
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
