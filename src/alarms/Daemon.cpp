@@ -149,21 +149,6 @@ std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarm
 
     return shelfName;
 }
-
-/** @brief Helper for validating alarm against alarm-inventory */
-bool validateInventoryField(const libyang::DataNode& node, const std::string& list, const std::string& searchFor)
-{
-    if (auto listNodes = node.findXPath(list); !listNodes.empty()) {
-        std::vector<std::string> elements;
-        std::transform(listNodes.begin(), listNodes.end(), std::back_inserter(elements), [&](const auto& node) { return std::string{node.asTerm().valueStr()}; });
-
-        if (auto it = std::find(elements.begin(), elements.end(), searchFor); it == elements.end()) {
-            return false;
-        }
-    }
-
-    return true;
-}
 }
 
 namespace alarms {
@@ -254,13 +239,39 @@ Daemon::Daemon()
     }
 
     m_inventorySub = m_session.onModuleChange(
-        ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
+        ietfAlarmsModule, [&](auto session, auto, auto, auto, auto, auto) {
+            std::unique_lock lck{m_mtx};
+            const auto data = session.getData(alarmInventoryPrefix)->findPath(alarmInventoryPrefix);
+            m_inventory.clear();
+            if (data->child()) {
+                for (const auto& entry : data->child()->siblings()) {
+                    decltype(InventoryData::resources) resources;
+                    decltype(InventoryData::severities) severities;
+                    for (const auto& child : entry.immediateChildren()) {
+                        const auto shortName = child.schema().name();
+                        if (shortName == "resource") {
+                            resources.emplace(child.asTerm().valueStr());
+                        } else if (shortName == "severity-level") {
+                            severities.emplace(child.asTerm().valueStr());
+                        }
+                    }
+                    m_inventory.emplace(
+                        Type{
+                            .id = utils::childValue(entry, "alarm-type-id"),
+                            .qualifier = utils::childValue(entry, "alarm-type-qualifier")},
+                        InventoryData{
+                            .resources = resources,
+                            .severities = severities,
+                        });
+                }
+            }
+
             m_session.sendNotification(m_session.getContext().newPath("/ietf-alarms:alarm-inventory-changed", std::nullopt), sysrepo::Wait::No);
             return sysrepo::ErrorCode::Ok;
         },
         alarmInventoryPrefix,
         0,
-        sysrepo::SubscribeOptions::DoneOnly | sysrepo::SubscribeOptions::Passive);
+        sysrepo::SubscribeOptions::Enabled | sysrepo::SubscribeOptions::DoneOnly);
 }
 
 /** @brief Check whether published alarm is in alarm-inventory container
@@ -272,26 +283,20 @@ Daemon::Daemon()
  *
  * @return optional<string> containing the error message if validation fails
  * */
-std::optional<std::string> Daemon::inventoryValidationError(const libyang::DataNode& alarmRoot, const InstanceKey& key, const std::string& severity)
+std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& key, const std::string& severity)
 {
-    const std::string msgPrefix = "Published or cleared alarm id='" + key.type.id + "'"
-        + " qualifier='" + key.type.qualifier + "'"
-        + " resource='" + key.resource + "' severity='" + severity + "'";
-
-    const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type"s + key.type.xpathIndex();
-    auto inventoryNodes = alarmRoot.findXPath(inventoryNodesXPath);
-    if (inventoryNodes.empty()) {
-        return msgPrefix + " but this alarm is not listed in the alarm inventory";
-    } else if (inventoryNodes.size() > 1) {
-        throw std::runtime_error("Internal error: too many matching alarms in alarm-inventory");
+    std::unique_lock lck{m_mtx};
+    auto it = m_inventory.find(key.type);
+    if (it == m_inventory.end()) {
+        return "No alarm inventory entry for " + key.type.xpathIndex();
     }
 
-    if (!validateInventoryField(*inventoryNodes.begin(), "resource", key.resource)) {
-        return msgPrefix + " but the resource is not listed in the alarm inventory for this alarm";
+    if (it->second.resources.size() && !it->second.resources.contains(key.resource)) {
+        return "Alarm inventory doesn't allow resource '" + key.resource + "' for " + key.type.xpathIndex();
     }
 
-    if (severity != "cleared" && !validateInventoryField(*inventoryNodes.begin(), "severity-level", severity)) {
-        return msgPrefix + " but the severity is not listed in the alarm inventory for this alarm";
+    if (it->second.severities.size() && severity != "cleared" && !it->second.severities.contains(severity)) {
+        return "Alarm inventory doesn't allow severity '" + severity + "' for " + key.type.xpathIndex();
     }
 
     return std::nullopt;
@@ -307,12 +312,12 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
 
-    if (auto inventoryError = inventoryValidationError(*alarmRoot, alarmKey, severity)) {
+    if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
         rpcSession.setNetconfError({.type = "application",
                                     .tag = "data-missing",
                                     .appTag = std::nullopt,
                                     .path = std::nullopt,
-                                    .message = (inventoryError.value() + " Violation of RFC8632 (sec. 4.1).").c_str(),
+                                    .message = (inventoryError.value() + " -- see RFC8632 (sec. 4.1).").c_str(),
                                     .infoElements = {}});
         m_log->warn(inventoryError.value());
         return sysrepo::ErrorCode::OperationFailed;
