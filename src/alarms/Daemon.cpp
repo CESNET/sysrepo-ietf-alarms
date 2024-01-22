@@ -139,7 +139,7 @@ bool shouldNotifyStatusChange(
 }
 
 /* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
-std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::Key& key)
+std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::InstanceKey& key)
 {
     alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
 
@@ -273,11 +273,13 @@ Daemon::Daemon()
  *
  * @return optional<string> containing the error message if validation fails
  * */
-std::optional<std::string> Daemon::inventoryValidationError(const libyang::DataNode& alarmRoot, const Key& key, const std::string& severity)
+std::optional<std::string> Daemon::inventoryValidationError(const libyang::DataNode& alarmRoot, const InstanceKey& key, const std::string& severity)
 {
-    const std::string msgPrefix = "Published or cleared alarm id='" + key.alarmTypeId + "' qualifier='" + key.alarmTypeQualifier + "' resource='" + key.resource + "' severity='" + severity + "'";
+    const std::string msgPrefix = "Published or cleared alarm id='" + key.type.id + "'"
+        + " qualifier='" + key.type.qualifier + "'"
+        + " resource='" + key.resource + "' severity='" + severity + "'";
 
-    const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type[alarm-type-id='"s + key.alarmTypeId + "'][alarm-type-qualifier='" + key.alarmTypeQualifier + "']";
+    const auto inventoryNodesXPath = alarmInventoryPrefix + "/alarm-type"s + key.type.xpathIndex();
     auto inventoryNodes = alarmRoot.findXPath(inventoryNodesXPath);
     if (inventoryNodes.empty()) {
         return msgPrefix + " but this alarm is not listed in the alarm inventory";
@@ -298,7 +300,7 @@ std::optional<std::string> Daemon::inventoryValidationError(const libyang::DataN
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
-    const auto& alarmKey = Key::fromNode(input);
+    const auto& alarmKey = InstanceKey::fromNode(input);
     const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
     const bool is_cleared = severity == "cleared";
     const auto now = std::chrono::system_clock::now();
@@ -449,7 +451,7 @@ void createCommonAlarmNodeProps(libyang::DataNode& edit, const libyang::DataNode
 }
 
 /** @brief Creates an edit with shelved-alarm list node based on existing alarm node */
-void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const Key& alarmKey, const std::string& shelfName)
+void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::string& shelfName)
 {
     const auto key = alarmKey.shelvedAlarmPath();
     edit.newPath(key + "/shelf-name", shelfName);
@@ -457,7 +459,7 @@ void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libya
 }
 
 /** @brief Creates an edit with alarm-list node based on existing alarm node */
-void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const Key& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
+void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
 {
     const auto key = alarmKey.alarmPath();
     edit.newPath(key + "/time-created", utils::yangTimeFormat(now));
@@ -479,7 +481,7 @@ void Daemon::reshelve()
     size_t unshelvedCount = 0;
 
     for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
-        const auto alarmKey = Key::fromNode(node);
+        const auto alarmKey = InstanceKey::fromNode(node);
         if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
             createShelvedAlarmNodeFromExistingNode(edit, node, alarmKey, *shelf);
             m_log->trace("Alarm {} shelved ({})", node.path(), *shelf);
@@ -490,7 +492,7 @@ void Daemon::reshelve()
     }
 
     for (const auto& node : alarmRoot->findXPath(shelvedAlarmListInstances)) {
-        const auto alarmKey = Key::fromNode(node);
+        const auto alarmKey = InstanceKey::fromNode(node);
         if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
             if (*shelf != utils::childValue(node, "shelf-name")) {
                 edit.newPath(alarmKey.shelvedAlarmPath() + "/shelf-name", *shelf);

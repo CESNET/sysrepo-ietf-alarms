@@ -15,11 +15,11 @@
 namespace {
 
 /** @brief Checks whether alarm's alarm-type-id is derived from identity */
-bool matchesIdentity(const libyang::Identity& identity, const alarms::Key& alarmKey)
+bool matchesIdentity(const libyang::Identity& identity, const alarms::Type& type)
 {
     auto derivedIdentities = identity.derivedRecursive();
-    return std::any_of(derivedIdentities.begin(), derivedIdentities.end(), [&alarmKey](const auto& d) {
-        return libyang::qualifiedName(d) == alarmKey.alarmTypeId;
+    return std::any_of(derivedIdentities.begin(), derivedIdentities.end(), [&type](const auto& d) {
+        return libyang::qualifiedName(d) == type.id;
     });
 }
 
@@ -27,11 +27,11 @@ bool matchesIdentity(const libyang::Identity& identity, const alarms::Key& alarm
  *
  * @param node A set of /ietf-alarms:control/alarm-shelving/shelf/alarm-type nodes
  * */
-bool matchesType(const libyang::Set<libyang::DataNode>& alarmTypeNodes, const alarms::Key& alarmKey)
+bool matchesType(const libyang::Set<libyang::DataNode>& alarmTypeNodes, const alarms::Type& type)
 {
-    return std::any_of(alarmTypeNodes.begin(), alarmTypeNodes.end(), [&alarmKey](const auto& node) {
-        return alarmKey.alarmTypeQualifier == alarms::utils::childValue(node, "alarm-type-qualifier-match") && // FIXME regexp matcher for qualifier
-            matchesIdentity(std::get<libyang::IdentityRef>(node.findPath("alarm-type-id")->asTerm().value()).schema, alarmKey);
+    return std::any_of(alarmTypeNodes.begin(), alarmTypeNodes.end(), [&type](const auto& node) {
+        return type.qualifier == alarms::utils::childValue(node, "alarm-type-qualifier-match") && // FIXME regexp matcher for qualifier
+            matchesIdentity(std::get<libyang::IdentityRef>(node.findPath("alarm-type-id")->asTerm().value()).schema, type);
     });
 }
 
@@ -39,7 +39,7 @@ bool matchesType(const libyang::Set<libyang::DataNode>& alarmTypeNodes, const al
  *
  * @param node A single /ietf-alarms:control/alarm-shelving/shelf node
  * */
-bool matchesShelf(const libyang::DataNode& node, const alarms::Key& alarmKey)
+bool matchesShelf(const libyang::DataNode& node, const alarms::InstanceKey& alarmKey)
 {
     /* Each entry defines the criteria for shelving alarms.
      * Criteria are ANDed. If no criteria are specified, all alarms will be shelved.
@@ -49,7 +49,7 @@ bool matchesShelf(const libyang::DataNode& node, const alarms::Key& alarmKey)
         return false;
     }
 
-    if (auto alarmTypes = node.findXPath("alarm-type"); !alarmTypes.empty() && !matchesType(alarmTypes, alarmKey)) {
+    if (auto alarmTypes = node.findXPath("alarm-type"); !alarmTypes.empty() && !matchesType(alarmTypes, alarmKey.type)) {
         return false;
     }
 
@@ -63,7 +63,7 @@ namespace alarms {
  *
  * @param shelves Set of /ietf-alarms:control/alarm-shelving/shelf nodes
  * */
-std::optional<std::string> findMatchingShelf(const Key& alarmKey, const libyang::Set<libyang::DataNode>& shelves)
+std::optional<std::string> findMatchingShelf(const InstanceKey& alarmKey, const libyang::Set<libyang::DataNode>& shelves)
 {
     if (auto it = std::find_if(shelves.begin(), shelves.end(), [&alarmKey](const auto& node) { return matchesShelf(node, alarmKey); }); it != shelves.end()) {
         return utils::childValue(*it, "name");
