@@ -28,6 +28,26 @@ summary_t getSummary(sysrepo::Session sess)
 }
 }
 
+namespace doctest {
+template <>
+struct StringMaker<summary_t> {
+    static String convert(const summary_t& map)
+    {
+        std::ostringstream os;
+        os << "summary_t{\n";
+        for (const auto& [severity, data] : map) {
+            os << " severity " << severity << ": {";
+            for (const auto& [key, value] : data) {
+                os << key << ": " << value << ", ";
+            }
+            os << "}\n";
+        }
+        os << "}";
+        return os.str().c_str();
+    }
+};
+}
+
 TEST_CASE("Basic alarm publishing and updating")
 {
     TEST_SYSREPO_INIT_LOGS;
