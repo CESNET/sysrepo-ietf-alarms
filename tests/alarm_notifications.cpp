@@ -55,8 +55,12 @@ TEST_CASE("Receiving alarm notifications")
     trompeloeil::sequence seq1;
     std::vector<std::unique_ptr<trompeloeil::expectation>> expectations;
 
-    // checking that time of the notification exactly equals to the time announced in leaf last-changed
-    // because notifications are coming async (but in order), the easiest way is probably to store the times of last-changed (fetch from sysrepo after each change) and then check all in one go at the end
+    // Checking that time of the notification exactly equals to the time announced in leaf last-changed.
+    // Because notifications are coming async (but in order), the easiest way is probably to store the times of
+    // last-changed (fetch from sysrepo after each change) and then check all in one go at the end.
+    // Note that upstream says that this might be fragile; we have two client sessions which are invoking RPCs
+    // "close to each other", and the notification delivery happens in a background, sysrepo-managed thread.
+    // So when these sequences no longer pass in future, we know why that is.
     std::vector<std::string> lastChangedTimesInSysrepo;
     std::vector<std::string> lastChangedTimesFromNotifications;
     std::mutex mtx;

@@ -9,6 +9,11 @@ namespace alarms {
 class Daemon {
 public:
     Daemon();
+    enum class NotifyStatusChanges {
+        All,
+        RaiseAndClear,
+        BySeverity,
+    };
 
 private:
     sysrepo::Connection m_connection;
@@ -16,6 +21,8 @@ private:
     std::optional<sysrepo::Subscription> m_alarmSub;
     std::optional<sysrepo::Subscription> m_inventorySub;
     alarms::Log m_log;
+    NotifyStatusChanges m_notifyStatusChanges;
+    std::optional<int32_t> m_notifySeverityThreshold;
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
