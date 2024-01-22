@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <boost/container_hash/hash.hpp>
 #include <string>
 
 namespace libyang {
@@ -28,6 +29,14 @@ struct Type {
     bool operator==(const Type& other) const = default;
 };
 
+inline std::size_t hash_value(const Type& t)
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, t.id);
+    boost::hash_combine(seed, t.qualifier);
+    return seed;
+
+}
 
 /** @short Identification of an alarm within the `alarm-list` */
 struct InstanceKey {
