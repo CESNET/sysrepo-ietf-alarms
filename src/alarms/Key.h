@@ -35,8 +35,7 @@ struct InstanceKey {
     Type type;
     std::string resource;
 
-    std::string alarmPath() const;
-    std::string shelvedAlarmPath() const;
+    std::string xpathIndex() const;
     static InstanceKey fromNode(const libyang::DataNode& node);
 };
 }
