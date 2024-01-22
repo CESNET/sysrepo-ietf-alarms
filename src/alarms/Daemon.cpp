@@ -25,6 +25,8 @@ const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
+const auto ctrlNotifyStatusChanges = controlPrefix + "/notify-status-changes"s;
+const auto ctrlNotifySeverityLevel = controlPrefix + "/notify-severity-level"s;
 const auto alarmSummaryPrefix = "/ietf-alarms:alarms/summary";
 
 /** @brief returns number of list instances in the list specified by xPath */
@@ -105,25 +107,21 @@ bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang
 }
 
 /** @brief Checks if we should notify about changes made based on the values changed and current settings in control container */
-bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& edit)
+bool shouldNotifyStatusChange(
+        const std::optional<libyang::DataNode>& oldNode,
+        const libyang::DataNode& edit,
+        const alarms::Daemon::NotifyStatusChanges notifyStatusChanges,
+        const std::optional<int32_t> notifySeverityThreshold
+        )
 {
-    std::optional<libyang::DataNode> data;
-    std::optional<libyang::DataNode> notifyStatusChangesNode;
-    {
-        alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
-        data = session.getData(controlPrefix);
-        notifyStatusChangesNode = data->findPath(controlPrefix + "/notify-status-changes"s);
-    }
-
     bool raised = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "false" && valueChanged(oldNode, edit, "is-cleared");
     bool cleared = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "true" && valueChanged(oldNode, edit, "is-cleared");
 
-    auto notifyStatusChangesValue = notifyStatusChangesNode->asTerm().valueStr();
-    if (cleared || notifyStatusChangesValue == "all-state-changes") {
+    if (cleared || notifyStatusChanges == alarms::Daemon::NotifyStatusChanges::All) {
         return true;
     }
 
-    if (notifyStatusChangesValue == "raise-and-clear") {
+    if (notifyStatusChanges == alarms::Daemon::NotifyStatusChanges::RaiseAndClear) {
         return raised || cleared;
     }
 
@@ -131,15 +129,13 @@ bool shouldNotifyStatusChange(sysrepo::Session session, const std::optional<liby
      * Notifications shall also be sent for state changes that make an alarm less severe than the specified level.
      */
 
-    auto notifySeverityLevelValue = std::get<libyang::Enum>(data->findPath(controlPrefix + "/notify-severity-level"s)->asTerm().value()).value;
-
     auto newSeverity = std::get<libyang::Enum>(edit.findPath("perceived-severity")->asTerm().value()).value;
     if (!oldNode) {
-        return newSeverity >= notifySeverityLevelValue;
+        return newSeverity >= *notifySeverityThreshold;
     }
 
     auto oldSeverity = std::get<libyang::Enum>(oldNode->findPath("perceived-severity")->asTerm().value()).value;
-    return newSeverity >= notifySeverityLevelValue || (oldSeverity >= notifySeverityLevelValue && newSeverity < notifySeverityLevelValue);
+    return newSeverity >= *notifySeverityThreshold || (oldSeverity >= *notifySeverityThreshold && newSeverity < *notifySeverityThreshold);
 }
 
 /* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
@@ -177,6 +173,7 @@ Daemon::Daemon()
     : m_connection(sysrepo::Connection{})
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
     , m_log(spdlog::get("main"))
+    , m_notifyStatusChanges(NotifyStatusChanges::All)
 {
     utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving", "alarm-summary"});
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
@@ -221,6 +218,31 @@ Daemon::Daemon()
                         needsReshelve = true;
                         break;
                     }
+                    if (xpath == ctrlNotifyStatusChanges) {
+                        auto val = std::get<libyang::Enum>(change.node.asTerm().value());
+                        if (val.name == "all-state-changes") {
+                            m_notifyStatusChanges = NotifyStatusChanges::All;
+                            m_log->info("Will notify about any alarm state changes");
+                        } else if (val.name == "raise-and-clear") {
+                            m_notifyStatusChanges = NotifyStatusChanges::RaiseAndClear;
+                            m_log->info("Will notify about raised and cleared alarms");
+                        } else if (val.name == "severity-level") {
+                            m_notifyStatusChanges = NotifyStatusChanges::BySeverity;
+                        } else {
+                            throw std::runtime_error{"Cannot handle " + ctrlNotifyStatusChanges + " value " + val.name};
+                        }
+                        continue;
+                    }
+                    if (xpath == ctrlNotifySeverityLevel) {
+                        if (change.operation == sysrepo::ChangeOperation::Deleted) {
+                            m_notifySeverityThreshold = std::nullopt;
+                        } else {
+                            auto value = std::get<libyang::Enum>(change.node.asTerm().value());
+                            m_notifySeverityThreshold = value.value;
+                            m_log->info("Will notify about alarms with perceived-severity >= {}", value.name);
+                        }
+                        continue;
+                    }
                 }
                 if (needsReshelve) {
                     reshelve();
@@ -229,7 +251,7 @@ Daemon::Daemon()
             },
             controlPrefix,
             0,
-            sysrepo::SubscribeOptions::DoneOnly);
+            sysrepo::SubscribeOptions::Enabled | sysrepo::SubscribeOptions::DoneOnly);
     }
 
     m_inventorySub = m_session.onModuleChange(
@@ -356,7 +378,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
     updateAlarmSummary(m_session);
 
-    if (shouldNotifyStatusChange(m_session, existingAlarmNode, *editAlarmNode)) {
+    if (shouldNotifyStatusChange(existingAlarmNode, *editAlarmNode, m_notifyStatusChanges, m_notifySeverityThreshold)) {
         m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
     }
 
