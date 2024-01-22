@@ -23,12 +23,6 @@ std::string escapeListKey(const std::string& str)
         return '\'' + str + '\'';
     }
 }
-
-std::string alarmListKeyPredicates(const alarms::InstanceKey& alarmKey)
-{
-    return alarmKey.type.xpathIndex() + "[resource=" + escapeListKey(alarmKey.resource) + "]";
-}
-
 }
 
 namespace alarms {
@@ -48,14 +42,8 @@ InstanceKey InstanceKey::fromNode(const libyang::DataNode& node)
         alarms::utils::childValue(node, "resource")};
 }
 
-std::string InstanceKey::alarmPath() const
+std::string InstanceKey::xpathIndex() const
 {
-    return "/ietf-alarms:alarms/alarm-list/alarm" + alarmListKeyPredicates(*this);
+    return type.xpathIndex() + "[resource=" + escapeListKey(resource) + "]";
 }
-
-std::string InstanceKey::shelvedAlarmPath() const
-{
-    return "/ietf-alarms:alarms/shelved-alarms/shelved-alarm" + alarmListKeyPredicates(*this);
-}
-
 }

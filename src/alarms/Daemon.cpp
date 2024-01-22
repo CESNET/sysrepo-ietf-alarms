@@ -329,7 +329,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     try {
-        alarmNodePath = matchedShelf ? alarmKey.shelvedAlarmPath() : alarmKey.alarmPath();
+        alarmNodePath = (matchedShelf ? shelvedAlarmListInstances : alarmListInstances) + alarmKey.xpathIndex();
         m_log->trace("Alarm node: {}", alarmNodePath);
     } catch (const std::invalid_argument& e) {
         m_log->debug("submitAlarm exception: {}", e.what());
@@ -453,7 +453,7 @@ void createCommonAlarmNodeProps(libyang::DataNode& edit, const libyang::DataNode
 /** @brief Creates an edit with shelved-alarm list node based on existing alarm node */
 void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::string& shelfName)
 {
-    const auto key = alarmKey.shelvedAlarmPath();
+    const auto key = shelvedAlarmListInstances + alarmKey.xpathIndex();
     edit.newPath(key + "/shelf-name", shelfName);
     createCommonAlarmNodeProps(edit, alarm, key);
 }
@@ -461,7 +461,7 @@ void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libya
 /** @brief Creates an edit with alarm-list node based on existing alarm node */
 void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
 {
-    const auto key = alarmKey.alarmPath();
+    const auto key = alarmListInstances + alarmKey.xpathIndex();
     edit.newPath(key + "/time-created", utils::yangTimeFormat(now));
     createCommonAlarmNodeProps(edit, alarm, key);
 }
@@ -495,7 +495,7 @@ void Daemon::reshelve()
         const auto alarmKey = InstanceKey::fromNode(node);
         if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
             if (*shelf != utils::childValue(node, "shelf-name")) {
-                edit.newPath(alarmKey.shelvedAlarmPath() + "/shelf-name", *shelf);
+                edit.newPath(shelvedAlarmListInstances + alarmKey.xpathIndex() + "/shelf-name", *shelf);
                 m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
                 change = true;
                 movedBetweenShelfs = true;
