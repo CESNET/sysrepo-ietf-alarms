@@ -223,6 +223,8 @@ TEST_CASE("Alarm shelving")
                 {"/shelved-alarms/shelved-alarms-last-changed", initTime},
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
+                {"/control/max-alarm-status-changes", "32"},
+                {"/control/notify-status-changes", "all-state-changes"},
                 {"/shelved-alarms", ""},
                 {"/summary", ""},
                 {"/summary/alarm-summary[severity='critical']", ""},

@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/predicate.hpp>
 #include <chrono>
 #include <map>
 #include <string>
@@ -212,11 +213,21 @@ Daemon::Daemon()
         utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Running);
         m_alarmSub->onModuleChange(
             ietfAlarmsModule,
-            [&](auto, auto, auto, auto, auto, auto) {
-                reshelve();
+            [&](auto session, auto, auto, auto, auto, auto) {
+                // FIXME: std::any_of, but that needs iterator_traits in sysrepo-cpp, which needs fanciness in libyang-cpp
+                bool needsReshelve = false;
+                for (const auto& change : session.getChanges()) {
+                    if (boost::algorithm::starts_with(change.node.path(), controlPrefix + "/alarm-shelving"s)) {
+                        needsReshelve = true;
+                        break;
+                    }
+                }
+                if (needsReshelve) {
+                    reshelve();
+                }
                 return sysrepo::ErrorCode::Ok;
             },
-            controlPrefix + "/alarm-shelving"s,
+            controlPrefix,
             0,
             sysrepo::SubscribeOptions::DoneOnly);
     }
