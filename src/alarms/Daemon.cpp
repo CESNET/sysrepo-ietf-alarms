@@ -212,11 +212,21 @@ Daemon::Daemon()
         utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Running);
         m_alarmSub->onModuleChange(
             ietfAlarmsModule,
-            [&](auto, auto, auto, auto, auto, auto) {
-                reshelve();
+            [&](auto session, auto, auto, auto, auto, auto) {
+                bool needsReshelve = false;
+                for (const auto& change : session.getChanges()) {
+                    std::string xpath = change.node.path();
+                    if (xpath.find(controlPrefix + "/alarm-shelving"s) == 0) {
+                        needsReshelve = true;
+                        continue;
+                    }
+                }
+                if (needsReshelve) {
+                    reshelve();
+                }
                 return sysrepo::ErrorCode::Ok;
             },
-            controlPrefix + "/alarm-shelving"s,
+            controlPrefix,
             0,
             sysrepo::SubscribeOptions::DoneOnly);
     }
