@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/Value.hpp>
 #include "PurgeFilter.h"
 #include "utils/libyang.h"

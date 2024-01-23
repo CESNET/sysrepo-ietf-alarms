@@ -7,7 +7,10 @@
 
 #pragma once
 #include <functional>
-#include <libyang-cpp/DataNode.hpp>
+
+namespace libyang {
+class DataNode;
+}
 
 namespace alarms {
 
