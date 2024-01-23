@@ -45,5 +45,15 @@ struct InstanceKey {
 
     std::string xpathIndex() const;
     static InstanceKey fromNode(const libyang::DataNode& node);
+    bool operator==(const InstanceKey& other) const = default;
 };
+
+inline std::size_t hash_value(const InstanceKey& k)
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, k.type);
+    boost::hash_combine(seed, k.resource);
+    return seed;
+
+}
 }

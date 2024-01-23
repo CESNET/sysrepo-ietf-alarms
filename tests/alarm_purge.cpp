@@ -88,7 +88,7 @@ TEST_CASE("Purge alarms RPC")
                 "/ietf-alarms:alarms/shelved-alarms/shelved-alarm[resource='wss'][alarm-type-id='alarms-test:alarm-2'][alarm-type-qualifier='']",
             });
     REQUIRE(includesAll(dataFromSysrepo(*userSess, shelvedAlarmList, sysrepo::Datastore::Operational), PropsWithTimeTest{
-                                                                                                           {"/shelved-alarms-last-changed", BEFORE_INTERVAL(timeShelf)},
+                                                                                                           {"/shelved-alarms-last-changed", timeShelf},
                                                                                                            {"/number-of-shelved-alarms", "2"},
                                                                                                        }));
 

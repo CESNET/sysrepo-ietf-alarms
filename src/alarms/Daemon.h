@@ -8,6 +8,17 @@
 #include "utils/log-fwd.h"
 
 namespace alarms {
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+
+struct AlarmEntry {
+    TimePoint created;
+    TimePoint lastRaised;
+    TimePoint lastChanged;
+    std::string text;
+    std::optional<std::string> shelf;
+    int32_t lastSeverity;
+    bool isCleared;
+};
 
 class Daemon {
 public:
@@ -36,6 +47,8 @@ private:
     std::mutex m_mtx;
     bool m_inventoryDirty;
     std::unordered_map<Type, InventoryData, boost::hash<Type>> m_inventory;
+    std::unordered_map<InstanceKey, AlarmEntry, boost::hash<InstanceKey>> m_alarms;
+    TimePoint m_alarmListLastChanged, m_shelfListLastChanged;
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
@@ -43,6 +56,7 @@ private:
     std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
     void reshelve();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
+    void updateStatistics(libyang::DataNode& edit);
 };
 
 }
