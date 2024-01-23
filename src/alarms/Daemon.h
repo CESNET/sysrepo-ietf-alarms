@@ -4,21 +4,11 @@
 #include <sysrepo-cpp/Connection.hpp>
 #include <unordered_map>
 #include <unordered_set>
+#include "AlarmEntry.h"
 #include "Key.h"
 #include "utils/log-fwd.h"
 
 namespace alarms {
-using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
-
-struct AlarmEntry {
-    TimePoint created;
-    TimePoint lastRaised;
-    TimePoint lastChanged;
-    std::string text;
-    std::optional<std::string> shelf;
-    int32_t lastSeverity;
-    bool isCleared;
-};
 
 class Daemon {
 public:
