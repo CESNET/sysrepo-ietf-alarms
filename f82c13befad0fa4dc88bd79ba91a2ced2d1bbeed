@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bae3ce2b_14d94f31",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-23T07:48:35Z",
+      "side": 1,
+      "message": "parent",
+      "range": {
+        "startLine": 9,
+        "startChar": 4,
+        "endLine": 9,
+        "endChar": 15
+      },
+      "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3e619437_14eeca01",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-23T07:48:35Z",
+      "side": 1,
+      "message": "I think the whole point of having an alarm-inventory is that operators can see what alarms can be raised. \n\nI think we miss the point of the alarm-inventory by doing that. \n\n\u003e A management system should be able to pull all available alarm\n\u003e types from a system, i.e., read the alarm inventory from a \n\u003e system.\n\u003e This makes it possible to prepare alarm operators with\n\u003e corresponding alarm instructions.\n\nsee https://www.rfc-editor.org/rfc/rfc8632.html#page-5",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 55
+      },
+      "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
