@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1c29c75b_31a4dcfa",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T11:44:30Z",
+      "side": 1,
+      "message": "done",
+      "parentUuid": "4e711882_3077d265",
+      "range": {
+        "startLine": 15,
+        "startChar": 61,
+        "endLine": 15,
+        "endChar": 70
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "74c9319e_e66ec9dc",
@@ -37,6 +61,30 @@
       "writtenOn": "2024-01-23T06:42:34Z",
       "side": 1,
       "message": "I think this copy is not necessary. consider capturing by a const reference.",
+      "range": {
+        "startLine": 218,
+        "startChar": 20,
+        "endLine": 218,
+        "endChar": 59
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e07c624_8e5737e0",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T11:44:30Z",
+      "side": 1,
+      "message": "I think that https://en.cppreference.com/w/cpp/language/copy_elision takes care of this, and you\u0027re right, I\u0027ll be changing this anyway",
+      "parentUuid": "74c9319e_e66ec9dc",
       "range": {
         "startLine": 218,
         "startChar": 20,
@@ -70,6 +118,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e6b2ec6b_d5e8e401",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T11:44:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "af7ac39e_8a7a4995",
+      "range": {
+        "startLine": 221,
+        "startChar": 24,
+        "endLine": 221,
+        "endChar": 32
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0dcdccf5_d7cb5445",
@@ -83,6 +155,30 @@
       "writtenOn": "2024-01-23T06:42:34Z",
       "side": 1,
       "message": "How about something like\n   bool needsReshelve \u003d std::any_of(changes.begin(), changes.end(), [](const auto\u0026 change) { return boost::starts_with(change.node.path(), controlPrefix + \"/alarm-shelving\"); });",
+      "range": {
+        "startLine": 224,
+        "startChar": 20,
+        "endLine": 224,
+        "endChar": 33
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "941c22d0_6d11d223",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T11:44:30Z",
+      "side": 1,
+      "message": "Great idea, I tried to implement this now, but because there is no specialization std::iterator_traits\u003csysrepo::ChangeIterator\u003e, I failed.\n\nI\u0027ve added a FIXME into the code.",
+      "parentUuid": "0dcdccf5_d7cb5445",
       "range": {
         "startLine": 224,
         "startChar": 20,
