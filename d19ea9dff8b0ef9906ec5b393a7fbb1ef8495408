@@ -187,6 +187,30 @@
       },
       "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bed06c00_5f1f68bd",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T11:58:12Z",
+      "side": 1,
+      "message": "...and of course the very next commit reuses that iteration for checking other things, which means that I\u0027ll be undoing this.",
+      "parentUuid": "941c22d0_6d11d223",
+      "range": {
+        "startLine": 224,
+        "startChar": 20,
+        "endLine": 224,
+        "endChar": 33
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
