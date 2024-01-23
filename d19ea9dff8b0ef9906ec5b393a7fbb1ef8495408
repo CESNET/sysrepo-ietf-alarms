@@ -211,6 +211,30 @@
       },
       "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0fe58af3_65874ce4",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T12:04:40Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bed06c00_5f1f68bd",
+      "range": {
+        "startLine": 224,
+        "startChar": 20,
+        "endLine": 224,
+        "endChar": 33
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
