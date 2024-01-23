@@ -158,6 +158,7 @@ Daemon::Daemon()
     , m_session(m_connection.sessionStart(sysrepo::Datastore::Operational))
     , m_log(spdlog::get("main"))
     , m_notifyStatusChanges(NotifyStatusChanges::All)
+    , m_inventoryDirty(true)
 {
     utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving", "alarm-summary"});
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
@@ -239,33 +240,11 @@ Daemon::Daemon()
     }
 
     m_inventorySub = m_session.onModuleChange(
-        ietfAlarmsModule, [&](auto session, auto, auto, auto, auto, auto) {
-            std::unique_lock lck{m_mtx};
-            const auto data = session.getData(alarmInventoryPrefix)->findPath(alarmInventoryPrefix);
-            m_inventory.clear();
-            if (data->child()) {
-                for (const auto& entry : data->child()->siblings()) {
-                    decltype(InventoryData::resources) resources;
-                    decltype(InventoryData::severities) severities;
-                    for (const auto& child : entry.immediateChildren()) {
-                        const auto shortName = child.schema().name();
-                        if (shortName == "resource") {
-                            resources.emplace(child.asTerm().valueStr());
-                        } else if (shortName == "severity-level") {
-                            severities.emplace(child.asTerm().valueStr());
-                        }
-                    }
-                    m_inventory.emplace(
-                        Type{
-                            .id = utils::childValue(entry, "alarm-type-id"),
-                            .qualifier = utils::childValue(entry, "alarm-type-qualifier")},
-                        InventoryData{
-                            .resources = resources,
-                            .severities = severities,
-                        });
-                }
+        ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
+            {
+                std::unique_lock lck{m_mtx};
+                m_inventoryDirty = true;
             }
-
             m_session.sendNotification(m_session.getContext().newPath("/ietf-alarms:alarm-inventory-changed", std::nullopt), sysrepo::Wait::No);
             return sysrepo::ErrorCode::Ok;
         },
@@ -285,7 +264,6 @@ Daemon::Daemon()
  * */
 std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& key, const std::string& severity)
 {
-    std::unique_lock lck{m_mtx};
     auto it = m_inventory.find(key.type);
     if (it == m_inventory.end()) {
         return "No alarm inventory entry for " + key.type.xpathIndex();
@@ -312,15 +290,21 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
 
-    if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
-        rpcSession.setNetconfError({.type = "application",
-                                    .tag = "data-missing",
-                                    .appTag = std::nullopt,
-                                    .path = std::nullopt,
-                                    .message = (inventoryError.value() + " -- see RFC8632 (sec. 4.1).").c_str(),
-                                    .infoElements = {}});
-        m_log->warn(inventoryError.value());
-        return sysrepo::ErrorCode::OperationFailed;
+    {
+        std::unique_lock lck{m_mtx};
+        if (m_inventoryDirty) {
+            rebuildInventory(*alarmRoot);
+        }
+        if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
+            rpcSession.setNetconfError({.type = "application",
+                                        .tag = "data-missing",
+                                        .appTag = std::nullopt,
+                                        .path = std::nullopt,
+                                        .message = (inventoryError.value() + " -- see RFC8632 (sec. 4.1).").c_str(),
+                                        .infoElements = {}});
+            m_log->warn(inventoryError.value());
+            return sysrepo::ErrorCode::OperationFailed;
+        }
     }
 
     auto matchedShelf = shouldBeShelved(m_session, alarmKey);
@@ -526,6 +510,34 @@ void Daemon::reshelve()
         m_session.applyChanges();
 
         updateAlarmSummary(m_session);
+    }
+}
+
+void Daemon::rebuildInventory(const libyang::DataNode& dataWithInventory)
+{
+    const auto data = dataWithInventory.findPath(alarmInventoryPrefix);
+    m_inventory.clear();
+    if (data->child()) {
+        for (const auto& entry : data->child()->siblings()) {
+            decltype(InventoryData::resources) resources;
+            decltype(InventoryData::severities) severities;
+            for (const auto& child : entry.immediateChildren()) {
+                const auto shortName = child.schema().name();
+                if (shortName == "resource") {
+                    resources.emplace(child.asTerm().valueStr());
+                } else if (shortName == "severity-level") {
+                    severities.emplace(child.asTerm().valueStr());
+                }
+            }
+            m_inventory.emplace(
+                Type{
+                    .id = utils::childValue(entry, "alarm-type-id"),
+                    .qualifier = utils::childValue(entry, "alarm-type-qualifier")},
+                InventoryData{
+                    .resources = resources,
+                    .severities = severities,
+                });
+        }
     }
 }
 }
