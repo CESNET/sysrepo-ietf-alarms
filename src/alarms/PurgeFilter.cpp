@@ -9,6 +9,7 @@
 #include <chrono>
 #include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/Value.hpp>
+#include "AlarmEntry.h"
 #include "PurgeFilter.h"
 #include "utils/libyang.h"
 #include "utils/time.h"
@@ -26,15 +27,13 @@ namespace alarms {
 PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
 {
     auto clearanceStatus = utils::childValue(filterInput, "alarm-clearance-status");
-    m_filters.emplace_back([clearanceStatus](const libyang::DataNode& alarmNode) {
-        auto isCleared = utils::childValue(alarmNode, "is-cleared");
-
+    m_filters.emplace_back([clearanceStatus](const AlarmEntry& alarm) {
         if (clearanceStatus == "any") {
             return true;
         } else if (clearanceStatus == "cleared") {
-            return isCleared == "true";
+            return alarm.isCleared;
         } else if (clearanceStatus == "not-cleared") {
-            return isCleared == "false";
+            return !alarm.isCleared;
         } else {
             throw std::logic_error("purge: Invalid alarm-clearance-status value");
         }
@@ -56,10 +55,8 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
             throw std::logic_error("purge: Invalid choice value below severity");
         }
 
-        m_filters.emplace_back([severityCheck](const libyang::DataNode& alarmNode) {
-            auto severityNode = alarmNode.findPath("perceived-severity");
-            auto enumVal = std::get<libyang::Enum>(severityNode->asTerm().value()).value;
-            return severityCheck(enumVal);
+        m_filters.emplace_back([severityCheck](const AlarmEntry& alarm) {
+            return severityCheck(alarm.lastSeverity);
         });
     }
 
@@ -80,17 +77,15 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
             throw std::logic_error("purge: Invalid choice value below older-than");
         }
 
-        m_filters.emplace_back([threshold](const libyang::DataNode& alarmNode) {
-            auto lastChangedNode = alarmNode.findPath("last-changed");
-            auto alarmTime = utils::fromYangTimeFormat(std::string(lastChangedNode->asTerm().valueStr()));
-            return alarmTime < threshold;
+        m_filters.emplace_back([threshold](const AlarmEntry& alarm) {
+            return alarm.lastChanged < threshold;
         });
     }
 }
 
-bool PurgeFilter::matches(const libyang::DataNode& alarmNode) const
+bool PurgeFilter::matches(const AlarmEntry& alarm) const
 {
-    return std::all_of(m_filters.begin(), m_filters.end(), [&](const Filter& filter) { return filter(alarmNode); });
+    return std::all_of(m_filters.begin(), m_filters.end(), [&](const Filter& filter) { return filter(alarm); });
 }
 
 }
