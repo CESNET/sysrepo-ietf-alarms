@@ -22,6 +22,30 @@
       },
       "revId": "94b29a1c37ef152ac51cbc2b12bc6df7c03556b8",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dbebe374_9450291f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T12:10:35Z",
+      "side": 1,
+      "message": "thanks, you\u0027re right, clarified in the updated commit message",
+      "parentUuid": "4d5a0edb_4d8dbfc5",
+      "range": {
+        "startLine": 17,
+        "startChar": 55,
+        "endLine": 18,
+        "endChar": 58
+      },
+      "revId": "94b29a1c37ef152ac51cbc2b12bc6df7c03556b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
