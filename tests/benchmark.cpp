@@ -25,6 +25,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
     constexpr auto NUM_RESOURCES = 200;
     constexpr auto FAILING_RESOURCES = 200;
+    constexpr auto NOOP_PURGES = 200;
 
     SECTION("inventory: sequential resources") {
         auto start = std::chrono::system_clock::now();
@@ -62,6 +63,22 @@ TEST_CASE("Basic alarm publishing and updating")
             }
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
             mainLog->error("Sending {} alarms: {}ms", FAILING_RESOURCES, ms);
+        }
+
+        {
+            auto start = std::chrono::system_clock::now();
+            for (int i = 0; i < NOOP_PURGES; ++i) {
+                CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/below", "indeterminate"}}));
+            }
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            mainLog->error("Issuing {} purge requests which don't purge anything: {}ms", NOOP_PURGES, ms);
+        }
+
+        {
+            auto start = std::chrono::system_clock::now();
+            CLIENT_PURGE_RPC(userSess, FAILING_RESOURCES, "any", {});
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            mainLog->error("Final purge of everything: {}ms", ms);
         }
     }
 }
