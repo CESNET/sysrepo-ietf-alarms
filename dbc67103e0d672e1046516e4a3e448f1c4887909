@@ -22,6 +22,30 @@
       },
       "revId": "dbc67103e0d672e1046516e4a3e448f1c4887909",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c068f6cc_4fad515b",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T08:55:10Z",
+      "side": 1,
+      "message": "There\u0027s no change in the patch which would ensure that, but there\u0027s a testcase which checks that this purging can be invoked even as the very first thing (that change of tests/alarm_purge.cpp in this commit), and therefore it\u0027s OK to just assert() in the implementation and simplify the code by removing the if-checking. The thing which guarantees that this is actually a safe thing is the order of sysrepo subscriptions, I suppose. Since there\u0027s an active subscription for modifications of the control/ container, \"something\" will be always present in the operational DS, even if it\u0027s just a bunch of non-presence containers.\n\nSo this patch simplifies the control flow while adding a test that these assumptions are OK.",
+      "parentUuid": "5606321b_911e45dd",
+      "range": {
+        "startLine": 10,
+        "startChar": 29,
+        "endLine": 11,
+        "endChar": 53
+      },
+      "revId": "dbc67103e0d672e1046516e4a3e448f1c4887909",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
