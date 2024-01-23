@@ -36,7 +36,7 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
         } else if (clearanceStatus == "not-cleared") {
             return isCleared == "false";
         } else {
-            throw std::logic_error("Invalid alarm-clearance-status value");
+            throw std::logic_error("purge: Invalid alarm-clearance-status value");
         }
     });
 
@@ -53,7 +53,7 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
             auto sev = std::get<libyang::Enum>(choice->asTerm().value()).value;
             severityCheck = [sev](int32_t alarmValue) { return sev > alarmValue; };
         } else {
-            throw std::logic_error("Invalid choice value");
+            throw std::logic_error("purge: Invalid choice value below severity");
         }
 
         m_filters.emplace_back([severityCheck](const libyang::DataNode& alarmNode) {
@@ -77,7 +77,7 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
         } else if (auto choice = olderThanContainer->findPath("weeks")) {
             threshold = threshold - 7 * std::chrono::days(getValue<uint16_t>(*choice));
         } else {
-            throw std::logic_error("Invalid choice value");
+            throw std::logic_error("purge: Invalid choice value below older-than");
         }
 
         m_filters.emplace_back([threshold](const libyang::DataNode& alarmNode) {
