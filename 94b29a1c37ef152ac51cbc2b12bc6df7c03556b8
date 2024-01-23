@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4d5a0edb_4d8dbfc5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-23T07:38:37Z",
+      "side": 1,
+      "message": "Can you please point me at a location where this is specified? My interpretation (see ietf-alarms yang, line 1030) is that alarm-type-qualifier is a key of the list so it must be present, isn\u0027t it so? (https://www.rfc-editor.org/rfc/rfc7950#section-7.8.2)",
+      "range": {
+        "startLine": 17,
+        "startChar": 55,
+        "endLine": 18,
+        "endChar": 58
+      },
+      "revId": "94b29a1c37ef152ac51cbc2b12bc6df7c03556b8",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
