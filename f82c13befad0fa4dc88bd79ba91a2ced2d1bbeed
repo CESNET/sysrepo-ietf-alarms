@@ -45,6 +45,30 @@
       },
       "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a464a41e_627c26c1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-23T09:36:58Z",
+      "side": 1,
+      "message": "This commit only affects the cache that\u0027s used by this daemon for validation of \"raised alarms\". The alarm producers still populate the actual content of the inventory through YANG data within sysrepo as before.\n\nAlso, there\u0027s also a testcase which \"accidentally\" tests that this indeed works; in the test-benchmark the first SUBCASE only pushes data to alarm inventory without ever raising a single alarm.",
+      "parentUuid": "3e619437_14eeca01",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 55
+      },
+      "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
