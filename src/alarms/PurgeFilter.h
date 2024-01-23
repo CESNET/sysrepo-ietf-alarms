@@ -14,13 +14,15 @@ class DataNode;
 
 namespace alarms {
 
+struct AlarmEntry;
+
 class PurgeFilter {
 public:
     PurgeFilter(const libyang::DataNode& filterInput);
-    bool matches(const libyang::DataNode& alarmNode) const;
+    bool matches(const AlarmEntry& alarmNode) const;
 
 private:
-    using Filter = std::function<bool(const libyang::DataNode&)>;
+    using Filter = std::function<bool(const AlarmEntry&)>;
     std::vector<Filter> m_filters;
 };
 

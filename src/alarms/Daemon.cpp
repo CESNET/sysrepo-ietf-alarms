@@ -138,8 +138,8 @@ Daemon::Daemon()
         }
         return submitAlarm(session, input);
     });
-    m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeRpcPrefix, alarmListInstances, input, output); });
-    m_alarmSub->onRPCAction(purgeShelvedRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeShelvedRpcPrefix, shelvedAlarmListInstances, input, output); });
+    m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeRpcPrefix, input, output); });
+    m_alarmSub->onRPCAction(purgeShelvedRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeShelvedRpcPrefix, input, output); });
 
     {
         utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Running);
@@ -346,28 +346,34 @@ libyang::DataNode Daemon::createStatusChangeNotification(const libyang::DataNode
     return notification;
 }
 
-sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output)
+sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output)
 {
     const auto now = std::chrono::system_clock::now();
+    bool doingShelved = rpcPath == purgeShelvedRpcPrefix;
     PurgeFilter filter(rpcInput);
     std::vector<std::string> toDelete;
 
-    auto alarmRoot = m_session.getData(rootPath);
-    assert(alarmRoot);
-
-    for (const auto& alarmNode : alarmRoot->findXPath(alarmListXPath)) {
-        if (filter.matches(alarmNode)) {
-            toDelete.push_back(std::string(alarmNode.path()));
-            m_alarms.erase(InstanceKey::fromNode(alarmNode));
+    for (auto it = m_alarms.begin(); it != m_alarms.end(); /* nothing */) {
+        const auto& [index, entry] = *it;
+        if (doingShelved != !!entry.shelf) {
+            // when purging through the "shelved" RPC, only consider shelved list and vice verse
+            ++it;
+            continue;
         }
+        if (!filter.matches(entry)) {
+            ++it;
+            continue;
+        }
+        toDelete.push_back((doingShelved ? shelvedAlarmListInstances : alarmListInstances) + index.xpathIndex());
+        it = m_alarms.erase(it);
     }
 
     if (!toDelete.empty()) {
         auto edit = m_session.getContext().newPath(alarmList);
-        if (rpcPath == purgeRpcPrefix) {
-            m_alarmListLastChanged = now;
-        } else {
+        if (doingShelved) {
             m_shelfListLastChanged = now;
+        } else {
+            m_alarmListLastChanged = now;
         }
         updateStatistics(edit);
         utils::removeFromOperationalDS(m_session.getContext(), edit, toDelete);
