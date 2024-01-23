@@ -1,6 +1,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <chrono>
 #include <map>
+#include <span>
 #include <string>
 #include "Daemon.h"
 #include "Key.h"
@@ -29,6 +30,18 @@ const auto ctrlNotifyStatusChanges = controlPrefix + "/notify-status-changes"s;
 const auto ctrlNotifySeverityLevel = controlPrefix + "/notify-severity-level"s;
 const auto alarmSummaryPrefix = "/ietf-alarms:alarms/summary";
 
+const int32_t ClearedSeverity = 1; // from the RFC
+
+const std::array Severities{
+    "_", // just a dummy on index 0
+    "cleared",
+    "indeterminate",
+    "warning",
+    "minor",
+    "major",
+    "critical",
+};
+
 /** @brief returns number of list instances in the list specified by xPath */
 size_t numberOfListInstances(const libyang::DataNode& alarmRoot, const std::string& xPath)
 {
@@ -54,7 +67,6 @@ void updateShelvedAlarmListStats(libyang::DataNode& edit, size_t alarmCount, con
 
 void updateAlarmSummary(sysrepo::Session session)
 {
-    static const std::vector<std::string> SEVERITIES = {"indeterminate", "warning", "minor", "major", "critical"};
     struct SeveritySummary {
         unsigned total;
         unsigned cleared;
@@ -65,7 +77,7 @@ void updateAlarmSummary(sysrepo::Session session)
     assert(alarmRoot);
 
     AlarmSummary alarmSummary;
-    for (const auto& severity : SEVERITIES) {
+    for (const auto& severity : std::span{Severities.begin() + 1 /* dummy value */ + 1 /* cleared */, Severities.end()}) {
         alarmSummary[severity];
     }
 
@@ -263,7 +275,7 @@ Daemon::Daemon()
  *
  * @return optional<string> containing the error message if validation fails
  * */
-std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& key, const std::string& severity)
+std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& key, const int32_t severity)
 {
     auto it = m_inventory.find(key.type);
     if (it == m_inventory.end()) {
@@ -274,8 +286,8 @@ std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& k
         return "Alarm inventory doesn't allow resource '" + key.resource + "' for " + key.type.xpathIndex();
     }
 
-    if (it->second.severities.size() && severity != "cleared" && !it->second.severities.contains(severity)) {
-        return "Alarm inventory doesn't allow severity '" + severity + "' for " + key.type.xpathIndex();
+    if (it->second.severities.size() && severity != ClearedSeverity && !it->second.severities.contains(severity)) {
+        return "Alarm inventory doesn't allow severity '"s + Severities[severity] + "' for " + key.type.xpathIndex();
     }
 
     return std::nullopt;
@@ -284,8 +296,8 @@ std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& k
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
     const auto& alarmKey = InstanceKey::fromNode(input);
-    const auto severity = std::string(input.findPath("severity").value().asTerm().valueStr());
-    const bool is_cleared = severity == "cleared";
+    const auto severity = std::get<libyang::Enum>(input.findPath("severity").value().asTerm().value()).value;
+    const bool is_cleared = severity == ClearedSeverity;
     const auto now = std::chrono::system_clock::now();
 
     const auto alarmRoot = m_session.getData(rootPath);
@@ -343,7 +355,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     if (!is_cleared) {
-        edit.newPath(alarmNodePath + "/perceived-severity", severity, libyang::CreationOptions::Update);
+        edit.newPath(alarmNodePath + "/perceived-severity", Severities[severity], libyang::CreationOptions::Update);
     }
 
     edit.newPath(alarmNodePath + "/alarm-text", std::string{input.findPath("alarm-text").value().asTerm().valueStr()}, libyang::CreationOptions::Update);
@@ -527,7 +539,7 @@ void Daemon::rebuildInventory(const libyang::DataNode& dataWithInventory)
                 if (shortName == "resource") {
                     resources.emplace(child.asTerm().valueStr());
                 } else if (shortName == "severity-level") {
-                    severities.emplace(child.asTerm().valueStr());
+                    severities.emplace(std::get<libyang::Enum>(child.asTerm().value()).value);
                 }
             }
             m_inventory.emplace(

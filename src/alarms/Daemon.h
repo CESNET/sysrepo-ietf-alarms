@@ -22,7 +22,7 @@ public:
 
     struct InventoryData {
         std::unordered_set<std::string, boost::hash<std::string>> resources;
-        std::unordered_set<std::string, boost::hash<std::string>> severities;
+        std::set<int32_t> severities;
     };
 
 private:
@@ -40,7 +40,7 @@ private:
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const libyang::DataNode& alarmNode);
-    std::optional<std::string> inventoryValidationError(const InstanceKey& key, const std::string& severity);
+    std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
     void reshelve();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
 };
