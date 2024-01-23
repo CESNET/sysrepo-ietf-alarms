@@ -1,6 +1,29 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4e711882_3077d265",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-23T09:15:07Z",
+      "side": 1,
+      "message": "nit: typo",
+      "range": {
+        "startLine": 15,
+        "startChar": 61,
+        "endLine": 15,
+        "endChar": 70
+      },
+      "revId": "d19ea9dff8b0ef9906ec5b393a7fbb1ef8495408",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "74c9319e_e66ec9dc",
