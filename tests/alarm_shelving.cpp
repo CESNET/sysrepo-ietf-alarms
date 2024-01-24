@@ -13,13 +13,10 @@ using namespace std::string_literals;
 
 namespace {
 
-struct ShelvedAlarm {
-    std::string resource;
-    std::string alarmType;
-    std::string alarmTypeQualifier;
+struct ShelvedAlarm : public alarms::InstanceKey {
     std::string shelfName;
 
-    auto operator<=>(const ShelvedAlarm&) const = default;
+    bool operator==(const ShelvedAlarm&) const = default;
 };
 
 std::vector<ShelvedAlarm> extractShelvedAlarms(sysrepo::Session session)
@@ -29,10 +26,7 @@ std::vector<ShelvedAlarm> extractShelvedAlarms(sysrepo::Session session)
     std::vector<ShelvedAlarm> res;
     if (auto data = session.getData(ietfAlarms)) {
         for (const auto& node : data->findXPath(shelvedAlarmListInstances)) {
-            res.push_back({alarms::utils::childValue(node, "resource"),
-                           alarms::utils::childValue(node, "alarm-type-id"),
-                           alarms::utils::childValue(node, "alarm-type-qualifier"),
-                           alarms::utils::childValue(node, "shelf-name")});
+            res.emplace_back(alarms::InstanceKey::fromNode(node), alarms::utils::childValue(node, "shelf-name"));
         }
     }
 
@@ -97,7 +91,7 @@ struct StringMaker<ShelvedAlarm> {
     static String convert(const ShelvedAlarm& obj)
     {
         std::ostringstream oss;
-        oss << "{" << obj.resource << ", " << obj.alarmType << ", " << obj.alarmTypeQualifier << ", " << obj.shelfName << "}";
+        oss << "{" << obj.resource << ", " << obj.type.id << ", " << obj.type.qualifier << ", " << obj.shelfName << "}";
         return oss.str().c_str();
     }
 };
@@ -344,7 +338,7 @@ TEST_CASE("Alarm shelving")
 
         auto origTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "Hey, I'm overheating.");
         if (shelved) {
-            REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{"edfa", "alarms-test:alarm-2-1", "high", "shelf"}}));
+            REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>({{{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelf"}}));
             REQUIRE(extractAlarms(*userSess).empty());
             SHELF_SUMMARY(*userSess, 1, origTime);
         } else {
@@ -382,7 +376,7 @@ TEST_CASE("Alarm shelving")
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
                 }));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                    {{{"alarms-test:alarm-1", "high"}, "wss"}, "shelf"},
                 });
         SHELF_SUMMARY(*userSess, 1, changedTime);
 
@@ -396,7 +390,7 @@ TEST_CASE("Alarm shelving")
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
                 }));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
+                    {{{"alarms-test:alarm-1", "high"}, "wss"}, "shelf"},
                 });
         SHELF_SUMMARY(*userSess, 1, changedTime);
 
@@ -408,8 +402,8 @@ TEST_CASE("Alarm shelving")
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
                 }));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
-                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
+                    {{{"alarms-test:alarm-1", "high"}, "wss"}, "shelf"},
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelf"},
                 });
         SHELF_SUMMARY(*userSess, 2, changedTime);
 
@@ -422,9 +416,9 @@ TEST_CASE("Alarm shelving")
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {}, {}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>({}));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"wss", "alarms-test:alarm-1", "high", "shelf"},
-                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf"},
-                    {"wss", "alarms-test:alarm-2-1", "low", "shelf"},
+                    {{{"alarms-test:alarm-1", "high"}, "wss"}, "shelf"},
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelf"},
+                    {{{"alarms-test:alarm-2-1", "low"}, "wss"}, "shelf"},
                 });
         SHELF_SUMMARY(*userSess, 3, changedTime);
 
@@ -435,9 +429,9 @@ TEST_CASE("Alarm shelving")
         REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf-replacement", {}, {}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>({}));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"wss", "alarms-test:alarm-1", "high", "shelf-replacement"},
-                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
-                    {"wss", "alarms-test:alarm-2-1", "low", "shelf-replacement"},
+                    {{{"alarms-test:alarm-1", "high"}, "wss"}, "shelf-replacement"},
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelf-replacement"},
+                    {{{"alarms-test:alarm-2-1", "low"}, "wss"}, "shelf-replacement"},
                 });
         SHELF_SUMMARY(*userSess, 3, changedTime);
 
@@ -455,7 +449,7 @@ TEST_CASE("Alarm shelving")
                 }));
         REQUIRE(dataFromSysrepo(*userSess, alarmListInstances + "[resource='wss'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']"s, sysrepo::Datastore::Operational)["/time-created"] == changedTime);
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"edfa", "alarms-test:alarm-2-1", "high", "shelf-replacement"},
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelf-replacement"},
                 });
         SHELF_SUMMARY(*userSess, 1, changedTime);
 
@@ -468,7 +462,7 @@ TEST_CASE("Alarm shelving")
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
                 }));
         REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
-                    {"edfa", "alarms-test:alarm-2-1", "high", "aashelf"},
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "aashelf"},
                 });
         SHELF_SUMMARY(*userSess, 1, changedTime);
     }
