@@ -64,19 +64,9 @@ std::vector<Alarm> extractAlarms(sysrepo::Session session)
 }
 
 struct ShelfControl {
-    struct AlarmType {
-        std::string id;
-        std::string qualifierMatch;
-
-        bool operator==(const AlarmType& o) const
-        {
-            return std::tie(id, qualifierMatch) == std::tie(o.id, o.qualifierMatch);
-        }
-    };
-
     std::string name;
     std::vector<std::string> resources;
-    std::vector<AlarmType> alarmTypes;
+    std::vector<alarms::Type> alarmTypes;
 
     bool operator==(const ShelfControl& o) const
     {
@@ -100,7 +90,7 @@ std::vector<ShelfControl> shelfControl(sysrepo::Session session)
             }
 
             for (const auto& alarmTypeNode : node.findXPath("alarm-type")) {
-                ctrl.alarmTypes.emplace_back(ShelfControl::AlarmType{alarms::utils::childValue(alarmTypeNode, "alarm-type-id"), alarms::utils::childValue(alarmTypeNode, "alarm-type-qualifier-match")});
+                ctrl.alarmTypes.emplace_back(alarms::Type{alarms::utils::childValue(alarmTypeNode, "alarm-type-id"), alarms::utils::childValue(alarmTypeNode, "alarm-type-qualifier-match")});
             }
 
             res.emplace_back(std::move(ctrl));
