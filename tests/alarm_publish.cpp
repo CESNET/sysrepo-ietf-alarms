@@ -1042,4 +1042,40 @@ TEST_CASE("Netopeer2 clients can't publish alarms")
                     {"/alarm-summary[severity='warning']/total", "1"},
                 });
     }
+
+    SECTION("First action for an alarm is 'cleared'")
+    {
+        CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-1", "foo", {}, {}, "test1");
+        CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-2-1", "bar", {}, {}, "test2");
+
+        CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "foo", "", "cleared", "test1");
+        CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-2-1", "bar", "", "minor", "test2");
+        REQUIRE(dataFromSysrepo(*cliSess, "/ietf-alarms:alarms/summary", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                    {"/alarm-summary[severity='critical']", ""},
+                    {"/alarm-summary[severity='critical']/cleared", "0"},
+                    {"/alarm-summary[severity='critical']/not-cleared", "0"},
+                    {"/alarm-summary[severity='critical']/severity", "critical"},
+                    {"/alarm-summary[severity='critical']/total", "0"},
+                    {"/alarm-summary[severity='indeterminate']", ""},
+                    {"/alarm-summary[severity='indeterminate']/cleared", "0"},
+                    {"/alarm-summary[severity='indeterminate']/not-cleared", "0"},
+                    {"/alarm-summary[severity='indeterminate']/severity", "indeterminate"},
+                    {"/alarm-summary[severity='indeterminate']/total", "0"},
+                    {"/alarm-summary[severity='major']", ""},
+                    {"/alarm-summary[severity='major']/cleared", "0"},
+                    {"/alarm-summary[severity='major']/not-cleared", "0"},
+                    {"/alarm-summary[severity='major']/severity", "major"},
+                    {"/alarm-summary[severity='major']/total", "0"},
+                    {"/alarm-summary[severity='minor']", ""},
+                    {"/alarm-summary[severity='minor']/cleared", "0"},
+                    {"/alarm-summary[severity='minor']/not-cleared", "1"},
+                    {"/alarm-summary[severity='minor']/severity", "minor"},
+                    {"/alarm-summary[severity='minor']/total", "1"},
+                    {"/alarm-summary[severity='warning']", ""},
+                    {"/alarm-summary[severity='warning']/cleared", "0"},
+                    {"/alarm-summary[severity='warning']/not-cleared", "0"},
+                    {"/alarm-summary[severity='warning']/severity", "warning"},
+                    {"/alarm-summary[severity='warning']/total", "0"},
+                });
+    }
 }
