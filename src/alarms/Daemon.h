@@ -29,16 +29,16 @@ public:
 private:
     sysrepo::Connection m_connection;
     sysrepo::Session m_session;
-    std::optional<sysrepo::Subscription> m_alarmSub;
-    std::optional<sysrepo::Subscription> m_inventorySub;
     alarms::Log m_log;
+    std::mutex m_mtx;
     NotifyStatusChanges m_notifyStatusChanges;
     std::optional<int32_t> m_notifySeverityThreshold;
-    std::mutex m_mtx;
     bool m_inventoryDirty;
     std::unordered_map<Type, InventoryData, boost::hash<Type>> m_inventory;
     std::unordered_map<InstanceKey, AlarmEntry, boost::hash<InstanceKey>> m_alarms;
     TimePoint m_alarmListLastChanged, m_shelfListLastChanged;
+    std::optional<sysrepo::Subscription> m_alarmSub;
+    std::optional<sysrepo::Subscription> m_inventorySub;
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const std::string& alarmListXPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
