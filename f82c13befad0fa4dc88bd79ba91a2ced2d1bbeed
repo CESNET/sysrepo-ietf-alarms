@@ -93,6 +93,30 @@
       },
       "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "66e94eb1_88d37662",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-24T09:50:38Z",
+      "side": 1,
+      "message": "Yes, I have read this again and now I understand. Thanks",
+      "parentUuid": "a464a41e_627c26c1",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 18,
+        "endChar": 55
+      },
+      "revId": "f82c13befad0fa4dc88bd79ba91a2ced2d1bbeed",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
