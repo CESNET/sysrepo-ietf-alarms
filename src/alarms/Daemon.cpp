@@ -257,6 +257,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         }
     }
 
+    std::unique_lock lck{m_mtx};
     auto matchedShelf = shouldBeShelved(m_session, alarmKey);
     std::string alarmNodePath;
 
@@ -354,6 +355,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const std::st
 
     auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
+    std::unique_lock lck{m_mtx};
 
     for (const auto& alarmNode : alarmRoot->findXPath(alarmListXPath)) {
         if (filter.matches(alarmNode)) {
@@ -415,6 +417,7 @@ void Daemon::reshelve()
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
     bool change = false;
+    std::unique_lock lck{m_mtx};
 
     for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
         const auto alarmKey = InstanceKey::fromNode(node);
