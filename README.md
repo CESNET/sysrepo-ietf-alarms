@@ -22,6 +22,7 @@ This daemon takes care of the rest:
 - [sysrepo-cpp](https://github.com/sysrepo/sysrepo-cpp) - C++ bindings for *sysrepo*
 - C++20 compiler (e.g., GCC 10.x+, clang 10+)
 - CMake 3.19+
+- [Boost](https://www.boost.org/) 1.78+ (header-only is sufficient)
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - [`spdlog`](https://github.com/gabime/spdlog)
 - [`date`](https://github.com/HowardHinnant/date) for time zones handling
