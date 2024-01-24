@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "506d2c92_5d13d9d7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-24T09:57:29Z",
+      "side": 1,
+      "message": "I\u0027d prefer a 42% speedup here. :-)",
+      "range": {
+        "startLine": 15,
+        "startChar": 23,
+        "endLine": 15,
+        "endChar": 27
+      },
+      "revId": "cbddff3dcad568fdcf8b5d5d70e4696c8b4295dd",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
