@@ -65,7 +65,7 @@ TEST_CASE("Basic alarm publishing and updating")
             mainLog->error("Sending {} alarms: {}ms", FAILING_RESOURCES, ms);
         }
 
-        {
+        if (0) { // FIXME: re-enable this once we're interested in measuring sysrepo's overhead for calling actions
             auto start = std::chrono::system_clock::now();
             for (int i = 0; i < NOOP_PURGES; ++i) {
                 CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/below", "indeterminate"}}));
