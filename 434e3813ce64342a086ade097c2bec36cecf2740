@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ee078eb8_722d746d",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1052,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-24T19:17:16Z",
+      "side": 1,
+      "message": "Ah, I see -- this required not just an already-cleared, not-yet-seen-before alarm, but also triggering the stats by a \"normal\" alarm. Now I understand what you said on Matrix.",
+      "range": {
+        "startLine": 1052,
+        "startChar": 71,
+        "endLine": 1052,
+        "endChar": 76
+      },
+      "revId": "434e3813ce64342a086ade097c2bec36cecf2740",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
