@@ -16,6 +16,24 @@
       "message": "oops, this actually needs locking",
       "revId": "becb4c27ec724c1f721e0bd78c2d924145d0fcf1",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d00cc2ef_d4d73fa5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-24T13:59:58Z",
+      "side": 1,
+      "message": "https://gerrit.cesnet.cz/c/CzechLight/sysrepo-ietf-alarms/+/6869/",
+      "parentUuid": "68b90321_fc8ca8e4",
+      "revId": "becb4c27ec724c1f721e0bd78c2d924145d0fcf1",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
