@@ -52,10 +52,7 @@ struct ShelfControl {
     std::vector<std::string> resources;
     std::vector<alarms::Type> alarmTypes;
 
-    bool operator==(const ShelfControl& o) const
-    {
-        return std::tie(name, resources, alarmTypes) == std::tie(o.name, o.resources, o.alarmTypes);
-    }
+    bool operator==(const ShelfControl& o) const = default;
 };
 
 std::vector<ShelfControl> shelfControl(sysrepo::Session session)
