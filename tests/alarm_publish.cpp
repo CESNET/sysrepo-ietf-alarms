@@ -1042,4 +1042,14 @@ TEST_CASE("Netopeer2 clients can't publish alarms")
                     {"/alarm-summary[severity='warning']/total", "1"},
                 });
     }
+
+    SECTION("First action for an alarm is 'cleared'")
+    {
+        CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-1", "foo", {}, {}, "test1");
+        CLIENT_INTRODUCE_ALARM(cliSess, "alarms-test:alarm-2-1", "bar", {}, {}, "test2");
+
+        CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "foo", "", "cleared", "High temperature on any resource with any severity");
+        CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-2-1", "bar", "", "minor", "Alarm with specific severity and resource");
+        auto actualDataFromSysrepo = dataFromSysrepo(*cliSess, "/ietf-alarms:alarms/summary", sysrepo::Datastore::Operational);
+    }
 }

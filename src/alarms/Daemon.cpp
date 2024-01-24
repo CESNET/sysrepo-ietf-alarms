@@ -276,14 +276,17 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     const auto existingAlarmNode = alarmRoot->findPath(alarmNodePath);
-    auto& alarm = m_alarms[alarmKey];
 
     auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
 
     if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
         // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
         return sysrepo::ErrorCode::Ok;
-    } else if (!existingAlarmNode && !matchedShelf) {
+    }
+
+    auto& alarm = m_alarms[alarmKey];
+
+    if (!existingAlarmNode && !matchedShelf) {
         edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(now));
         alarm.created = now;
     }
