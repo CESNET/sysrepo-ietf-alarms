@@ -77,5 +77,6 @@ TEST_CASE("Basic alarm publishing and updating")
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
             mainLog->error("Final purge of everything: {}ms", ms);
         }
+        REQUIRE(0);
     }
 }
