@@ -73,7 +73,7 @@ TEST_CASE("Basic alarm publishing and updating")
 
         {
             auto start = std::chrono::system_clock::now();
-            CLIENT_PURGE_RPC(userSess, FAILING_RESOURCES, "any", {});
+            CLIENT_PURGE_RPC_SLOW(userSess, FAILING_RESOURCES, "any", {}, std::chrono::milliseconds{30'666});
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
             mainLog->error("Final purge of everything: {}ms", ms);
         }

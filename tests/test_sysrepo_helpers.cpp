@@ -38,14 +38,14 @@ std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session sessio
 }
 
 /** @short Execute an RPC or action, return result, compacting the XPath. The rpcPath and input gets concatenated. */
-std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, const std::string& rpcPath, std::map<std::string, std::string> input)
+std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, const std::string& rpcPath, std::map<std::string, std::string> input, std::chrono::milliseconds timeout)
 {
     spdlog::get("main")->debug("rpcFromSysrepo {}", rpcPath);
     auto inputNode = session.getContext().newPath(rpcPath, std::nullopt);
     for (const auto& [k, v] : input) {
         inputNode.newPath(rpcPath + "/" + k, v);
     }
-    auto output = session.sendRPC(inputNode);
+    auto output = session.sendRPC(inputNode, timeout);
     std::map<std::string, std::string> res;
     for (const auto& node : output.childrenDfs()) {
         const auto briefXPath = std::string{node.path()}.substr(rpcPath.size());
