@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "75067a75_eae207ec",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-01-25T08:03:35Z",
+      "side": 1,
+      "message": "This made me wonder wtf, but it is actually nice.",
+      "range": {
+        "startLine": 364,
+        "startChar": 12,
+        "endLine": 364,
+        "endChar": 41
+      },
+      "revId": "c462a1a524f4edca7c531a35ce2a1460494e09f5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
