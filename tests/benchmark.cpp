@@ -10,9 +10,6 @@
 
 using namespace std::string_literals;
 
-namespace {
-}
-
 TEST_CASE("Basic alarm publishing and updating")
 {
     TEST_SYSREPO_INIT_LOGS;
