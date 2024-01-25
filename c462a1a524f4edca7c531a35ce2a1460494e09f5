@@ -22,6 +22,30 @@
       },
       "revId": "c462a1a524f4edca7c531a35ce2a1460494e09f5",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b5d06cec_1fe99728",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-01-25T09:47:39Z",
+      "side": 1,
+      "message": "yeah, I wonder which one is \"cleaner\", whether `someOptional.has_value()` or `!!someOptional`. Probably the former, but essentially all the tests in, say, libyang-cpp which operate on optional\u003cDataNode\u003e are in the !!form now... I guess I became infested with C-isms? :)",
+      "parentUuid": "75067a75_eae207ec",
+      "range": {
+        "startLine": 364,
+        "startChar": 12,
+        "endLine": 364,
+        "endChar": 41
+      },
+      "revId": "c462a1a524f4edca7c531a35ce2a1460494e09f5",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
