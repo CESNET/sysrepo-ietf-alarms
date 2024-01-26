@@ -19,7 +19,7 @@
     alarms::utils::initLogs(test_logger);
 
 #define IMPL_TEST_INIT_LOGS_2 \
-    spdlog::set_pattern("%S.%e [%t %n %L] %v"); \
+    spdlog::set_pattern("+%oms [%t %n %^%L%$] %v"); \
     spdlog::set_level(spdlog::level::trace); \
     spdlog::get("sysrepo")->set_level(spdlog::level::info); \
     trompeloeil::stream_tracer tracer{std::cout};
