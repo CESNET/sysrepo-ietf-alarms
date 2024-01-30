@@ -421,6 +421,13 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 
 void Daemon::reshelve()
 {
+    // FIXME: this function is potentially buggy. It is *meant* to be called from a context where
+    // `m_session` is switched to the `operational` DS, but at least during the initial `SR_EV_ENABLED`
+    // subscription/copying, the current DS is `running`. In that case, this function would try to insert
+    // `config: false` data into the `running` DS, which is not allowed. Unfortunately, switching to the
+    // `operational` DS (so as to retrieve proper data about alarms) when inside a `SR_EV_ENABLED` handler
+    // apparently results in a deadlock (been there, tried that, didn't work). That makes sense; that datastore
+    // has not yet been populated after all.
     auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
 
