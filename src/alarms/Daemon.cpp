@@ -28,6 +28,7 @@ const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
 const auto ctrlNotifyStatusChanges = controlPrefix + "/notify-status-changes"s;
 const auto ctrlNotifySeverityLevel = controlPrefix + "/notify-severity-level"s;
+const auto ctrlShelving = controlPrefix + "/alarm-shelving"s;
 const auto alarmSummaryPrefix = "/ietf-alarms:alarms/summary";
 
 const int32_t ClearedSeverity = 1; // from the RFC
@@ -95,8 +96,8 @@ std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarm
     alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
 
     std::optional<std::string> shelfName;
-    if (auto data = session.getData("/ietf-alarms:alarms/control/alarm-shelving")) {
-        shelfName = findMatchingShelf(key, data->findXPath("/ietf-alarms:alarms/control/alarm-shelving/shelf"));
+    if (auto data = session.getData(ctrlShelving)) {
+        shelfName = findMatchingShelf(key, data->findXPath(ctrlShelving + "/shelf"));
     }
 
     return shelfName;
@@ -149,7 +150,7 @@ Daemon::Daemon()
                 bool needsReshelve = false;
                 for (const auto& change : session.getChanges()) {
                     const auto xpath = change.node.path();
-                    if (boost::algorithm::starts_with(xpath, controlPrefix + "/alarm-shelving"s)) {
+                    if (boost::algorithm::starts_with(xpath, ctrlShelving)) {
                         needsReshelve = true;
                         break;
                     }
