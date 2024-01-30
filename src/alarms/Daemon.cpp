@@ -91,16 +91,9 @@ bool shouldNotifyStatusChange(
 }
 
 /* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
-std::optional<std::string> shouldBeShelved(sysrepo::Session session, const alarms::InstanceKey& key)
+std::optional<std::string> shouldBeShelved(const libyang::DataNode& shelvingRules, const alarms::InstanceKey& key)
 {
-    alarms::utils::ScopedDatastoreSwitch s(session, sysrepo::Datastore::Running);
-
-    std::optional<std::string> shelfName;
-    if (auto data = session.getData(ctrlShelving)) {
-        shelfName = findMatchingShelf(key, data->findXPath(ctrlShelving + "/shelf"));
-    }
-
-    return shelfName;
+    return findMatchingShelf(key, shelvingRules.findXPath(ctrlShelving + "/shelf"));
 }
 }
 
@@ -181,7 +174,7 @@ Daemon::Daemon()
                     }
                 }
                 if (needsReshelve) {
-                    reshelve();
+                    reshelve(session);
                 }
                 return sysrepo::ErrorCode::Ok;
             },
@@ -259,7 +252,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     std::unique_lock lck{m_mtx};
-    auto matchedShelf = shouldBeShelved(m_session, alarmKey);
+    auto matchedShelf = shouldBeShelved(*m_shelvingRules, alarmKey);
     std::string alarmNodePath;
 
     if (matchedShelf) {
@@ -419,7 +412,7 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 }
 }
 
-void Daemon::reshelve()
+void Daemon::reshelve(sysrepo::Session running)
 {
     // FIXME: this function is potentially buggy. It is *meant* to be called from a context where
     // `m_session` is switched to the `operational` DS, but at least during the initial `SR_EV_ENABLED`
@@ -428,6 +421,7 @@ void Daemon::reshelve()
     // `operational` DS (so as to retrieve proper data about alarms) when inside a `SR_EV_ENABLED` handler
     // apparently results in a deadlock (been there, tried that, didn't work). That makes sense; that datastore
     // has not yet been populated after all.
+    assert(running.activeDatastore() == sysrepo::Datastore::Running);
     auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
 
@@ -436,10 +430,12 @@ void Daemon::reshelve()
     std::vector<std::string> toErase;
     bool change = false;
     std::unique_lock lck{m_mtx};
+    m_shelvingRules = running.getData(ctrlShelving);
+    assert(m_shelvingRules);
 
     for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
         const auto alarmKey = InstanceKey::fromNode(node);
-        if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
+        if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
             createShelvedAlarmNodeFromExistingNode(edit, node, alarmKey, *shelf);
             m_log->trace("Alarm {} shelved ({})", node.path(), *shelf);
             toErase.emplace_back(node.path());
@@ -452,7 +448,7 @@ void Daemon::reshelve()
 
     for (const auto& node : alarmRoot->findXPath(shelvedAlarmListInstances)) {
         const auto alarmKey = InstanceKey::fromNode(node);
-        if (auto shelf = shouldBeShelved(m_session, alarmKey)) {
+        if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
             if (*shelf != utils::childValue(node, "shelf-name")) {
                 edit.newPath(shelvedAlarmListInstances + alarmKey.xpathIndex() + "/shelf-name", *shelf);
                 m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
