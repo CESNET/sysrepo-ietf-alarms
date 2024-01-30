@@ -37,6 +37,7 @@ private:
     std::unordered_map<Type, InventoryData, boost::hash<Type>> m_inventory;
     std::unordered_map<InstanceKey, AlarmEntry, boost::hash<InstanceKey>> m_alarms;
     TimePoint m_alarmListLastChanged, m_shelfListLastChanged;
+    std::optional<libyang::DataNode> m_shelvingRules;
     std::optional<sysrepo::Subscription> m_alarmSub;
     std::optional<sysrepo::Subscription> m_inventorySub;
 
@@ -44,7 +45,7 @@ private:
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const libyang::DataNode& alarmNode);
     std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
-    void reshelve();
+    void reshelve(sysrepo::Session running);
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
     void updateStatistics(libyang::DataNode& edit);
 };
