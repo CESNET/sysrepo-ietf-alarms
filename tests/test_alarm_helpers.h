@@ -68,7 +68,7 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
         auto inp = std::map<std::string, std::string> ADDITIONAL_PARAMS; \
         inp["alarm-clearance-status"] = CLEARANCE_STATUS; \
         auto intervalStart = std::chrono::system_clock::now(); \
-        REQUIRE(rpcFromSysrepo(*SESS, RPCPATH, inp) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(EXPECTED_NUMBER_OF_PURGED_ALARMS)}}); \
+        REQUIRE(rpcFromSysrepo(*SESS, RPCPATH, inp, TIMEOUT) == std::map<std::string, std::string>{{"/purged-alarms", std::to_string(EXPECTED_NUMBER_OF_PURGED_ALARMS)}}); \
         auto intervalEnd = std::chrono::system_clock::now(); \
         return AnyTimeBetween{intervalStart, intervalEnd}; \
     }();
