@@ -13,11 +13,6 @@ namespace alarms {
 class Daemon {
 public:
     Daemon();
-    enum class NotifyStatusChanges {
-        All,
-        RaiseAndClear,
-        BySeverity,
-    };
 
     // FIXME: consider boost::concurrent_flat_set (Boost 1.84+) or boost::unordered_flat_set (Boost 1.81+) everywhere
 

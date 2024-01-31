@@ -43,53 +43,6 @@ const std::array Severities{
     "critical",
 };
 
-bool valueChanged(const std::optional<libyang::DataNode>& oldNode, const libyang::DataNode& newNode, const char* leafName)
-{
-    bool oldLeafExists = oldNode && oldNode->findPath(leafName);
-    bool newLeafExists = newNode.findPath(leafName).has_value();
-
-    // leaf was deleted or created
-    if (oldLeafExists != newLeafExists) {
-        return true;
-    } else if (!oldLeafExists && !newLeafExists) {
-        return false;
-    } else {
-        return alarms::utils::childValue(*oldNode, leafName) != alarms::utils::childValue(newNode, leafName);
-    }
-}
-
-/** @brief Checks if we should notify about changes made based on the values changed and current settings in control container */
-bool shouldNotifyStatusChange(
-        const std::optional<libyang::DataNode>& oldNode,
-        const libyang::DataNode& edit,
-        const alarms::Daemon::NotifyStatusChanges notifyStatusChanges,
-        const std::optional<int32_t> notifySeverityThreshold
-        )
-{
-    bool raised = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "false" && valueChanged(oldNode, edit, "is-cleared");
-    bool cleared = edit.findPath("is-cleared") && alarms::utils::childValue(edit, "is-cleared") == "true" && valueChanged(oldNode, edit, "is-cleared");
-
-    if (cleared || notifyStatusChanges == alarms::Daemon::NotifyStatusChanges::All) {
-        return true;
-    }
-
-    if (notifyStatusChanges == alarms::Daemon::NotifyStatusChanges::RaiseAndClear) {
-        return raised || cleared;
-    }
-
-    /* Notifications are sent for status changes equal to or above the specified severity level.
-     * Notifications shall also be sent for state changes that make an alarm less severe than the specified level.
-     */
-
-    auto newSeverity = std::get<libyang::Enum>(edit.findPath("perceived-severity")->asTerm().value()).value;
-    if (!oldNode) {
-        return newSeverity >= *notifySeverityThreshold;
-    }
-
-    auto oldSeverity = std::get<libyang::Enum>(oldNode->findPath("perceived-severity")->asTerm().value()).value;
-    return newSeverity >= *notifySeverityThreshold || (oldSeverity >= *notifySeverityThreshold && newSeverity < *notifySeverityThreshold);
-}
-
 /* @brief Checks if the alarm keys match any entry in ietf-alarms:alarms/control/alarm-shelving. If so, return name of the matched shelf */
 std::optional<std::string> shouldBeShelved(const libyang::DataNode& shelvingRules, const alarms::InstanceKey& key)
 {
@@ -224,19 +177,101 @@ std::optional<std::string> Daemon::inventoryValidationError(const InstanceKey& k
     return std::nullopt;
 }
 
+/** @short Propagate changes from an incoming RPC to the cached alarm info
+ *
+ * The entry that's being modified might not have existed in the cache. In that case, it's a new alarm,
+ * and this function is called on a default-constructed AlarmEntry.
+ * */
+AlarmEntry::WhatChanged AlarmEntry::updateByRpc(
+        const bool wasPresent,
+        const TimePoint now,
+        const libyang::DataNode& input,
+        const std::optional<std::string> shelf,
+        const NotifyStatusChanges notifyStatusChanges,
+        const std::optional<int32_t> notifySeverityThreshold)
+{
+    const auto severity = std::get<libyang::Enum>(input.findPath("severity").value().asTerm().value()).value;
+    const bool isClearedNow = severity == ClearedSeverity;
+
+    // If the update clears and alarm and that alarm was not present before, we don't know
+    // what to store into the `isCleared`. This must be handled prior to default-constructing
+    // the new entry in m_alarms in Daemon::submitAlarm.
+    assert(!isClearedNow || wasPresent);
+
+    WhatChanged res {
+        .changed = false,
+        .shouldNotify = false,
+    };
+
+    if (!wasPresent) {
+        // Shelving status does not depend on "alarm updates" (which are handled here); whether an alarm is shelved
+        // or not shelved is only determined by the /ietf-alarms:alarms/control/alarm-shelving.
+        // We don't have to track updates here.
+        this->shelf = shelf;
+
+        // this one only gets assigned at the very beginning of an alarm lifetime
+        this->created = now;
+
+        // -1 is an invalid value which compares different to anything legal later on
+        this->lastSeverity = -1;
+    }
+
+    if (auto text = utils::childValue(input, "alarm-text"); text != this->text) {
+        this->text = text;
+        res.changed = true;
+    }
+
+    if (isClearedNow || notifyStatusChanges == NotifyStatusChanges::All) {
+        res.shouldNotify = true;
+    } else if (notifyStatusChanges == NotifyStatusChanges::RaiseAndClear) {
+        res.shouldNotify = !wasPresent || (isClearedNow != this->isCleared);
+    }
+
+    if (severity != this->lastSeverity /* evaluates true also for previously unseen alarm keys */) {
+        res.changed = true;
+    }
+
+    if (!isClearedNow) {
+        if (!wasPresent || (wasPresent && this->isCleared)) {
+            this->lastRaised = now;
+        }
+        if (notifyStatusChanges == NotifyStatusChanges::BySeverity &&
+                (severity >= *notifySeverityThreshold || this->lastSeverity >= *notifySeverityThreshold)) {
+            res.shouldNotify = true;
+        }
+        if (severity > ClearedSeverity) {
+            this->lastSeverity = severity;
+        }
+    }
+    this->isCleared = severity == ClearedSeverity;
+
+    if (res.changed) {
+        this->lastChanged = now;
+    }
+
+    return res;
+}
+
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
     const auto now = TimePoint::clock::now();
     const auto& alarmKey = InstanceKey::fromNode(input);
     const auto severity = std::get<libyang::Enum>(input.findPath("severity").value().asTerm().value()).value;
-    const bool is_cleared = severity == ClearedSeverity;
+    const bool isClearedNow = severity == ClearedSeverity;
 
-    const auto alarmRoot = m_session.getData(rootPath);
-    assert(alarmRoot);
+    std::string keyXPath;
+    try {
+        keyXPath = alarmKey.xpathIndex();
+    } catch (std::logic_error& e) {
+        rpcSession.setErrorMessage(e.what());
+        return sysrepo::ErrorCode::InvalidArgument;
+    }
 
     {
         std::unique_lock lck{m_mtx};
         if (m_inventoryDirty) {
+            const auto alarmRoot = m_session.getData(rootPath);
+            assert(alarmRoot);
             rebuildInventory(*alarmRoot);
         }
         if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
@@ -252,77 +287,38 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     }
 
     std::unique_lock lck{m_mtx};
-    auto matchedShelf = shouldBeShelved(*m_shelvingRules, alarmKey);
-    std::string alarmNodePath;
 
-    if (matchedShelf) {
-        alarmNodePath = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
-    } else {
-        alarmNodePath = "/ietf-alarms:alarms/alarm-list/alarm";
-    }
-
-    try {
-        alarmNodePath = (matchedShelf ? shelvedAlarmListInstances : alarmListInstances) + alarmKey.xpathIndex();
-        m_log->trace("Alarm node: {}", alarmNodePath);
-    } catch (const std::invalid_argument& e) {
-        m_log->debug("submitAlarm exception: {}", e.what());
-        rpcSession.setErrorMessage(e.what());
-        return sysrepo::ErrorCode::InvalidArgument;
-    }
-
-    const auto existingAlarmNode = alarmRoot->findPath(alarmNodePath);
-
-    auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
-
-    if (is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
-        // if passing is-cleared=true the alarm either doesn't exist or exists but is inactive (is-cleared=true), do nothing, it's a NOOP
+    if (auto it = m_alarms.find(alarmKey); isClearedNow && ((it == m_alarms.end()) || ((it != m_alarms.end()) && it->second.isCleared))) {
+        m_log->trace("No update for already-cleared alarm {}", keyXPath);
         return sysrepo::ErrorCode::Ok;
     }
 
-    auto& alarm = m_alarms[alarmKey];
+    auto matchedShelf = shouldBeShelved(*m_shelvingRules, alarmKey);
+    auto alarmNodePath = (matchedShelf ? shelvedAlarmListInstances : alarmListInstances) + keyXPath;
+    auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
+    auto [it, wasInserted] = m_alarms.try_emplace(alarmKey);
+    auto res = it->second.updateByRpc(!wasInserted, now, input, matchedShelf, m_notifyStatusChanges, m_notifySeverityThreshold);
 
-    if (!existingAlarmNode && !matchedShelf) {
-        edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(now));
-        alarm.created = now;
+    if (res.changed) {
+        edit.newPath(alarmNodePath + "/is-cleared", it->second.isCleared ? "true" : "false");
+        edit.newPath(alarmNodePath + "/last-raised", utils::yangTimeFormat(it->second.lastRaised));
+        edit.newPath(alarmNodePath + "/last-changed", utils::yangTimeFormat(it->second.lastChanged));
+        edit.newPath(alarmNodePath + "/perceived-severity", Severities[it->second.lastSeverity]);
+        edit.newPath(alarmNodePath + "/alarm-text", it->second.text);
+        if (it->second.shelf) {
+            edit.newPath(alarmNodePath + "/shelf-name", *it->second.shelf);
+        } else {
+            edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(it->second.created));
+        }
+        m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
+        updateStatistics(edit);
+        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        m_session.applyChanges();
+
+        if (res.shouldNotify) {
+            m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
+        }
     }
-
-    edit.newPath(alarmNodePath + "/is-cleared", is_cleared ? "true" : "false", libyang::CreationOptions::Update);
-    alarm.isCleared = is_cleared;
-    if (!is_cleared && (!existingAlarmNode || (existingAlarmNode && utils::childValue(*existingAlarmNode, "is-cleared") == "true"))) {
-        edit.newPath(alarmNodePath + "/last-raised", utils::yangTimeFormat(now));
-        alarm.lastRaised = now;
-    }
-
-    if (!is_cleared) {
-        edit.newPath(alarmNodePath + "/perceived-severity", Severities[severity], libyang::CreationOptions::Update);
-        alarm.lastSeverity = severity;
-    }
-
-    edit.newPath(alarmNodePath + "/alarm-text", std::string{input.findPath("alarm-text").value().asTerm().valueStr()}, libyang::CreationOptions::Update);
-    alarm.text = std::string{input.findPath("alarm-text").value().asTerm().valueStr()};
-
-    const auto& editAlarmNode = edit.findPath(alarmNodePath);
-    if (valueChanged(existingAlarmNode, *editAlarmNode, "alarm-text") || valueChanged(existingAlarmNode, *editAlarmNode, "is-cleared") || valueChanged(existingAlarmNode, *editAlarmNode, "perceived-severity")) {
-        edit.newPath(alarmNodePath + "/last-changed", utils::yangTimeFormat(now));
-        alarm.lastChanged = now;
-    }
-
-    if (matchedShelf) {
-        edit.newPath(alarmNodePath + "/shelf-name", matchedShelf);
-        alarm.shelf = matchedShelf;
-    }
-
-    m_log->trace("Update: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
-
-    updateStatistics(edit);
-
-    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
-    m_session.applyChanges();
-
-    if (shouldNotifyStatusChange(existingAlarmNode, *editAlarmNode, m_notifyStatusChanges, m_notifySeverityThreshold)) {
-        m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
-    }
-
     return sysrepo::ErrorCode::Ok;
 }
 
