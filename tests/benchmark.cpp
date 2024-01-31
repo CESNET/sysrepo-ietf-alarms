@@ -14,7 +14,7 @@ TEST_CASE("Basic alarm publishing and updating")
 {
     TEST_SYSREPO_INIT_LOGS;
     spdlog::set_level(spdlog::level::info);
-    spdlog::get("sysrepo")->set_level(spdlog::level::warn);
+    spdlog::get("sysrepo")->set_level(spdlog::level::trace);
     auto mainLog = spdlog::get("main");
     copyStartupDatastore("ietf-alarms");
     auto daemon = std::make_unique<alarms::Daemon>();
@@ -73,9 +73,10 @@ TEST_CASE("Basic alarm publishing and updating")
 
         {
             auto start = std::chrono::system_clock::now();
-            CLIENT_PURGE_RPC_SLOW(userSess, FAILING_RESOURCES, "any", {}, std::chrono::milliseconds{30'666});
+            CLIENT_PURGE_RPC_SLOW(userSess, FAILING_RESOURCES, "any", {}, std::chrono::milliseconds{66'666});
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
             mainLog->error("Final purge of everything: {}ms", ms);
         }
+        REQUIRE(0);
     }
 }
