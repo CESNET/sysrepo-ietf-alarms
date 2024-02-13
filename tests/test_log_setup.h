@@ -22,7 +22,7 @@
 
 #define IMPL_TEST_INIT_LOGS_2 \
     spdlog::set_level(spdlog::level::trace); \
-    spdlog::get("sysrepo")->set_level(spdlog::level::info); \
+    spdlog::get("sysrepo")->set_level(spdlog::level::warn); \
     trompeloeil::stream_tracer tracer{std::cout};
 
 #define TEST_INIT_LOGS \
