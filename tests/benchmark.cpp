@@ -13,8 +13,7 @@ using namespace std::string_literals;
 TEST_CASE("Basic alarm publishing and updating")
 {
     TEST_SYSREPO_INIT_LOGS;
-    spdlog::set_level(spdlog::level::info);
-    spdlog::get("sysrepo")->set_level(spdlog::level::warn);
+    spdlog::get("main")->set_level(spdlog::level::info);
     auto mainLog = spdlog::get("main");
     copyStartupDatastore("ietf-alarms");
     auto daemon = std::make_unique<alarms::Daemon>();
