@@ -498,6 +498,7 @@ void Daemon::rebuildInventory(const libyang::DataNode& dataWithInventory)
                 });
         }
     }
+    m_inventoryDirty = false;
 }
 
 void Daemon::updateStatistics(libyang::DataNode& edit)
