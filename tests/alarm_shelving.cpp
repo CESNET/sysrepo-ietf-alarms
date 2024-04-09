@@ -1,5 +1,6 @@
 #include "trompeloeil_doctest.h"
 #include <chrono>
+#include <experimental/iterator>
 #include <sysrepo-cpp/Connection.hpp>
 #include "alarms/Daemon.h"
 #include "test_alarm_helpers.h"
@@ -104,6 +105,23 @@ struct StringMaker<alarms::InstanceKey> {
 };
 
 template <>
+struct StringMaker<ShelfControl> {
+    static String convert(const ShelfControl& obj)
+    {
+        std::ostringstream oss;
+        oss << "ShelfControl{name: " << obj.name << ", resources: [";
+        std::copy(obj.resources.begin(), obj.resources.end(), std::experimental::make_ostream_joiner(oss, ", "));
+        oss << "], alarm-types: [";
+        std::transform(obj.alarmTypes.begin(), obj.alarmTypes.end(), std::experimental::make_ostream_joiner(oss, ", "),
+                [](const alarms::Type t) {
+                    return "id: " + t.id + ", qualifier: " + t.qualifier;
+                });
+        oss << "]}";
+        return oss.str().c_str();
+    }
+};
+
+template <>
 struct StringMaker<std::vector<ShelvedAlarm>> {
     static String convert(const std::vector<ShelvedAlarm>& v)
     {
@@ -125,6 +143,20 @@ struct StringMaker<std::vector<alarms::InstanceKey>> {
         os << "{" << std::endl;
         for (const auto& e : v) {
             os << "  \"" << StringMaker<alarms::InstanceKey>::convert(e) << "\"," << std::endl;
+        }
+        os << "}";
+        return os.str().c_str();
+    };
+};
+
+template <>
+struct StringMaker<std::vector<ShelfControl>> {
+    static String convert(const std::vector<ShelfControl>& v)
+    {
+        std::ostringstream os;
+        os << "{" << std::endl;
+        for (const auto& e : v) {
+            os << "  \"" << StringMaker<ShelfControl>::convert(e) << "\"," << std::endl;
         }
         os << "}";
         return os.str().c_str();
