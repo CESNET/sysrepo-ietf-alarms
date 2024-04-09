@@ -413,7 +413,7 @@ TEST_CASE("Alarm shelving")
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/resource[.='edfa']", std::nullopt);
         userSess->applyChanges();
 
-        REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"wss", "edfa"}, {{"alarms-test:alarm-1", "high"}}}});
+        REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"edfa", "wss"}, {{"alarms-test:alarm-1", "high"}}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>({
                     {{"alarms-test:alarm-2-1", "high"}, "edfa"},
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
@@ -426,7 +426,7 @@ TEST_CASE("Alarm shelving")
         userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelf']/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier-match='high']", std::nullopt);
         changedTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
 
-        REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"wss", "edfa"}, {{"alarms-test:alarm-1", "high"}, {"alarms-test:alarm-2-1", "high"}}}});
+        REQUIRE(shelfControl(*userSess) == std::vector<ShelfControl>{{"shelf", {"edfa", "wss"}, {{"alarms-test:alarm-1", "high"}, {"alarms-test:alarm-2-1", "high"}}}});
         REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>({
                     {{"alarms-test:alarm-2-1", "low"}, "wss"},
                 }));
