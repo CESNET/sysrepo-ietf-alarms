@@ -23,7 +23,7 @@ option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${D
 
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
-find_package(date REQUIRED)
+find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
 find_package(Boost 1.78 REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
@@ -58,12 +58,10 @@ add_library(alarms-utils STATIC
     src/utils/string.h
     src/utils/sysrepo.cpp
     src/utils/sysrepo.h
-    src/utils/time.cpp
-    src/utils/time.h
     src/utils/waitUntilSignalled.cpp
     src/utils/waitUntilSignalled.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO PRIVATE date::date-tz)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO)
 
 add_library(alarms STATIC
     src/alarms/Key.h
@@ -76,7 +74,7 @@ add_library(alarms STATIC
     src/alarms/ShelfMatch.cpp
     src/alarms/ShelfMatch.h
     )
-target_link_libraries(alarms PUBLIC alarms-utils Boost::headers)
+target_link_libraries(alarms PUBLIC alarms-utils Boost::headers PRIVATE date::date-tz)
 
 add_executable(sysrepo-ietf-alarmsd src/main.cpp)
 add_dependencies(sysrepo-ietf-alarmsd target-SYSREPO_IETF_ALARMS_VERSION)
@@ -108,7 +106,7 @@ if(BUILD_TESTING)
         tests/test_time_interval.h
         tests/wait-a-bit-longer.cpp
         )
-    target_link_libraries(Testing PRIVATE spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO alarms-utils)
+    target_link_libraries(Testing PRIVATE spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO alarms-utils date::date-tz)
     target_include_directories(Testing PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
 
     include(cmake/SysrepoTest.cmake)
@@ -122,8 +120,6 @@ if(BUILD_TESTING)
         sysrepo_test(NAME ${TEST_NAME} ${TEST_UNPARSED_ARGUMENTS})
         target_link_libraries(test-${TEST_NAME} DoctestIntegration Testing alarms)
     endfunction()
-
-    ietfalarms_test(NAME time)
 
     set(fixture-alarms_testing
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang
