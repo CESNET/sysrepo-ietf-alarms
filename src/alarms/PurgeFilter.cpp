@@ -12,7 +12,6 @@
 #include "AlarmEntry.h"
 #include "PurgeFilter.h"
 #include "utils/libyang.h"
-#include "utils/time.h"
 
 namespace {
 
