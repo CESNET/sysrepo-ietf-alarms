@@ -1,5 +1,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <chrono>
+#include <libyang-cpp/Time.hpp>
 #include <map>
 #include <span>
 #include <string>
@@ -10,7 +11,6 @@
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
-#include "utils/time.h"
 
 using namespace std::string_literals;
 
@@ -47,6 +47,11 @@ const std::array Severities{
 std::optional<std::string> shouldBeShelved(const libyang::DataNode& shelvingRules, const alarms::InstanceKey& key)
 {
     return findMatchingShelf(key, shelvingRules.findXPath(ctrlShelving + "/shelf"));
+}
+
+std::string yangTimeFormat(const std::chrono::time_point<std::chrono::system_clock>& timePoint)
+{
+    return libyang::yangTimeFormat(timePoint, libyang::TimezoneInterpretation::Local);
 }
 }
 
@@ -302,14 +307,14 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
     if (res.changed) {
         edit.newPath(alarmNodePath + "/is-cleared", it->second.isCleared ? "true" : "false");
-        edit.newPath(alarmNodePath + "/last-raised", utils::yangTimeFormat(it->second.lastRaised));
-        edit.newPath(alarmNodePath + "/last-changed", utils::yangTimeFormat(it->second.lastChanged));
+        edit.newPath(alarmNodePath + "/last-raised", yangTimeFormat(it->second.lastRaised));
+        edit.newPath(alarmNodePath + "/last-changed", yangTimeFormat(it->second.lastChanged));
         edit.newPath(alarmNodePath + "/perceived-severity", Severities[it->second.lastSeverity]);
         edit.newPath(alarmNodePath + "/alarm-text", it->second.text);
         if (it->second.shelf) {
             edit.newPath(alarmNodePath + "/shelf-name", *it->second.shelf);
         } else {
-            edit.newPath(alarmNodePath + "/time-created", utils::yangTimeFormat(it->second.created));
+            edit.newPath(alarmNodePath + "/time-created", yangTimeFormat(it->second.created));
         }
         m_log->debug("Updated alarm: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
         updateStatistics(edit);
@@ -404,7 +409,7 @@ void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libya
 void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
 {
     const auto key = alarmListInstances + alarmKey.xpathIndex();
-    edit.newPath(key + "/time-created", utils::yangTimeFormat(now));
+    edit.newPath(key + "/time-created", yangTimeFormat(now));
     createCommonAlarmNodeProps(edit, alarm, key);
 }
 }
@@ -546,8 +551,8 @@ void Daemon::updateStatistics(libyang::DataNode& edit)
     }
 
     edit.newPath(alarmList + "/number-of-alarms", std::to_string(totalList));
-    edit.newPath(alarmList + "/last-changed", utils::yangTimeFormat(m_alarmListLastChanged));
+    edit.newPath(alarmList + "/last-changed", yangTimeFormat(m_alarmListLastChanged));
     edit.newPath(shelvedAlarmList + "/number-of-shelved-alarms", std::to_string(totalShelved));
-    edit.newPath(shelvedAlarmList + "/shelved-alarms-last-changed", utils::yangTimeFormat(m_shelfListLastChanged));
+    edit.newPath(shelvedAlarmList + "/shelved-alarms-last-changed", yangTimeFormat(m_shelfListLastChanged));
 }
 }
