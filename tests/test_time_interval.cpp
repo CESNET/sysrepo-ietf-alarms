@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <iostream>
+#include <libyang-cpp/Time.hpp>
 #include "test_time_interval.h"
-#include "utils/time.h"
 
 bool AnyTimeBetween::operator==(const std::string& str) const
 {
-    auto tp = alarms::utils::fromYangTimeFormat(str);
+    auto tp = libyang::fromYangTimeFormat<std::chrono::system_clock>(str);
     return start <= tp && tp < end;
 }
 
@@ -27,7 +27,7 @@ bool operator==(const std::string& str, const std::variant<std::string, AnyTimeB
 
 std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o)
 {
-    return os << "(AnyTimeBetween [" << alarms::utils::yangTimeFormat(o.start) << "] and [" << alarms::utils::yangTimeFormat(o.end) << "])";
+    return os << "(AnyTimeBetween [" << libyang::yangTimeFormat(o.start, libyang::Timezone::Local) << "] and [" << libyang::yangTimeFormat(o.end, libyang::Timezone::Local) << "])";
 }
 
 bool operator==(const std::map<std::string, std::string>& lhs, const std::map<std::string, std::variant<std::string, AnyTimeBetween>>& rhs)
