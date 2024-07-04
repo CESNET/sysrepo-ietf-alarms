@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ae65f93_13dee689",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:37:51Z",
+      "side": 1,
+      "message": "please add a FIXME for future removal once we\u0027re on \"new enough\" STL",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 26,
+        "endChar": 2
+      },
+      "revId": "3a461f0a8185c6fc281b6bc73d865a50393aa872",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "05e16e06_a282d489",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 6
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-04T10:37:51Z",
+      "side": 1,
+      "message": "if I was writing this, I would have problably just used the libyang version everywhere without this wrapper, but I don\u0027t really care",
+      "revId": "3a461f0a8185c6fc281b6bc73d865a50393aa872",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
