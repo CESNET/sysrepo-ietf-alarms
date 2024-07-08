@@ -73,6 +73,30 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "018e6310_1e6efe2a",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-07-08T11:53:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "df96197c_40f9d701",
+      "range": {
+        "startLine": 77,
+        "startChar": 64,
+        "endLine": 77,
+        "endChar": 82
+      },
+      "revId": "3a461f0a8185c6fc281b6bc73d865a50393aa872",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "05e16e06_a282d489",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 6
