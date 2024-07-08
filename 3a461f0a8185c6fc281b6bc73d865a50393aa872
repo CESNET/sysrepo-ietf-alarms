@@ -24,6 +24,29 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "df96197c_40f9d701",
+        "filename": "CMakeLists.txt",
+        "patchSetId": 6
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-07-08T11:03:02Z",
+      "side": 1,
+      "message": "this should not be needed as it will get pulled in transitively through the `alarms-utils` library",
+      "range": {
+        "startLine": 77,
+        "startChar": 64,
+        "endLine": 77,
+        "endChar": 82
+      },
+      "revId": "3a461f0a8185c6fc281b6bc73d865a50393aa872",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "05e16e06_a282d489",
