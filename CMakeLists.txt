@@ -158,6 +158,6 @@ if(WITH_DOCS)
             )
 endif()
 
-set(YANG_DIR ${CMAKE_INSTALL_PREFIX}/share/sysrepo-ietf-alarms/yang)
+set(YANG_DIR ${CMAKE_INSTALL_PREFIX}/share/yang/modules/sysrepo-ietf-alarms)
 install(FILES ${YANG_SRCS} DESTINATION ${YANG_DIR})
 install(TARGETS sysrepo-ietf-alarmsd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/)
