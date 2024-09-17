@@ -27,8 +27,8 @@ find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chro
 find_package(Boost 1.78 REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=2 sysrepo)
-pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=2)
+pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=3 sysrepo)
+pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=3)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 include(GNUInstallDirs)
