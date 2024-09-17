@@ -11,6 +11,7 @@
 #include "utils/sysrepo.h"
 
 namespace {
+using namespace std::string_literals;
 
 const auto rpcPrefix = "/sysrepo-ietf-alarms:create-or-update-alarm";
 
@@ -18,7 +19,7 @@ const auto ietfAlarmsModule = "ietf-alarms";
 const auto ietfAlarms = "/ietf-alarms:alarms";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
-const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
+const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory"s;
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
 const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms";
@@ -49,13 +50,13 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
     { \
         alarms::utils::ScopedDatastoreSwitch s(*SESS, sysrepo::Datastore::Operational); \
 \
-        SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/description", DESCRIPTION); \
-        SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/will-clear", "true"); \
+        SESS->setItem(alarmInventoryPrefix + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/description", DESCRIPTION); \
+        SESS->setItem(alarmInventoryPrefix + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/will-clear", "true"); \
         for (const auto& resource : RESOURCES) { \
-            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource", resource.c_str()); \
+            SESS->setItem(alarmInventoryPrefix + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/resource", resource.c_str()); \
         } \
         for (const auto& severity : SEVERITIES) { \
-            SESS->setItem(std::string{alarmInventoryPrefix} + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level", severity.c_str()); \
+            SESS->setItem(alarmInventoryPrefix + "/alarm-type[alarm-type-id='" + ID + "'][alarm-type-qualifier='" + QUALIFIER + "']/severity-level", severity.c_str()); \
         } \
         SESS->applyChanges(); \
     }
