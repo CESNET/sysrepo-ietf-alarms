@@ -21,6 +21,6 @@ std::string childValue(const libyang::DataNode& node, const std::string& leafNam
         throw std::runtime_error("Selected child '" + leafName + "' is not a leaf");
     }
 
-    return std::string(leaf->asTerm().valueStr());
+    return leaf->asTerm().valueStr();
 }
 }

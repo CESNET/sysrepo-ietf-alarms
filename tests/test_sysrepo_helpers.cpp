@@ -26,7 +26,7 @@ std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session sessio
     REQUIRE(data);
     for (const auto& sibling : data->findXPath(xpath)) { // Use findXPath here in case the xpath is list without keys.
         for (const auto& node : sibling.childrenDfs()) {
-            const auto briefXPath = std::string(node.path()).substr(alarms::utils::endsWith(xpath, ":*") ? xpath.size() - 1 : xpath.size());
+            const auto briefXPath = node.path().substr(alarms::utils::endsWith(xpath, ":*") ? xpath.size() - 1 : xpath.size());
             // We ignore the thing that's exactly the xpath we're retrieving to avoid having {"": ""} entries.
             if (briefXPath.empty()) {
                 continue;
@@ -48,7 +48,7 @@ std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, cons
     auto output = session.sendRPC(inputNode, timeout);
     std::map<std::string, std::string> res;
     for (const auto& node : output.childrenDfs()) {
-        const auto briefXPath = std::string{node.path()}.substr(rpcPath.size());
+        const auto briefXPath = node.path().substr(rpcPath.size());
         // We ignore the thing that's exactly the xpath we're retrieving to avoid having {"": ""} entries.
         if (briefXPath.empty()) {
             continue;

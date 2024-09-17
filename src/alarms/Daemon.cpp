@@ -263,7 +263,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     const auto& alarmKey = InstanceKey::fromNode(input);
     const auto severity = std::get<libyang::Enum>(input.findPath("severity").value().asTerm().value()).value;
     const bool isClearedNow = severity == ClearedSeverity;
-    m_log->trace("RPC {}: {}", rpcPrefix, std::string(*input.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
+    m_log->trace("RPC {}: {}", rpcPrefix, *input.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
 
     std::string keyXPath;
     try {
@@ -316,7 +316,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         } else {
             edit.newPath(alarmNodePath + "/time-created", yangTimeFormat(it->second.created));
         }
-        m_log->debug("Updated alarm: {}", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));
+        m_log->debug("Updated alarm: {}", *edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
         updateStatistics(edit);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
