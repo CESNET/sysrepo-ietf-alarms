@@ -16,6 +16,24 @@
       "message": "I found more occurrences of the old string_view code:\n\n```\ndiff --git a/src/alarms/Daemon.cpp b/src/alarms/Daemon.cpp\nindex c63675c..9177c8d 100644\n--- a/src/alarms/Daemon.cpp\n+++ b/src/alarms/Daemon.cpp\n@@ -263,7 +263,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan\n     const auto\u0026 alarmKey \u003d InstanceKey::fromNode(input);\n     const auto severity \u003d std::get\u003clibyang::Enum\u003e(input.findPath(\"severity\").value().asTerm().value()).value;\n     const bool isClearedNow \u003d severity \u003d\u003d ClearedSeverity;\n-    m_log-\u003etrace(\"RPC {}: {}\", rpcPrefix, std::string(*input.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));\n+    m_log-\u003etrace(\"RPC {}: {}\", rpcPrefix, *input.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));\n \n     std::string keyXPath;\n     try {\n@@ -316,7 +316,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan\n         } else {\n             edit.newPath(alarmNodePath + \"/time-created\", yangTimeFormat(it-\u003esecond.created));\n         }\n-        m_log-\u003edebug(\"Updated alarm: {}\", std::string(*edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink)));\n+        m_log-\u003edebug(\"Updated alarm: {}\", *edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));\n         updateStatistics(edit);\n         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);\n         m_session.applyChanges();\ndiff --git a/src/utils/libyang.cpp b/src/utils/libyang.cpp\nindex b3052f6..fdfb494 100644\n--- a/src/utils/libyang.cpp\n+++ b/src/utils/libyang.cpp\n@@ -21,6 +21,6 @@ std::string childValue(const libyang::DataNode\u0026 node, const std::string\u0026 leafNam\n         throw std::runtime_error(\"Selected child \u0027\" + leafName + \"\u0027 is not a leaf\");\n     }\n \n-    return std::string(leaf-\u003easTerm().valueStr());\n+    return leaf-\u003easTerm().valueStr();\n }\n }\ndiff --git a/tests/test_sysrepo_helpers.cpp b/tests/test_sysrepo_helpers.cpp\nindex 8b8dfd2..433840d 100644\n--- a/tests/test_sysrepo_helpers.cpp\n+++ b/tests/test_sysrepo_helpers.cpp\n@@ -26,7 +26,7 @@ std::map\u003cstd::string, std::string\u003e dataFromSysrepo(const sysrepo::Session sessio\n     REQUIRE(data);\n     for (const auto\u0026 sibling : data-\u003efindXPath(xpath)) { // Use findXPath here in case the xpath is list without keys.\n         for (const auto\u0026 node : sibling.childrenDfs()) {\n-            const auto briefXPath \u003d std::string(node.path()).substr(alarms::utils::endsWith(xpath, \":*\") ? xpath.size() - 1 : xpath.size());\n+            const auto briefXPath \u003d node.path().substr(alarms::utils::endsWith(xpath, \":*\") ? xpath.size() - 1 : xpath.size());\n             // We ignore the thing that\u0027s exactly the xpath we\u0027re retrieving to avoid having {\"\": \"\"} entries.\n             if (briefXPath.empty()) {\n                 continue;\n@@ -48,7 +48,7 @@ std::map\u003cstd::string, std::string\u003e rpcFromSysrepo(sysrepo::Session session, cons\n     auto output \u003d session.sendRPC(inputNode, timeout);\n     std::map\u003cstd::string, std::string\u003e res;\n     for (const auto\u0026 node : output.childrenDfs()) {\n-        const auto briefXPath \u003d std::string{node.path()}.substr(rpcPath.size());\n+        const auto briefXPath \u003d node.path().substr(rpcPath.size());\n         // We ignore the thing that\u0027s exactly the xpath we\u0027re retrieving to avoid having {\"\": \"\"} entries.\n         if (briefXPath.empty()) {\n             continue;\n\n```",
       "revId": "970e5d239445fed51fc7f8eb1c2513f05110e995",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b08b3f39_0530a10a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-09-23T20:04:44Z",
+      "side": 1,
+      "message": "thanks (the tests/test_sysrepo_helpers.cpp change was half-done already and did not apply cleanly)",
+      "parentUuid": "fc1a0566_26b48999",
+      "revId": "970e5d239445fed51fc7f8eb1c2513f05110e995",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
