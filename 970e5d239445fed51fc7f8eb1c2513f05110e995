@@ -34,6 +34,24 @@
       "parentUuid": "fc1a0566_26b48999",
       "revId": "970e5d239445fed51fc7f8eb1c2513f05110e995",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9bb49eff_2335c6ac",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-24T07:43:32Z",
+      "side": 1,
+      "message": "Hm that makes me wonder what commit did I use for the diff. Thanks.",
+      "parentUuid": "b08b3f39_0530a10a",
+      "revId": "970e5d239445fed51fc7f8eb1c2513f05110e995",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
