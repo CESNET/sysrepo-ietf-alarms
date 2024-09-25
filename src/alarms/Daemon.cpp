@@ -70,6 +70,7 @@ Daemon::Daemon()
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     {
+        m_log->trace("initializing stats");
         auto edit = m_session.getContext().newPath(alarmList);
         updateStatistics(edit);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
@@ -379,6 +380,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang
         }
         updateStatistics(edit);
         utils::removeFromOperationalDS(m_session.getContext(), edit, toDelete);
+        m_log->trace("purgeAlarms: removing entries in sysrepo");
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
         m_session.applyChanges();
     }
@@ -470,6 +472,7 @@ void Daemon::reshelve(sysrepo::Session running)
     }
 
     if (change) {
+        m_log->trace("reshelve: updating stats");
         updateStatistics(edit);
         utils::removeFromOperationalDS(m_session.getContext(), edit, toErase);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
