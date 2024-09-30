@@ -222,6 +222,10 @@ AlarmEntry::WhatChanged AlarmEntry::updateByRpc(
         this->lastSeverity = -1;
     }
 
+    if (wasPresent && this->isCleared != isClearedNow) {
+        res.changed = true;
+    }
+
     if (auto text = utils::childValue(input, "alarm-text"); text != this->text) {
         this->text = text;
         res.changed = true;
