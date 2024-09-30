@@ -24,6 +24,30 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fbb5b08a_d1a3f6d8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-30T12:53:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d0812faf_75a149fa",
+      "range": {
+        "startLine": 9,
+        "startChar": 36,
+        "endLine": 9,
+        "endChar": 50
+      },
+      "revId": "be8e726d36eb235749d82a5c61032921d354748d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3abe64d4_329cd051",
@@ -37,6 +61,24 @@
       "writtenOn": "2024-09-30T11:37:05Z",
       "side": 1,
       "message": "is this a relevant change? The alarm which was raised with this message is the one on EDFA.",
+      "revId": "be8e726d36eb235749d82a5c61032921d354748d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4c8d6e5b_d5508f69",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 471,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-09-30T12:53:25Z",
+      "side": 1,
+      "message": "You are right, it is not. Thanks.",
+      "parentUuid": "3abe64d4_329cd051",
       "revId": "be8e726d36eb235749d82a5c61032921d354748d",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
