@@ -27,6 +27,7 @@ This daemon takes care of the rest:
 - [Boost](https://www.boost.org/) 1.78+ (header-only is sufficient)
 - [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - [`spdlog`](https://github.com/gabime/spdlog)
+- [`fmt`](https://fmt.dev/) - C++ string formatting library
 - [`date`](https://github.com/HowardHinnant/date) for time zones handling
 - [`docopt`](https://github.com/docopt/docopt.cpp) for command line options
 - [`doctest`](https://github.com/doctest/doctest) for unit testing
