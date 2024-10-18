@@ -8,6 +8,7 @@
 #include "Key.h"
 #include "PurgeFilter.h"
 #include "ShelfMatch.h"
+#include "utils/benchmark.h"
 #include "utils/libyang.h"
 #include "utils/log.h"
 #include "utils/sysrepo.h"
@@ -70,7 +71,7 @@ Daemon::Daemon()
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     {
-        m_log->trace("initializing stats");
+        WITH_TIME_MEASUREMENT{"initializing stats"};
         auto edit = m_session.getContext().newPath(alarmList);
         updateStatistics(edit);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
@@ -99,6 +100,7 @@ Daemon::Daemon()
         m_alarmSub->onModuleChange(
             ietfAlarmsModule,
             [&](auto session, auto, auto, auto, auto, auto) {
+                WITH_TIME_MEASUREMENT{controlPrefix};
                 bool needsReshelve = false;
                 for (const auto& change : session.getChanges()) {
                     const auto xpath = change.node.path();
@@ -144,6 +146,7 @@ Daemon::Daemon()
 
     m_inventorySub = m_session.onModuleChange(
         ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
+            WITH_TIME_MEASUREMENT{alarmInventoryPrefix};
             {
                 std::unique_lock lck{m_mtx};
                 m_inventoryDirty = true;
@@ -264,6 +267,7 @@ AlarmEntry::WhatChanged AlarmEntry::updateByRpc(
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
+    WITH_TIME_MEASUREMENT{};
     const auto now = TimePoint::clock::now();
     const auto& alarmKey = InstanceKey::fromNode(input);
     const auto severity = std::get<libyang::Enum>(input.findPath("severity").value().asTerm().value()).value;
@@ -281,6 +285,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
     {
         std::unique_lock lck{m_mtx};
         if (m_inventoryDirty) {
+            WITH_TIME_MEASUREMENT{"submitAlarm/rebuildInventory"};
             const auto alarmRoot = m_session.getData(rootPath);
             assert(alarmRoot);
             rebuildInventory(*alarmRoot);
@@ -324,9 +329,13 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         m_log->debug("Updated alarm: {}", *edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
         updateStatistics(edit);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
-        m_session.applyChanges();
+        {
+            WITH_TIME_MEASUREMENT{"submitAlarm/applyChanges"};
+            m_session.applyChanges();
+        }
 
         if (res.shouldNotify) {
+            WITH_TIME_MEASUREMENT{"submitAlarm/sendNotification"};
             m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
         }
     }
@@ -353,6 +362,7 @@ libyang::DataNode Daemon::createStatusChangeNotification(const libyang::DataNode
 
 sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output)
 {
+    WITH_TIME_MEASUREMENT{};
     const auto now = std::chrono::system_clock::now();
     bool doingShelved = rpcPath == purgeShelvedRpcPrefix;
     PurgeFilter filter(rpcInput);
@@ -422,6 +432,7 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 
 void Daemon::reshelve(sysrepo::Session running)
 {
+    WITH_TIME_MEASUREMENT{};
     // FIXME: this function is potentially buggy. It is *meant* to be called from a context where
     // `m_session` is switched to the `operational` DS, but at least during the initial `SR_EV_ENABLED`
     // subscription/copying, the current DS is `running`. In that case, this function would try to insert

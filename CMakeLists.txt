@@ -25,6 +25,7 @@ find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
 find_package(Boost 1.78 REQUIRED)
+find_package(fmt "9.0.0" REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
 pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=3 sysrepo)
@@ -44,6 +45,8 @@ set(YANG_SRCS
 # Targets
 # - utils
 add_library(alarms-utils STATIC
+    src/utils/benchmark.cpp
+    src/utils/benchmark.h
     src/utils/exceptions.cpp
     src/utils/exceptions.h
     src/utils/journal.cpp
@@ -61,7 +64,7 @@ add_library(alarms-utils STATIC
     src/utils/waitUntilSignalled.cpp
     src/utils/waitUntilSignalled.h
     )
-target_link_libraries(alarms-utils PUBLIC spdlog::spdlog PkgConfig::LIBYANG PkgConfig::SYSREPO)
+target_link_libraries(alarms-utils PUBLIC spdlog::spdlog fmt::fmt PkgConfig::LIBYANG PkgConfig::SYSREPO)
 
 add_library(alarms STATIC
     src/alarms/Key.h
