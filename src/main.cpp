@@ -7,6 +7,7 @@
 #include "utils/exceptions.h"
 #include "utils/journal.h"
 #include "utils/log-init.h"
+#include "utils/sysrepo.h"
 #include "utils/waitUntilSignalled.h"
 
 spdlog::level::level_enum parseLogLevel(const std::string& name, const docopt::value& option)
@@ -56,6 +57,7 @@ int main(int argc, char* argv[])
     auto args = docopt::docopt(usage, {argv + 1, argv + argc}, true, "sysrepo-ietf-alarmsd " SYSREPO_IETF_ALARMS_VERSION, true);
 
     alarms::utils::initLogs(loggingSink);
+    alarms::utils::initLogsSysrepo();
     spdlog::get("main")->set_level(spdlog::level::info);
     spdlog::get("sysrepo")->set_level(spdlog::level::warn);
 
