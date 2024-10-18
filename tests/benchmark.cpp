@@ -24,7 +24,7 @@ TEST_CASE("Basic alarm publishing and updating")
     constexpr auto NOOP_PURGES = 200;
 
     SECTION("inventory: sequential resources") {
-        auto start = std::chrono::system_clock::now();
+        auto start = std::chrono::steady_clock::now();
         int i = 0;
         CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-2", "" /* qualifier is useless */, ({"r1", "r2"}), {}, "desc");
         ++i;
@@ -35,7 +35,7 @@ TEST_CASE("Basic alarm publishing and updating")
         for (; i < NUM_RESOURCES; ++i) {
             CLIENT_INTRODUCE_ALARM(userSess, "alarms-test:alarm-1", "" /* qualifier is useless */, {"resource-" + std::to_string(i)}, {"critical"}, "desc");
         }
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
         mainLog->error("Sequentially pushing {} inventory entries: {}ms", NUM_RESOURCES, ms);
     }
 
@@ -46,34 +46,34 @@ TEST_CASE("Basic alarm publishing and updating")
         }
 
         {
-            auto start = std::chrono::system_clock::now();
+            auto start = std::chrono::steady_clock::now();
             CLIENT_INTRODUCE_ALARM_VECTOR(userSess, "alarms-test:alarm-1", "" /* qualifier is useless */, resources, std::vector<std::string>{{"critical"}}, "desc");
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             mainLog->error("Pushing {} inventory entries at once: {}ms", NUM_RESOURCES, ms);
         }
 
         {
-            auto start = std::chrono::system_clock::now();
+            auto start = std::chrono::steady_clock::now();
             for (int i = 0; i < FAILING_RESOURCES; ++i) {
                 CLIENT_ALARM_RPC(userSess, "alarms-test:alarm-1", "", "resource-" + std::to_string(i), "critical", "xxx");
             }
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             mainLog->error("Sending {} alarms: {}ms", FAILING_RESOURCES, ms);
         }
 
         if (0) { // FIXME: re-enable this once we're interested in measuring sysrepo's overhead for calling actions
-            auto start = std::chrono::system_clock::now();
+            auto start = std::chrono::steady_clock::now();
             for (int i = 0; i < NOOP_PURGES; ++i) {
                 CLIENT_PURGE_RPC(userSess, 0, "cleared", ({{"severity/below", "indeterminate"}}));
             }
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             mainLog->error("Issuing {} purge requests which don't purge anything: {}ms", NOOP_PURGES, ms);
         }
 
         {
-            auto start = std::chrono::system_clock::now();
+            auto start = std::chrono::steady_clock::now();
             CLIENT_PURGE_RPC_SLOW(userSess, FAILING_RESOURCES, "any", {}, std::chrono::milliseconds{30'666});
-            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             mainLog->error("Final purge of everything: {}ms", ms);
         }
     }
