@@ -926,41 +926,35 @@ TEST_CASE("Basic alarm publishing and updating")
     {
         CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", {}, {}, "For escaping test");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "/some:hardware/entry[n1='ahoj\"'][n2=\"cau']`", "minor", "A text") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
-                            " Encountered mixed single and double quotes in XPath; can't properly escape. (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)");
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
+                            " Encountered mixed single and double quotes in XPath; can't properly escape. (SR_ERR_OPERATION_FAILED)");
     }
 
     SECTION("Validation against inventory")
     {
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "minor", "A text") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1). (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
 
         CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-2-2", "", ({"a-resource", "another-resource"}), ({"minor", "major", "critical"}), "test");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "a-resource", "minor", "A text");
 
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "minor", "Invalid qualifier") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1). (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "a-qual", "a-resource", "major", "Invalid qualifier") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1). (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: data-missing: No alarm inventory entry for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='a-qual'] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "invalid-resource", "major", "Invalid resource") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " Alarm inventory doesn't allow resource 'invalid-resource' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1). (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: data-missing: Alarm inventory doesn't allow resource 'invalid-resource' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1).");
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "indeterminate", "Invalid severity") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " Alarm inventory doesn't allow severity 'indeterminate' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1). (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: data-missing: Alarm inventory doesn't allow severity 'indeterminate' for [alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier=''] -- see RFC8632 (sec. 4.1).");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "critical", "valid");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "cleared", "valid");
@@ -996,9 +990,8 @@ TEST_CASE("Netopeer2 clients can't publish alarms")
         }
 
         REQUIRE_THROWS_WITH([&]() { CLIENT_ALARM_RPC(cliSess, "alarms-test:alarm-1", "", "", "warning", "High temperature on any resource with any severity") }(),
-                            "Couldn't send RPC: SR_ERR_CALLBACK_FAILED\n"
+                            "Couldn't send RPC: SR_ERR_OPERATION_FAILED\n"
                             " Internal RPCs cannot be called. (SR_ERR_OPERATION_FAILED)\n"
-                            " User callback failed. (SR_ERR_CALLBACK_FAILED)\n"
                             " NETCONF: application: operation-not-supported: Internal RPCs cannot be called.");
     }
 
