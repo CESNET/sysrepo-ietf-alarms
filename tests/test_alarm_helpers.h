@@ -77,3 +77,24 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
 #define CLIENT_PURGE_RPC(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS) CLIENT_PURGE_RPC_IMPL(SESS, purgeRpcPrefix, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, std::chrono::milliseconds{0})
 #define CLIENT_PURGE_SHELVED_RPC(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS) CLIENT_PURGE_RPC_IMPL(SESS, purgeShelvedRpcPrefix, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, std::chrono::milliseconds{0})
 #define CLIENT_PURGE_RPC_SLOW(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, TIMEOUT) CLIENT_PURGE_RPC_IMPL(SESS, purgeRpcPrefix, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, TIMEOUT)
+
+struct Summary {
+    int cleared;
+    int notCleared;
+};
+
+#define ALARM_SUMMARY_IMPL(SEVERITY, SUMMARY) \
+    {"/summary/alarm-summary[severity='" SEVERITY "']", ""}, \
+    {"/summary/alarm-summary[severity='" SEVERITY "']/severity", SEVERITY}, \
+    {"/summary/alarm-summary[severity='" SEVERITY "']/cleared", std::to_string(SUMMARY.cleared)}, \
+    {"/summary/alarm-summary[severity='" SEVERITY "']/not-cleared", std::to_string(SUMMARY.notCleared)}, \
+    {"/summary/alarm-summary[severity='" SEVERITY "']/total", std::to_string(SUMMARY.cleared + SUMMARY.notCleared)}
+
+#define CRITICAL(SUMMARY) ALARM_SUMMARY_IMPL("critical", SUMMARY)
+#define WARNING(SUMMARY) ALARM_SUMMARY_IMPL("warning", SUMMARY)
+#define MAJOR(SUMMARY) ALARM_SUMMARY_IMPL("major", SUMMARY)
+#define MINOR(SUMMARY) ALARM_SUMMARY_IMPL("minor", SUMMARY)
+#define INDETERMINATE(SUMMARY) ALARM_SUMMARY_IMPL("indeterminate", SUMMARY)
+#define ALARM_SUMMARY(...) \
+    {"/summary", ""}, \
+    __VA_ARGS__
