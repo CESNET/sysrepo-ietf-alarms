@@ -1,4 +1,5 @@
 #include "trompeloeil_doctest.h"
+#include <algorithm>
 #include <sysrepo-cpp/Connection.hpp>
 #include "alarms/Daemon.h"
 #include "test_alarm_helpers.h"
@@ -12,7 +13,6 @@ bool checkAlarmListLastChanged(const auto& dataFromSysrepo, const std::string& r
 {
     return dataFromSysrepo.at("/alarm-list/last-changed") == dataFromSysrepo.at("/alarm-list/alarm[resource='" + resource + "'][alarm-type-id='" + alarmTypeId + "'][alarm-type-qualifier='" + alarmTypeQualifier + "']/last-changed");
 }
-
 }
 
 TEST_CASE("Basic alarm publishing and updating")
@@ -72,6 +72,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                 {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
                 {"/control", ""},
                 {"/control/alarm-shelving", ""},
                 {"/control/max-alarm-status-changes", "32"},
@@ -86,7 +87,6 @@ TEST_CASE("Basic alarm publishing and updating")
                         MAJOR(Summary({.cleared = 0, .notCleared = 0})),
                         MINOR(Summary({.cleared = 0, .notCleared = 0})),
                         INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
-
             });
     REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
@@ -110,6 +110,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/control/max-alarm-status-changes", "32"},
@@ -170,6 +171,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -180,6 +182,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/time-created", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-raised", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", origTime1},
+                    ALARM_STATUS_CHANGE(2, "psu-1", "alarms-test:alarm-2-1", "", origTime1, "major", "More juice pls."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/control/max-alarm-status-changes", "32"},
@@ -215,6 +218,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']", ""},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-id", "alarms-test:alarm-2-1"},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/alarm-type-qualifier", ""},
@@ -225,6 +229,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/time-created", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-raised", origTime1},
                     {"/alarm-list/alarm[resource='psu-1'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/last-changed", origTime1},
+                    ALARM_STATUS_CHANGE(2, "psu-1", "alarms-test:alarm-2-1", "", origTime1, "major", "More juice pls."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/control/max-alarm-status-changes", "32"},
@@ -271,6 +276,8 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", clearedTime},
+                        ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+                        ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", clearedTime, "cleared", "Hey, I'm overheating."),
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/control/max-alarm-status-changes", "32"},
@@ -309,6 +316,9 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", raisedTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", raisedTime},
+                        ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+                        ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", clearedTime, "cleared", "Hey, I'm overheating."),
+                        ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", raisedTime, "warning", "Hey, I'm overheating."),
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/control/max-alarm-status-changes", "32"},
@@ -356,6 +366,7 @@ TEST_CASE("Basic alarm publishing and updating")
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
                         {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", origTime},
+                        ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
                         {"/control", ""},
                         {"/control/alarm-shelving", ""},
                         {"/control/max-alarm-status-changes", "32"},
@@ -376,7 +387,11 @@ TEST_CASE("Basic alarm publishing and updating")
 
     SECTION("Updating state")
     {
-        auto changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "indeterminate", "Something happen but we don't know what and how serious it is.");
+        userSess->setItem("/ietf-alarms:alarms/control/max-alarm-status-changes", "4");
+        userSess->applyChanges();
+
+        std::vector<AnyTimeBetween> changedTimes;
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "indeterminate", "Something happen but we don't know what and how serious it is."));
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
@@ -387,7 +402,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", changedTimes[0]},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -397,10 +412,12 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Something happen but we don't know what and how serious it is."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[0]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[0], "indeterminate", "Something happen but we don't know what and how serious it is."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
-                    {"/control/max-alarm-status-changes", "32"},
+                    {"/control/max-alarm-status-changes", "4"},
                     {"/control/notify-status-changes", "all-state-changes"},
                     {"/shelved-alarms", ""},
                     {"/shelved-alarms/number-of-shelved-alarms", "0"},
@@ -414,7 +431,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
-        changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "minor", "No worries.");
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "minor", "No worries."));
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
@@ -425,7 +442,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", changedTimes[1]},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -435,10 +452,13 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "No worries."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[1]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[0], "indeterminate", "Something happen but we don't know what and how serious it is."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", changedTimes[1], "minor", "No worries."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
-                    {"/control/max-alarm-status-changes", "32"},
+                    {"/control/max-alarm-status-changes", "4"},
                     {"/control/notify-status-changes", "all-state-changes"},
                     {"/shelved-alarms", ""},
                     {"/shelved-alarms/number-of-shelved-alarms", "0"},
@@ -452,7 +472,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
-        changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Hey, I'm overheating.");
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "cleared", "Hey, I'm overheating."));
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
@@ -463,7 +483,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", changedTimes[2]},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -473,10 +493,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[2]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[0], "indeterminate", "Something happen but we don't know what and how serious it is."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", changedTimes[1], "minor", "No worries."),
+                    ALARM_STATUS_CHANGE(4, "edfa", "alarms-test:alarm-1", "high", changedTimes[2], "cleared", "Hey, I'm overheating."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
-                    {"/control/max-alarm-status-changes", "32"},
+                    {"/control/max-alarm-status-changes", "4"},
                     {"/control/notify-status-changes", "all-state-changes"},
                     {"/shelved-alarms", ""},
                     {"/shelved-alarms/number-of-shelved-alarms", "0"},
@@ -490,7 +514,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
-        auto reraisedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "major", "Hey, I'm overheating.");
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "major", "Hey, I'm overheating."));
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
@@ -501,7 +525,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", reraisedTime},
+                    {"/alarm-list/last-changed", changedTimes[3]},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -510,11 +534,15 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "major"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", reraisedTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", reraisedTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", changedTimes[3]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[3]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", changedTimes[0], "indeterminate", "Something happen but we don't know what and how serious it is."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[1], "minor", "No worries."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", changedTimes[2], "cleared", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(4, "edfa", "alarms-test:alarm-1", "high", changedTimes[3], "major", "Hey, I'm overheating."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
-                    {"/control/max-alarm-status-changes", "32"},
+                    {"/control/max-alarm-status-changes", "4"},
                     {"/control/notify-status-changes", "all-state-changes"},
                     {"/shelved-alarms", ""},
                     {"/shelved-alarms/number-of-shelved-alarms", "0"},
@@ -528,7 +556,7 @@ TEST_CASE("Basic alarm publishing and updating")
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
 
-        changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "critical", "Hey, I'm overheating.");
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "critical", "Hey, I'm overheating."));
         actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
         REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
                     {"/alarm-inventory", ""},
@@ -539,7 +567,7 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
                     {"/alarm-list", ""},
                     {"/alarm-list/number-of-alarms", "1"},
-                    {"/alarm-list/last-changed", changedTime},
+                    {"/alarm-list/last-changed", changedTimes[4]},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
@@ -548,11 +576,15 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
                     {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", reraisedTime},
-                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", changedTimes[3]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[4]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", changedTimes[1], "minor", "No worries."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[2], "cleared", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", changedTimes[3], "major", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(4, "edfa", "alarms-test:alarm-1", "high", changedTimes[4], "critical", "Hey, I'm overheating."),
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
-                    {"/control/max-alarm-status-changes", "32"},
+                    {"/control/max-alarm-status-changes", "4"},
                     {"/control/notify-status-changes", "all-state-changes"},
                     {"/shelved-alarms", ""},
                     {"/shelved-alarms/number-of-shelved-alarms", "0"},
@@ -565,6 +597,129 @@ TEST_CASE("Basic alarm publishing and updating")
                             INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
                 });
         REQUIRE(checkAlarmListLastChanged(actualDataFromSysrepo, "edfa", "alarms-test:alarm-1", "high"));
+
+        userSess->setItem("/ietf-alarms:alarms/control/max-alarm-status-changes", "2");
+        userSess->applyChanges();
+
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                    {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", changedTimes[4]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", changedTimes[3]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[4]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", changedTimes[3], "major", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[4], "critical", "Hey, I'm overheating."),
+                    {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/control/max-alarm-status-changes", "2"},
+                    {"/control/notify-status-changes", "all-state-changes"},
+                    {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
+                    ALARM_SUMMARY(
+                            CRITICAL(Summary({.cleared = 0, .notCleared = 1})),
+                            WARNING(Summary({.cleared = 0, .notCleared = 0})),
+                            MAJOR(Summary({.cleared = 0, .notCleared = 0})),
+                            MINOR(Summary({.cleared = 0, .notCleared = 0})),
+                            INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
+                });
+
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "Hey, I'm overheating."));
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                    {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", changedTimes[5]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "Hey, I'm overheating."},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", changedTimes[3]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[5]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", changedTimes[4], "critical", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[5], "warning", "Hey, I'm overheating."),
+                    {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/control/max-alarm-status-changes", "2"},
+                    {"/control/notify-status-changes", "all-state-changes"},
+                    {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
+                    ALARM_SUMMARY(
+                            CRITICAL(Summary({.cleared = 0, .notCleared = 0})),
+                            WARNING(Summary({.cleared = 0, .notCleared = 1})),
+                            MAJOR(Summary({.cleared = 0, .notCleared = 0})),
+                            MINOR(Summary({.cleared = 0, .notCleared = 0})),
+                            INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
+                });
+
+        userSess->setItem("/ietf-alarms:alarms/control/max-alarm-status-changes", "infinite");
+        userSess->applyChanges();
+
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "high", "edfa", "warning", "text change"));
+        actualDataFromSysrepo = dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational);
+        REQUIRE(actualDataFromSysrepo == PropsWithTimeTest{
+                    {"/alarm-inventory", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "High temperature on any resource with any severity"},
+                    {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                    {"/alarm-list", ""},
+                    {"/alarm-list/number-of-alarms", "1"},
+                    {"/alarm-list/last-changed", changedTimes[6]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/is-cleared", "false"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/perceived-severity", "warning"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-text", "text change"},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/time-created", origTime},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-raised", changedTimes[3]},
+                    {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/last-changed", changedTimes[6]},
+                    ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-1", "high", changedTimes[4], "critical", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-1", "high", changedTimes[5], "warning", "Hey, I'm overheating."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", changedTimes[6], "warning", "text change"),
+                    {"/control", ""},
+                    {"/control/alarm-shelving", ""},
+                    {"/control/max-alarm-status-changes", "infinite"},
+                    {"/control/notify-status-changes", "all-state-changes"},
+                    {"/shelved-alarms", ""},
+                    {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                    {"/shelved-alarms/shelved-alarms-last-changed", initTime},
+                    ALARM_SUMMARY(
+                            CRITICAL(Summary({.cleared = 0, .notCleared = 0})),
+                            WARNING(Summary({.cleared = 0, .notCleared = 1})),
+                            MAJOR(Summary({.cleared = 0, .notCleared = 0})),
+                            MINOR(Summary({.cleared = 0, .notCleared = 0})),
+                            INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
+                });
     }
 
     SECTION("Properly escaped resource string")
@@ -626,6 +781,14 @@ TEST_CASE("Basic alarm publishing and updating")
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/time-created", origTime2},
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/last-raised", origTime2},
                     {"/alarm-list/alarm[resource='/ietf-interfaces:interface[name=\"eth2\"]'][alarm-type-id='alarms-test:alarm-2-2'][alarm-type-qualifier='']/last-changed", origTime2},
+
+                    {"/alarm-list/alarm[resource=\"/ietf-interfaces:interface[name='eth1']\"][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/status-change[time='1']", ""},
+                    {"/alarm-list/alarm[resource=\"/ietf-interfaces:interface[name='eth1']\"][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/status-change[time='1']/alarm-text", "Link operationally down but administratively up."},
+                    {"/alarm-list/alarm[resource=\"/ietf-interfaces:interface[name='eth1']\"][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/status-change[time='1']/perceived-severity", "minor"},
+                    {"/alarm-list/alarm[resource=\"/ietf-interfaces:interface[name='eth1']\"][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='']/status-change[time='1']/time", origTime1},
+                    ALARM_STATUS_CHANGE(2, "/ietf-interfaces:interface[name=\"eth2\"]", "alarms-test:alarm-2-2", "", origTime2, "minor", "Link operationally down but administratively up."),
+                    ALARM_STATUS_CHANGE(3, "edfa", "alarms-test:alarm-1", "high", origTime, "warning", "Hey, I'm overheating."),
+
                     {"/control", ""},
                     {"/control/alarm-shelving", ""},
                     {"/control/max-alarm-status-changes", "32"},
