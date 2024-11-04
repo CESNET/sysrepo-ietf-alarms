@@ -18,6 +18,48 @@
 
 using namespace std::chrono_literals;
 
+/** @brief Replaces timestamps in status-change keys with event order number.
+ *
+ * Currently, we compare sysrepo data with expected data. But here, we have a problem with timestamps in status-change keys.
+ * We can't compare them directly, because they are different in every run. So we replace them with event order number.
+ *
+ * This is a hack, I know, but it's probably the easiest way to solve this problem.
+ */
+std::map<std::string, std::string> replaceStatusChangeTimestampsWithEventOrder(const std::map<std::string, std::string> data)
+{
+    std::map<std::string, std::string> res;
+
+    unsigned eventOrder = 0;
+    std::optional<std::tuple<std::string, std::string, std::string>> lastKeys;
+
+    static const std::regex keyRegex{R"(\[(.*)='(.*)'\])"};
+    static const std::regex timestampRegex{R"(\[time='(.*)'\])"};
+
+    for (const auto& [key, value] : data) {
+        if (key.find("/status-change[") == std::string::npos) {
+            res.emplace(key, value);
+            continue;
+        }
+
+        // parse keys using the regex
+        std::smatch match;
+        std::regex_search(key, match, keyRegex);
+        auto alarmType = match[1].str();
+        auto alarmQual = match[2].str();
+        auto timestamp = match[3].str();
+
+        if (std::tie(alarmType, alarmQual, timestamp) != lastKeys) {
+            lastKeys = std::make_tuple(alarmType, alarmQual, timestamp);
+            eventOrder += 1;
+        }
+
+        auto newKey = std::regex_replace(key, timestampRegex, "[time='" + std::to_string(eventOrder) + "']");
+        res.emplace(newKey, value);
+    }
+
+    return res;
+}
+
 /** @short Return a subtree from sysrepo, compacting the XPath */
 std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session session, const std::string& xpath)
 {
@@ -34,7 +76,7 @@ std::map<std::string, std::string> dataFromSysrepo(const sysrepo::Session sessio
             res.emplace(briefXPath, node.isTerm() ? node.asTerm().valueStr() : "");
         }
     }
-    return res;
+    return replaceStatusChangeTimestampsWithEventOrder(res);
 }
 
 /** @short Execute an RPC or action, return result, compacting the XPath. The rpcPath and input gets concatenated. */
