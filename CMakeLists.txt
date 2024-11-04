@@ -126,6 +126,7 @@ if(BUILD_TESTING)
 
     set(fixture-alarms_testing
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/ietf-alarms@2019-09-11.yang
+            --enable-feature alarm-history
             --enable-feature alarm-shelving
             --enable-feature alarm-summary
         --install ${CMAKE_CURRENT_SOURCE_DIR}/yang/sysrepo-ietf-alarms@2022-02-17.yang

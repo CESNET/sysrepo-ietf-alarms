@@ -6,6 +6,7 @@
 
 #pragma once
 #include <map>
+#include <libyang-cpp/Time.hpp>
 #include <string>
 #include <test_time_interval.h>
 #include "utils/sysrepo.h"
@@ -98,3 +99,15 @@ struct Summary {
 #define ALARM_SUMMARY(...) \
     {"/summary", ""}, \
     __VA_ARGS__
+
+#define ALARM_STATUS_CHANGE_IMPL(PREFIX, ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    {PREFIX "[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']", ""}, \
+    {PREFIX "[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/alarm-text", TEXT}, \
+    {PREFIX "[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/perceived-severity", SEVERITY}, \
+    {PREFIX "[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/time", TIMESTAMP}
+
+#define SHELVED_ALARM_STATUS_CHANGE(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    ALARM_STATUS_CHANGE_IMPL("/shelved-alarms/shelved-alarm", ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT)
+
+#define ALARM_STATUS_CHANGE(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    ALARM_STATUS_CHANGE_IMPL("/alarm-list/alarm", ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT)
