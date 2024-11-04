@@ -6,6 +6,7 @@
 
 #pragma once
 #include <map>
+#include <libyang-cpp/Time.hpp>
 #include <string>
 #include <test_time_interval.h>
 #include "utils/sysrepo.h"
@@ -95,3 +96,9 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
 #define ALARM_SUMMARY(...) \
     {"/summary", ""}, \
     __VA_ARGS__
+
+#define ALARM_STATUS_CHANGE(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    {"/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']", ""}, \
+    {"/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/alarm-text", TEXT}, \
+    {"/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/perceived-severity", SEVERITY}, \
+    {"/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']/status-change[time='" + std::to_string(ORDER) + "']/time", TIMESTAMP}

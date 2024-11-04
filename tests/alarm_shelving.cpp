@@ -477,5 +477,69 @@ TEST_CASE("Alarm shelving")
         SHELF_SUMMARY(*userSess, 1, changedTime);
     }
 
+    SECTION("Alarm history is retained when alarm transitions to shelf and back")
+    {
+        auto initTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "warning text");
+        auto changedTime = CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "critical", "critical text");
+
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelve all']", std::nullopt);
+        userSess->applyChanges();
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>());
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelve all"},
+                });
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/shelved-alarms/shelved-alarm", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "critical text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "false"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", initTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/shelf-name", "shelve all"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/alarm-text", "warning text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/perceived-severity", "warning"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/time", initTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/alarm-text", "critical text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/perceived-severity", "critical"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/time", changedTime},
+                });
+
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelve all']");
+        auto reshelveTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>{
+                    {{"alarms-test:alarm-2-1", "high"}, "edfa"},
+                });
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{});
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms/alarm-list/alarm", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "critical text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "false"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", changedTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", initTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/time-created", reshelveTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/alarm-text", "warning text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/perceived-severity", "warning"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='1']/time", initTime},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']", ""},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/alarm-text", "critical text"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/perceived-severity", "critical"},
+                    {"[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/status-change[time='2']/time", changedTime},
+                });
+    }
+
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules
 }

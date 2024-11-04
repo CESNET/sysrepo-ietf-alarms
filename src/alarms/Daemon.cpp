@@ -67,7 +67,7 @@ Daemon::Daemon()
     , m_alarmListLastChanged(TimePoint::clock::now())
     , m_shelfListLastChanged(TimePoint::clock::now())
 {
-    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving", "alarm-summary"});
+    utils::ensureModuleImplemented(m_session, ietfAlarmsModule, "2019-09-11", {"alarm-shelving", "alarm-summary", "alarm-history"});
     utils::ensureModuleImplemented(m_session, "sysrepo-ietf-alarms", "2022-02-17");
 
     {
@@ -265,6 +265,26 @@ AlarmEntry::WhatChanged AlarmEntry::updateByRpc(
     return res;
 }
 
+/** @brief Adds new entry to alarm's status-change list */
+void updateStatusChangeList(const libyang::Context& ctx, libyang::DataNode& edit, const std::string& alarmNodePath, const AlarmEntry& alarm)
+{
+    /* ietf-alarms says:
+     * > The entry with latest timestamp in this list MUST correspond to the leafs 'is-cleared', 'perceived-severity', and 'alarm-text' for the alarm.
+     * > This list is ordered according to the timestamps of alarm state changes.  The first item corresponds to the latest state change.
+     *
+     * This means that we have to insert new status-change entries at the beginning of the list.
+     */
+
+    auto modYang = *ctx.getModuleImplemented("yang");
+    auto time = yangTimeFormat(alarm.lastChanged);
+
+    auto createdNodes = edit.newPath2(alarmNodePath + "/status-change[time='" + time + "']", std::nullopt);
+    createdNodes.createdNode->newMeta(modYang, "insert", "first");
+
+    edit.newPath(alarmNodePath + "/status-change[time='" + time + "']/perceived-severity", Severities[alarm.isCleared ? ClearedSeverity : alarm.lastSeverity]);
+    edit.newPath(alarmNodePath + "/status-change[time='" + time + "']/alarm-text", alarm.text);
+}
+
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
 {
     WITH_TIME_MEASUREMENT{};
@@ -326,6 +346,9 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         } else {
             edit.newPath(alarmNodePath + "/time-created", yangTimeFormat(it->second.created));
         }
+
+        updateStatusChangeList(rpcSession.getContext(), edit, alarmNodePath, it->second);
+
         m_log->debug("Updated alarm: {}", *edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
         updateStatistics(edit);
         m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
@@ -410,6 +433,12 @@ void createCommonAlarmNodeProps(libyang::DataNode& edit, const libyang::DataNode
 {
     for (const auto& leafName : {"is-cleared", "last-raised", "last-changed", "perceived-severity", "alarm-text"}) {
         edit.newPath(prefix + "/" + leafName, utils::childValue(alarm, leafName));
+    }
+
+    for (const auto& statusChange : alarm.findXPath("status-change")) {
+        const auto time = utils::childValue(statusChange, "time");
+        edit.newPath(prefix + "/status-change[time='" + time + "']/perceived-severity", utils::childValue(statusChange, "perceived-severity"));
+        edit.newPath(prefix + "/status-change[time='" + time + "']/alarm-text", utils::childValue(statusChange, "alarm-text"));
     }
 }
 
