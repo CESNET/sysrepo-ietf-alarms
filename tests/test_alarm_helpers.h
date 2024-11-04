@@ -44,7 +44,7 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
         rpcFromSysrepo(*SESS, rpcPrefix, inp); \
         auto intervalEnd = std::chrono::system_clock::now(); \
         return AnyTimeBetween{intervalStart, intervalEnd}; \
-    }();
+    }()
 
 #define CLIENT_INTRODUCE_ALARM_VECTOR(SESS, ID, QUALIFIER, RESOURCES, SEVERITIES, DESCRIPTION) \
     { \
