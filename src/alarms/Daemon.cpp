@@ -5,8 +5,8 @@
 #include <span>
 #include <string>
 #include "Daemon.h"
+#include "Filters.h"
 #include "Key.h"
-#include "PurgeFilter.h"
 #include "ShelfMatch.h"
 #include "utils/benchmark.h"
 #include "utils/libyang.h"
@@ -25,6 +25,8 @@ const auto shelvedAlarmList = "/ietf-alarms:alarms/shelved-alarms"s;
 const auto shelvedAlarmListInstances = "/ietf-alarms:alarms/shelved-alarms/shelved-alarm";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
+const auto compressAlarmsRpcPrefix = "/ietf-alarms:alarms/alarm-list/compress-alarms";
+const auto compressShelvedAlarmsRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/compress-shelved-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory";
 const auto controlPrefix = "/ietf-alarms:alarms/control";
 const auto ctrlNotifyStatusChanges = controlPrefix + "/notify-status-changes"s;
@@ -95,6 +97,8 @@ Daemon::Daemon()
     });
     m_alarmSub->onRPCAction(purgeRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeRpcPrefix, input, output); });
     m_alarmSub->onRPCAction(purgeShelvedRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return purgeAlarms(purgeShelvedRpcPrefix, input, output); });
+    m_alarmSub->onRPCAction(compressAlarmsRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return compressAlarms(compressAlarmsRpcPrefix, input, output); });
+    m_alarmSub->onRPCAction(compressShelvedAlarmsRpcPrefix, [&](auto, auto, auto, const libyang::DataNode input, auto, auto, libyang::DataNode output) { return compressAlarms(compressShelvedAlarmsRpcPrefix, input, output); });
 
     {
         utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Running);
@@ -490,7 +494,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang
             ++it;
             continue;
         }
-        if (!filter.matches(entry)) {
+        if (!filter.matches(index, entry)) {
             ++it;
             continue;
         }
@@ -513,6 +517,40 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang
     }
 
     output.newPath(rpcPath + "/purged-alarms", std::to_string(toDelete.size()), libyang::CreationOptions::Output);
+    return sysrepo::ErrorCode::Ok;
+}
+
+sysrepo::ErrorCode Daemon::compressAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output)
+{
+    WITH_TIME_MEASUREMENT{};
+
+    std::vector<std::string> discardPaths;
+    libyang::DataNode edit = m_session.getContext().newPath(rootPath);
+
+    bool doingShelved = rpcPath == compressShelvedAlarmsRpcPrefix;
+    CompressFilter filter(rpcInput);
+    int compressedAlarmEntries = 0;
+
+    std::unique_lock lck{m_mtx};
+
+    for (auto& [key, alarm] : m_alarms) {
+        if (doingShelved == !!alarm.shelf && filter.matches(key, alarm)) {
+            auto discardTimestamps = alarm.shrinkStatusChanges(1);
+            std::transform(discardTimestamps.begin(), discardTimestamps.end(), std::back_inserter(discardPaths), [&](const auto& discardedTimestamp) {
+                return (doingShelved ? shelvedAlarmListInstances : alarmListInstances) + key.xpathIndex() + "/status-change[time='" + yangTimeFormat(discardedTimestamp) + "']";
+            });
+
+            if (!discardTimestamps.empty()) {
+                compressedAlarmEntries += 1;
+            }
+        }
+    }
+
+    utils::removeFromOperationalDS(m_session.getContext(), edit, discardPaths);
+    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+    m_session.applyChanges();
+
+    output.newPath(rpcPath + "/compressed-alarms", std::to_string(compressedAlarmEntries), libyang::CreationOptions::Output);
     return sysrepo::ErrorCode::Ok;
 }
 
