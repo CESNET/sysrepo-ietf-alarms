@@ -12,6 +12,7 @@
 #include <sstream>
 #include <trompeloeil.hpp>
 #include <variant>
+#include "alarms/AlarmEntry.h"
 #include "alarms/Key.h"
 #include "test_time_interval.h"
 
@@ -88,12 +89,36 @@ struct StringMaker<std::vector<T>> {
     }
 };
 
+template <class T>
+struct StringMaker<std::set<T>> {
+    static String convert(const std::set<T>& v)
+    {
+        std::ostringstream os;
+        os << "{" << std::endl;
+        for (const auto& e : v) {
+            os << "  \"" << StringMaker<T>::convert(e) << "\"," << std::endl;
+        }
+        os << "}";
+        return os.str().c_str();
+    }
+};
+
 template <>
 struct StringMaker<alarms::InstanceKey> {
     static String convert(const alarms::InstanceKey& obj)
     {
         std::ostringstream oss;
         oss << "{" << obj.resource << ", " << obj.type.id << ", " << obj.type.qualifier << "}";
+        return oss.str().c_str();
+    }
+};
+
+template <>
+struct StringMaker<alarms::StatusChange> {
+    static String convert(const alarms::StatusChange& obj)
+    {
+        std::ostringstream oss;
+        oss << "{" << obj.time << ", " << obj.perceivedSeverity << ", " << obj.text << "}";
         return oss.str().c_str();
     }
 };

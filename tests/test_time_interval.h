@@ -15,6 +15,7 @@ struct AnyTimeBetween {
     std::chrono::time_point<std::chrono::system_clock> end;
 
     bool operator==(const std::string& str) const;
+    auto operator<=>(const AnyTimeBetween&) const = default;
 
     friend std::ostream& operator<<(std::ostream& os, const AnyTimeBetween& o);
 };

@@ -10,7 +10,7 @@
 #include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/Value.hpp>
 #include "AlarmEntry.h"
-#include "PurgeFilter.h"
+#include "Filters.h"
 #include "utils/libyang.h"
 
 namespace {
@@ -85,6 +85,35 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
 bool PurgeFilter::matches(const AlarmEntry& alarm) const
 {
     return std::all_of(m_filters.begin(), m_filters.end(), [&](const Filter& filter) { return filter(alarm); });
+}
+
+CompressFilter::CompressFilter(const libyang::DataNode& filterInput)
+{
+    if (auto resourceNode = filterInput.findPath("resource")) {
+        auto resource = resourceNode->asTerm().valueStr();
+        m_filters.emplace_back([resource](const InstanceKey& key) {
+            return key.resource == resource;
+        });
+    }
+
+    if (auto alarmTypeIdNode = filterInput.findPath("alarm-type-id")) {
+        auto alarmTypeId = alarmTypeIdNode->asTerm().valueStr();
+        m_filters.emplace_back([alarmTypeId](const InstanceKey& key) {
+            return key.type.id == alarmTypeId;
+        });
+    }
+
+    if (auto alarmTypeQualifierNode = filterInput.findPath("alarm-type-qualifier")) {
+        auto alarmTypeQualifier = alarmTypeQualifierNode->asTerm().valueStr();
+        m_filters.emplace_back([alarmTypeQualifier](const InstanceKey& key) {
+            return key.type.qualifier == alarmTypeQualifier;
+        });
+    }
+}
+
+bool CompressFilter::matches(const InstanceKey& alarmKey) const
+{
+    return std::all_of(m_filters.begin(), m_filters.end(), [&](const Filter& filter) { return filter(alarmKey); });
 }
 
 }
