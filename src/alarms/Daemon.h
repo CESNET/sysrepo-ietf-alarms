@@ -39,6 +39,7 @@ private:
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
+    sysrepo::ErrorCode compressAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const libyang::DataNode& alarmNode);
     std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
     void reshelve(sysrepo::Session running);

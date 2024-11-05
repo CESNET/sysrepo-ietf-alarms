@@ -26,7 +26,7 @@ struct Type {
     std::string qualifier; /**< Dynamic qualifier, `alarm-type-qualifier` from RFC 8632 */
 
     std::string xpathIndex() const;
-    bool operator==(const Type& other) const = default;
+    auto operator<=>(const Type& other) const = default;
 };
 
 inline std::size_t hash_value(const Type& t)
@@ -45,7 +45,7 @@ struct InstanceKey {
 
     std::string xpathIndex() const;
     static InstanceKey fromNode(const libyang::DataNode& node);
-    bool operator==(const InstanceKey& other) const = default;
+    auto operator<=>(const InstanceKey& other) const = default;
 };
 
 inline std::size_t hash_value(const InstanceKey& k)
