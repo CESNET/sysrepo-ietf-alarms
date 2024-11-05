@@ -95,16 +95,6 @@ struct StringMaker<ShelvedAlarm> {
 };
 
 template <>
-struct StringMaker<alarms::InstanceKey> {
-    static String convert(const alarms::InstanceKey& obj)
-    {
-        std::ostringstream oss;
-        oss << "{" << obj.resource << ", " << obj.type.id << ", " << obj.type.qualifier << "}";
-        return oss.str().c_str();
-    }
-};
-
-template <>
 struct StringMaker<ShelfControl> {
     static String convert(const ShelfControl& obj)
     {
@@ -119,48 +109,6 @@ struct StringMaker<ShelfControl> {
         oss << "]}";
         return oss.str().c_str();
     }
-};
-
-template <>
-struct StringMaker<std::vector<ShelvedAlarm>> {
-    static String convert(const std::vector<ShelvedAlarm>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<ShelvedAlarm>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
-};
-
-template <>
-struct StringMaker<std::vector<alarms::InstanceKey>> {
-    static String convert(const std::vector<alarms::InstanceKey>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<alarms::InstanceKey>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
-};
-
-template <>
-struct StringMaker<std::vector<ShelfControl>> {
-    static String convert(const std::vector<ShelfControl>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<ShelfControl>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
 };
 }
 
