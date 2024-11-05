@@ -72,8 +72,8 @@ add_library(alarms STATIC
     src/alarms/Daemon.h
     src/alarms/Key.cpp
     src/alarms/Key.h
-    src/alarms/PurgeFilter.cpp
-    src/alarms/PurgeFilter.h
+    src/alarms/Filters.cpp
+    src/alarms/Filters.h
     src/alarms/ShelfMatch.cpp
     src/alarms/ShelfMatch.h
     )
@@ -135,6 +135,7 @@ if(BUILD_TESTING)
 
     ietfalarms_test(NAME alarm_publish FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_purge FIXTURE fixture-alarms_testing)
+    ietfalarms_test(NAME alarm_compress FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_notifications FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_shelving FIXTURE fixture-alarms_testing)
     ietfalarms_test(NAME alarm_summary FIXTURE fixture-alarms_testing)

@@ -7,6 +7,7 @@
 
 #pragma once
 #include <functional>
+#include "alarms/Key.h"
 
 namespace libyang {
 class DataNode;
@@ -23,6 +24,16 @@ public:
 
 private:
     using Filter = std::function<bool(const AlarmEntry&)>;
+    std::vector<Filter> m_filters;
+};
+
+class CompressFilter {
+public:
+    CompressFilter(const libyang::DataNode& filterInput);
+    bool matches(const InstanceKey& key) const;
+
+private:
+    using Filter = std::function<bool(const InstanceKey&)>;
     std::vector<Filter> m_filters;
 };
 
