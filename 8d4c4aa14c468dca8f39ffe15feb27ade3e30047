@@ -1,0 +1,157 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3b9e94a0_88fc95ad",
+        "filename": "src/alarms/AlarmEntry.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "why is this a deque and not a vector?",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "59a5c0d9_68c0d132",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "nit: space after “while”",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7148b453_031e4489",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "nit: remove this-\u003e (and also below)",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "921ef387_2037a2db",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 356,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "use the alarm entry’s shrinkStatusChanges() for this",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "575e6d03_32b8b165",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "There’s some potential for optimization in case of both shelving changes and history length changes; with this patch it will read data twice and commit twice. OTOH, this will likely be a non-frequent change…",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "229b7fa0_a1e6afb9",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 604,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "since this test has only tests list shrinking, have you considered fetching just the alarm-list, either in its entirety, or matbe even a single instance which matters? The advantage would be a shorter test code.",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f2256a53_126349c3",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 643,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "…especially here and in the following code.",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fb73b5c5_2f1bbd73",
+        "filename": "tests/alarm_shelving.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 479,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "nice",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "645967da_f86fa454",
+        "filename": "tests/test_sysrepo_helpers.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 1,
+      "message": "https://xkcd.com/208/",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e12cbe3f_2080e4c0",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T07:29:59Z",
+      "side": 0,
+      "message": "nit: whitespace noise (at several places)",
+      "revId": "c84c9b06d2e00612b3b7abaea45c7c364477666d",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
