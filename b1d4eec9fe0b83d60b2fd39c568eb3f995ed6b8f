@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2d279f5c_59f562dc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T09:54:29Z",
+      "side": 1,
+      "message": "I vaguely recall you talking about a different structure in the action YANG input tree between the non-shelved and shelved alarms. Was that a problem?",
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c180b0e1_af5a4dc4",
+        "filename": "src/alarms/Filters.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T09:54:29Z",
+      "side": 1,
+      "message": "Since the actual implementation of matches() is the same as the other filter, would it make sense to rename that class and to use static memmber functions for initialization? E.g.:\n \nauto foo \u003d Filter::forPurge(node1);\nauto bar \u003d Filter::forCompression(node2);",
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d2d1399d_c3d14224",
+        "filename": "tests/alarm_compress.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T09:54:29Z",
+      "side": 1,
+      "message": "nit: no need to repeat the class names here; the compiler infers them just fine (at least my compiler, hope it will pass the version in the CI)",
+      "range": {
+        "startLine": 142,
+        "startChar": 0,
+        "endLine": 144,
+        "endChar": 191
+      },
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
