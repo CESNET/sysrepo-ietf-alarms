@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "784ac014_3d12729f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T06:46:07Z",
+      "side": 1,
+      "message": "I like this a lot!",
+      "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d1681e1f_fd985a8c",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-07T06:46:07Z",
+      "side": 1,
+      "message": "Do you want/need to call this with the Summary(…) syntax suggar? On a quick glance, it seems to me that this could go to the macro implementation. so that you could invoke it like this:\n CRITICAL({.cleared \u003d 0, .active \u003d 666})",
+      "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
