@@ -16,6 +16,24 @@
       "message": "do we seriously need a pretty printer for a std::string? I guess that if so, this must be because we assume one method of stringification while doctest already has something “different” for std::string already. As a minimum, this needs a big FIXME.",
       "revId": "41e7f37f8e77b498d91680f49f5b5aea54e52317",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "20f203b1_5f7543e9",
+        "filename": "tests/pretty_printers.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "I tested some failed REQUIREs with deleted StringMaker\u003cstring\u003e and it works just fine. It is indeed a bogus. I don\u0027t really remember why I tried to add that.",
+      "parentUuid": "cc651de1_cd2b03b2",
+      "revId": "41e7f37f8e77b498d91680f49f5b5aea54e52317",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
