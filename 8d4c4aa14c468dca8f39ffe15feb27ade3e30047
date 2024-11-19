@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "24925d91_21966452",
+        "filename": "src/alarms/AlarmEntry.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "std::deque, i.e., a linked list of something like array\u003cT,8\u003e, has O(1) pop_front. When cleaning the old alarm status, I removed the oldest entries, so this comes handy.\n\nBut yeah, actually, for small vectors with movable element_type, the difference will probably not be that large and maybe the vector wins because of caches (not measured).\nI am changing this  in favour of a vector.",
+      "parentUuid": "3b9e94a0_88fc95ad",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "59a5c0d9_68c0d132",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "71f0dc3a_98821f60",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "59a5c0d9_68c0d132",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "7148b453_031e4489",
@@ -48,6 +84,24 @@
       "writtenOn": "2024-11-07T07:29:59Z",
       "side": 1,
       "message": "nit: remove this-\u003e (and also below)",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "edc73835_a4c973e2",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7148b453_031e4489",
       "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -71,6 +125,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6913224d_a8dfd668",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 356,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "The AlarmEntry::shrinkStatusChanges is used (see two lines above), this only propagates the changes to sysrepo.",
+      "parentUuid": "921ef387_2037a2db",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "575e6d03_32b8b165",
         "filename": "src/alarms/Daemon.cpp",
         "patchSetId": 3
@@ -82,6 +154,24 @@
       "writtenOn": "2024-11-07T07:29:59Z",
       "side": 1,
       "message": "There’s some potential for optimization in case of both shelving changes and history length changes; with this patch it will read data twice and commit twice. OTOH, this will likely be a non-frequent change…",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "af9a5332_0459621e",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 364,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "I am adding a todo and maybe let\u0027s do it in a different patch.",
+      "parentUuid": "575e6d03_32b8b165",
       "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
@@ -103,6 +193,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "afbf316f_d437c196",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 604,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Shortened. Done.",
+      "parentUuid": "229b7fa0_a1e6afb9",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "f2256a53_126349c3",
@@ -116,6 +224,24 @@
       "writtenOn": "2024-11-07T07:29:59Z",
       "side": 1,
       "message": "…especially here and in the following code.",
+      "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a9062808_569ea0d0",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 3
+      },
+      "lineNbr": 643,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f2256a53_126349c3",
       "revId": "8d4c4aa14c468dca8f39ffe15feb27ade3e30047",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
