@@ -33,6 +33,24 @@
       "message": "Do you want/need to call this with the Summary(…) syntax suggar? On a quick glance, it seems to me that this could go to the macro implementation. so that you could invoke it like this:\n CRITICAL({.cleared \u003d 0, .active \u003d 666})",
       "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "85e05197_a29265b6",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "I was unable to make it work with the {}, only without them.\n\n  CRITICAL(.cleared \u003d 0, .active \u003d 666)\n\nIs that ok or is it confusing?",
+      "parentUuid": "d1681e1f_fd985a8c",
+      "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
