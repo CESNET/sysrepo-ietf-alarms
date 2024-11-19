@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8296814f_59454ef2",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Addressed this via fixme and in the commit msg.",
+      "parentUuid": "2d279f5c_59f562dc",
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c180b0e1_af5a4dc4",
@@ -35,6 +53,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e56a249_1f412700",
+        "filename": "src/alarms/Filters.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "The implementation differes a bit (filtering on alarm keys, vs alarm content). But still, we can merge those. I used inheritance.",
+      "parentUuid": "c180b0e1_af5a4dc4",
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d2d1399d_c3d14224",
@@ -48,6 +84,30 @@
       "writtenOn": "2024-11-07T09:54:29Z",
       "side": 1,
       "message": "nit: no need to repeat the class names here; the compiler infers them just fine (at least my compiler, hope it will pass the version in the CI)",
+      "range": {
+        "startLine": 142,
+        "startChar": 0,
+        "endLine": 144,
+        "endChar": 191
+      },
+      "revId": "b1d4eec9fe0b83d60b2fd39c568eb3f995ed6b8f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6eddc32e_59e3a774",
+        "filename": "tests/alarm_compress.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-19T11:43:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d2d1399d_c3d14224",
       "range": {
         "startLine": 142,
         "startChar": 0,
