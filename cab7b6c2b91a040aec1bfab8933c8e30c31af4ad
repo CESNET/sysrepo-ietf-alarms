@@ -51,6 +51,24 @@
       "parentUuid": "d1681e1f_fd985a8c",
       "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6c653f3b_ed7527f2",
+        "filename": "tests/alarm_publish.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-19T11:55:56Z",
+      "side": 1,
+      "message": "the fewer magic chars the better IMHO",
+      "parentUuid": "85e05197_a29265b6",
+      "revId": "cab7b6c2b91a040aec1bfab8933c8e30c31af4ad",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
