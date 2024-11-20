@@ -1,0 +1,7 @@
+Code-Review+2: Jan Kundrát <jan.kundrat@cesnet.cz>
+Verified+1: Zuul CI <cesnet-zuul+public@gerrit.cesnet.cz>
+Submitted-by: Jan Kundrát <jan.kundrat@cesnet.cz>
+Submitted-at: Wed, 20 Nov 2024 10:59:52 +0100
+Reviewed-on: https://gerrit.cesnet.cz/c/CzechLight/sysrepo-ietf-alarms/+/8010
+Project: CzechLight/sysrepo-ietf-alarms
+Branch: refs/heads/master
