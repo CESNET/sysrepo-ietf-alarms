@@ -18,6 +18,24 @@
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "fc1c4683_534e36ea",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-25T07:45:00Z",
+      "side": 1,
+      "message": "Thanks, done",
+      "parentUuid": "96f3e33a_18620b74",
+      "revId": "d2c73a327045903c2aa480bb916577724433686f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "70b039c2_c781606f",
@@ -31,6 +49,30 @@
       "writtenOn": "2024-11-20T10:11:27Z",
       "side": 1,
       "message": "it\u0027s a plain vector and we\u0027re moving stuff around",
+      "range": {
+        "startLine": 319,
+        "startChar": 51,
+        "endLine": 319,
+        "endChar": 59
+      },
+      "revId": "d2c73a327045903c2aa480bb916577724433686f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "910f1efe_f2c5d8d1",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2024-11-25T07:45:00Z",
+      "side": 1,
+      "message": "It\u0027s a quote from RFC, I tried to emphasise that it is a quote.",
+      "parentUuid": "70b039c2_c781606f",
       "range": {
         "startLine": 319,
         "startChar": 51,
