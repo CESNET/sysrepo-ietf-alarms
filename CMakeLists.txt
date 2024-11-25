@@ -24,7 +24,7 @@ option(WITH_DOCS "Create and install internal documentation (needs Doxygen)" ${D
 find_package(spdlog REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(date REQUIRED) # FIXME: Remove when we have STL with __cpp_lib_chrono >= 201907 (gcc 14)
-find_package(Boost 1.78 REQUIRED)
+find_package(Boost 1.78 REQUIRED CONFIG)
 find_package(fmt "9.0.0" REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
