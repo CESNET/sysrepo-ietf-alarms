@@ -6,6 +6,7 @@
 
 #pragma once
 #include <map>
+#include <libyang-cpp/Time.hpp>
 #include <string>
 #include <test_time_interval.h>
 #include "utils/sysrepo.h"
@@ -19,6 +20,8 @@ const auto ietfAlarmsModule = "ietf-alarms";
 const auto ietfAlarms = "/ietf-alarms:alarms";
 const auto purgeRpcPrefix = "/ietf-alarms:alarms/alarm-list/purge-alarms";
 const auto purgeShelvedRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/purge-shelved-alarms";
+const auto compressAlarmsRpcPrefix = "/ietf-alarms:alarms/alarm-list/compress-alarms";
+const auto compressShelvedAlarmsRpcPrefix = "/ietf-alarms:alarms/shelved-alarms/compress-shelved-alarms";
 const auto alarmInventoryPrefix = "/ietf-alarms:alarms/alarm-inventory"s;
 const auto alarmList = "/ietf-alarms:alarms/alarm-list";
 const auto alarmListInstances = "/ietf-alarms:alarms/alarm-list/alarm";
@@ -78,6 +81,17 @@ const auto inventoryNotification = "/ietf-alarms:alarm-inventory-changed";
 #define CLIENT_PURGE_SHELVED_RPC(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS) CLIENT_PURGE_RPC_IMPL(SESS, purgeShelvedRpcPrefix, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, std::chrono::milliseconds{0})
 #define CLIENT_PURGE_RPC_SLOW(SESS, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, TIMEOUT) CLIENT_PURGE_RPC_IMPL(SESS, purgeRpcPrefix, EXPECTED_NUMBER_OF_PURGED_ALARMS, CLEARANCE_STATUS, ADDITIONAL_PARAMS, TIMEOUT)
 
+#define CLIENT_COMPRESS_RPC_IMPL(SESS, RPCPATH, EXPECTED_NUMBER_OF_COMPRESSED_ALARMS, PARAMS) \
+    [&]() { \
+        auto inp = std::map<std::string, std::string> PARAMS; \
+        auto intervalStart = std::chrono::system_clock::now(); \
+        REQUIRE(rpcFromSysrepo(*SESS, RPCPATH, inp) == std::map<std::string, std::string>{{"/compressed-alarms", std::to_string(EXPECTED_NUMBER_OF_COMPRESSED_ALARMS)}}); \
+        auto intervalEnd = std::chrono::system_clock::now(); \
+        return AnyTimeBetween{intervalStart, intervalEnd}; \
+    }();
+#define CLIENT_COMPRESS_RPC(SESS, EXPECTED_NUMBER_OF_COMPRESSED_ALARMS, PARAMS) CLIENT_COMPRESS_RPC_IMPL(SESS, compressAlarmsRpcPrefix, EXPECTED_NUMBER_OF_COMPRESSED_ALARMS, PARAMS)
+#define CLIENT_COMPRESS_SHELVED_RPC(SESS, EXPECTED_NUMBER_OF_COMPRESSED_ALARMS, PARAMS) CLIENT_COMPRESS_RPC_IMPL(SESS, compressShelvedAlarmsRpcPrefix, EXPECTED_NUMBER_OF_COMPRESSED_ALARMS, PARAMS)
+
 struct Summary {
     int cleared;
     int notCleared;
@@ -98,3 +112,34 @@ struct Summary {
 #define ALARM_SUMMARY(...) \
     {"/summary", ""}, \
     __VA_ARGS__
+
+#define ALARM_STATUS_CHANGE_IMPL(PREFIX, ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    {PREFIX "/status-change[time='" + std::to_string(ORDER) + "']", ""}, \
+    {PREFIX "/status-change[time='" + std::to_string(ORDER) + "']/alarm-text", TEXT}, \
+    {PREFIX "/status-change[time='" + std::to_string(ORDER) + "']/perceived-severity", SEVERITY}, \
+    {PREFIX "/status-change[time='" + std::to_string(ORDER) + "']/time", TIMESTAMP}
+
+#define SHELVED_ALARM_STATUS_CHANGE(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    ALARM_STATUS_CHANGE_IMPL( \
+        "/shelved-alarms/shelved-alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']", \
+        ORDER, \
+        RESOURCE, \
+        ALARM_TYPE_ID, \
+        ALARM_TYPE_QUALIFIER, \
+        TIMESTAMP, \
+        SEVERITY, \
+        TEXT)
+
+#define ALARM_STATUS_CHANGE(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    ALARM_STATUS_CHANGE_IMPL( \
+        "/alarm-list/alarm[resource='" RESOURCE "'][alarm-type-id='" ALARM_TYPE_ID "'][alarm-type-qualifier='" ALARM_TYPE_QUALIFIER "']", \
+        ORDER, \
+        RESOURCE, \
+        ALARM_TYPE_ID, \
+        ALARM_TYPE_QUALIFIER, \
+        TIMESTAMP, \
+        SEVERITY, \
+        TEXT)
+
+#define ALARM_STATUS_CHANGE_NOPREFIX(ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT) \
+    ALARM_STATUS_CHANGE_IMPL("", ORDER, RESOURCE, ALARM_TYPE_ID, ALARM_TYPE_QUALIFIER, TIMESTAMP, SEVERITY, TEXT)

@@ -95,16 +95,6 @@ struct StringMaker<ShelvedAlarm> {
 };
 
 template <>
-struct StringMaker<alarms::InstanceKey> {
-    static String convert(const alarms::InstanceKey& obj)
-    {
-        std::ostringstream oss;
-        oss << "{" << obj.resource << ", " << obj.type.id << ", " << obj.type.qualifier << "}";
-        return oss.str().c_str();
-    }
-};
-
-template <>
 struct StringMaker<ShelfControl> {
     static String convert(const ShelfControl& obj)
     {
@@ -119,48 +109,6 @@ struct StringMaker<ShelfControl> {
         oss << "]}";
         return oss.str().c_str();
     }
-};
-
-template <>
-struct StringMaker<std::vector<ShelvedAlarm>> {
-    static String convert(const std::vector<ShelvedAlarm>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<ShelvedAlarm>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
-};
-
-template <>
-struct StringMaker<std::vector<alarms::InstanceKey>> {
-    static String convert(const std::vector<alarms::InstanceKey>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<alarms::InstanceKey>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
-};
-
-template <>
-struct StringMaker<std::vector<ShelfControl>> {
-    static String convert(const std::vector<ShelfControl>& v)
-    {
-        std::ostringstream os;
-        os << "{" << std::endl;
-        for (const auto& e : v) {
-            os << "  \"" << StringMaker<ShelfControl>::convert(e) << "\"," << std::endl;
-        }
-        os << "}";
-        return os.str().c_str();
-    };
 };
 }
 
@@ -474,6 +422,127 @@ TEST_CASE("Alarm shelving")
                     {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "aashelf"},
                 });
         SHELF_SUMMARY(*userSess, 1, changedTime);
+    }
+
+    SECTION("Alarm history is updated for shelved alarms")
+    {
+        userSess->setItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelve all']", std::nullopt);
+        userSess->setItem("/ietf-alarms:alarms/control/max-alarm-status-changes", "2");
+        userSess->applyChanges();
+
+        std::vector<AnyTimeBetween> changedTimes;
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "warning", "warning text"));
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "critical", "critical text"));
+        changedTimes.emplace_back(CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-1", "high", "edfa", "cleared", "idk"));
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>());
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{
+                    {{{"alarms-test:alarm-2-1", "high"}, "edfa"}, "shelve all"},
+                });
+
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                {"/alarm-inventory", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/will-clear", "true"},
+                {"/alarm-list", ""},
+                {"/alarm-list/last-changed", initTime},
+                {"/alarm-list/number-of-alarms", "0"},
+                {"/control", ""},
+                {"/control/alarm-shelving", ""},
+                {"/control/alarm-shelving/shelf[name='shelve all']", ""},
+                {"/control/alarm-shelving/shelf[name='shelve all']/name", "shelve all"},
+                {"/control/max-alarm-status-changes", "2"},
+                {"/control/notify-status-changes", "all-state-changes"},
+                {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "1"},
+                {"/shelved-alarms/shelved-alarms-last-changed", changedTimes[2]},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "idk"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "true"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", changedTimes[2]},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", changedTimes[0]},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                {"/shelved-alarms/shelved-alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/shelf-name", "shelve all"},
+                SHELVED_ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-2-1", "high", changedTimes[1], "critical", "critical text"),
+                SHELVED_ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-2-1", "high", changedTimes[2], "cleared", "idk"),
+                ALARM_SUMMARY(
+                        CRITICAL(Summary({.cleared = 0, .notCleared = 0})),
+                        WARNING(Summary({.cleared = 0, .notCleared = 0})),
+                        MAJOR(Summary({.cleared = 0, .notCleared = 0})),
+                        MINOR(Summary({.cleared = 0, .notCleared = 0})),
+                        INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
+                });
+
+        // alarm history is retained after unshelving
+        userSess->deleteItem("/ietf-alarms:alarms/control/alarm-shelving/shelf[name='shelve all']");
+        auto reshelveTime = getExecutionTimeInterval([&]() { userSess->applyChanges(); });
+
+        REQUIRE(extractAlarms(*userSess) == std::vector<alarms::InstanceKey>{
+                    {{"alarms-test:alarm-2-1", "high"}, "edfa"},
+                });
+        REQUIRE(extractShelvedAlarms(*userSess) == std::vector<ShelvedAlarm>{});
+        REQUIRE(dataFromSysrepo(*userSess, "/ietf-alarms:alarms", sysrepo::Datastore::Operational) == PropsWithTimeTest{
+                {"/alarm-inventory", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/will-clear", "true"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']", ""},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/alarm-type-qualifier", "low"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/description", "Alarm 1"},
+                {"/alarm-inventory/alarm-type[alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='low']/will-clear", "true"},
+                {"/alarm-list", ""},
+                {"/alarm-list/last-changed", reshelveTime},
+                {"/alarm-list/number-of-alarms", "1"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']", ""},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-text", "idk"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-id", "alarms-test:alarm-2-1"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/alarm-type-qualifier", "high"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/is-cleared", "true"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-changed", changedTimes[2]},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/last-raised", changedTimes[0]},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/perceived-severity", "critical"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/resource", "edfa"},
+                {"/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-2-1'][alarm-type-qualifier='high']/time-created", reshelveTime},
+                ALARM_STATUS_CHANGE(1, "edfa", "alarms-test:alarm-2-1", "high", changedTimes[1], "critical", "critical text"),
+                ALARM_STATUS_CHANGE(2, "edfa", "alarms-test:alarm-2-1", "high", changedTimes[2], "cleared", "idk"),
+                {"/control", ""},
+                {"/control/alarm-shelving", ""},
+                {"/control/max-alarm-status-changes", "2"},
+                {"/control/notify-status-changes", "all-state-changes"},
+                {"/shelved-alarms", ""},
+                {"/shelved-alarms/number-of-shelved-alarms", "0"},
+                {"/shelved-alarms/shelved-alarms-last-changed", reshelveTime},
+                ALARM_SUMMARY(
+                        CRITICAL(Summary({.cleared = 1, .notCleared = 0})),
+                        WARNING(Summary({.cleared = 0, .notCleared = 0})),
+                        MAJOR(Summary({.cleared = 0, .notCleared = 0})),
+                        MINOR(Summary({.cleared = 0, .notCleared = 0})),
+                        INDETERMINATE(Summary({.cleared = 0, .notCleared = 0}))),
+                });
     }
 
     copyStartupDatastore("ietf-alarms"); // cleanup after last run so we can cleanly uninstall modules

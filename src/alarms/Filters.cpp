@@ -10,7 +10,7 @@
 #include <libyang-cpp/DataNode.hpp>
 #include <libyang-cpp/Value.hpp>
 #include "AlarmEntry.h"
-#include "PurgeFilter.h"
+#include "Filters.h"
 #include "utils/libyang.h"
 
 namespace {
@@ -23,10 +23,15 @@ T getValue(const libyang::DataNode& node)
 }
 namespace alarms {
 
+bool AlarmFilter::matches(const InstanceKey& alarmKey, const AlarmEntry& alarmEntry) const
+{
+    return std::all_of(m_filters.begin(), m_filters.end(), [&](const auto& filter) { return filter(alarmKey, alarmEntry); });
+}
+
 PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
 {
     auto clearanceStatus = utils::childValue(filterInput, "alarm-clearance-status");
-    m_filters.emplace_back([clearanceStatus](const AlarmEntry& alarm) {
+    m_filters.emplace_back([clearanceStatus](const InstanceKey&, const AlarmEntry& alarm) {
         if (clearanceStatus == "any") {
             return true;
         } else if (clearanceStatus == "cleared") {
@@ -54,7 +59,7 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
             throw std::logic_error("purge: Invalid choice value below severity");
         }
 
-        m_filters.emplace_back([severityCheck](const AlarmEntry& alarm) {
+        m_filters.emplace_back([severityCheck](const InstanceKey&, const AlarmEntry& alarm) {
             return severityCheck(alarm.lastSeverity);
         });
     }
@@ -76,15 +81,36 @@ PurgeFilter::PurgeFilter(const libyang::DataNode& filterInput)
             throw std::logic_error("purge: Invalid choice value below older-than");
         }
 
-        m_filters.emplace_back([threshold](const AlarmEntry& alarm) {
+        m_filters.emplace_back([threshold](const InstanceKey&, const AlarmEntry& alarm) {
             return alarm.lastChanged < threshold;
         });
     }
 }
 
-bool PurgeFilter::matches(const AlarmEntry& alarm) const
+CompressFilter::CompressFilter(const libyang::DataNode& filterInput)
 {
-    return std::all_of(m_filters.begin(), m_filters.end(), [&](const Filter& filter) { return filter(alarm); });
-}
+    if (auto resourceNode = filterInput.findPath("resource")) {
+        auto resource = resourceNode->asTerm().valueStr();
+        /* FIXME:
+         * for unshelved alarms, the type is resource-match, it is not enough to just compare the resource name, see https://github.com/CESNET/sysrepo-ietf-alarms/issues/2
+         */
+        m_filters.emplace_back([resource](const InstanceKey& key, const AlarmEntry&) {
+            return key.resource == resource;
+        });
+    }
 
+    if (auto alarmTypeIdNode = filterInput.findPath("alarm-type-id")) {
+        auto alarmTypeId = alarmTypeIdNode->asTerm().valueStr();
+        m_filters.emplace_back([alarmTypeId](const InstanceKey& key, const AlarmEntry&) {
+            return key.type.id == alarmTypeId;
+        });
+    }
+
+    if (auto alarmTypeQualifierNode = filterInput.findPath("alarm-type-qualifier")) {
+        auto alarmTypeQualifier = alarmTypeQualifierNode->asTerm().valueStr();
+        m_filters.emplace_back([alarmTypeQualifier](const InstanceKey& key, const AlarmEntry&) {
+            return key.type.qualifier == alarmTypeQualifier;
+        });
+    }
+}
 }

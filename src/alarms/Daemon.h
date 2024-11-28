@@ -28,6 +28,7 @@ private:
     std::mutex m_mtx;
     NotifyStatusChanges m_notifyStatusChanges;
     std::optional<int32_t> m_notifySeverityThreshold;
+    std::optional<uint16_t> m_maxAlarmStatusChanges;
     bool m_inventoryDirty;
     std::unordered_map<Type, InventoryData, boost::hash<Type>> m_inventory;
     std::unordered_map<InstanceKey, AlarmEntry, boost::hash<InstanceKey>> m_alarms;
@@ -38,9 +39,11 @@ private:
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
+    sysrepo::ErrorCode compressAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const libyang::DataNode& alarmNode);
     std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
     void reshelve(sysrepo::Session running);
+    void shrinkStatusChangesLists();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
     void updateStatistics(libyang::DataNode& edit);
 };
