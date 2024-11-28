@@ -81,6 +81,30 @@
       },
       "revId": "d2c73a327045903c2aa480bb916577724433686f",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c83be30c_6f61e8e5",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2024-11-28T11:12:11Z",
+      "side": 1,
+      "message": "ack",
+      "parentUuid": "910f1efe_f2c5d8d1",
+      "range": {
+        "startLine": 319,
+        "startChar": 51,
+        "endLine": 319,
+        "endChar": 59
+      },
+      "revId": "d2c73a327045903c2aa480bb916577724433686f",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
