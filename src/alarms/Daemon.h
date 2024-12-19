@@ -13,6 +13,7 @@ namespace alarms {
 class Daemon {
 public:
     Daemon();
+    ~Daemon();
 
     // FIXME: consider boost::concurrent_flat_set (Boost 1.84+) or boost::unordered_flat_set (Boost 1.81+) everywhere
 
@@ -36,6 +37,7 @@ private:
     std::optional<libyang::DataNode> m_shelvingRules;
     std::optional<sysrepo::Subscription> m_alarmSub;
     std::optional<sysrepo::Subscription> m_inventorySub;
+    std::optional<libyang::DataNode> m_edit;
 
     sysrepo::ErrorCode submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input);
     sysrepo::ErrorCode purgeAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
@@ -45,7 +47,7 @@ private:
     void reshelve(sysrepo::Session running);
     void shrinkStatusChangesLists();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
-    void updateStatistics(libyang::DataNode& edit);
+    void updateStatistics();
 };
 
 }

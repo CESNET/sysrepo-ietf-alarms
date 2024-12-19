@@ -46,4 +46,6 @@ struct AlarmEntry {
         const std::optional<int32_t> notifySeverityThreshold,
         const std::optional<uint16_t> maxAlarmStatusChanges);
 };
+
+std::string statusChangeXPath(const std::string& alarmNodePath, const TimePoint& time);
 }
