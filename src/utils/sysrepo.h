@@ -17,7 +17,7 @@ namespace alarms::utils {
 void initLogsSysrepo();
 void ensureModuleImplemented(const sysrepo::Session& session, const std::string& module, const std::string& revision, const std::vector<std::string>& features = {});
 
-void removeFromOperationalDS(::libyang::Context ctx, ::libyang::DataNode& edit, const std::vector<std::string>& removePaths);
+void removeFromOperationalDS(::libyang::DataNode& edit, const std::vector<std::string>& removePaths);
 
 /** @brief Ensures that session switches to provided datastore and when the object gets destroyed the session switches back to the original datastore. */
 class ScopedDatastoreSwitch {

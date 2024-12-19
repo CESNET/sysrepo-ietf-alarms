@@ -75,9 +75,9 @@ Daemon::Daemon()
 
     {
         WITH_TIME_MEASUREMENT{"initializing stats"};
-        auto edit = m_session.getContext().newPath(alarmList);
-        updateStatistics(edit);
-        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        m_edit = m_session.getContext().newPath(alarmList, std::nullopt, libyang::CreationOptions::Update);
+        updateStatistics();
+        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
         m_session.applyChanges();
     }
 
@@ -314,7 +314,7 @@ std::vector<TimePoint> AlarmEntry::shrinkStatusChanges(const std::optional<uint1
 }
 
 /** @brief Adds new entry to alarm's status-change list */
-void updateStatusChangeList(const libyang::Context& ctx, libyang::DataNode& edit, const std::string& alarmNodePath, AlarmEntry& alarm, const std::vector<TimePoint>& removedStatusChanges)
+void updateStatusChangeList(alarms::Log log, const libyang::Context& ctx, libyang::DataNode& edit, const std::string& alarmNodePath, AlarmEntry& alarm, const std::vector<TimePoint>& removedStatusChanges)
 {
     /* ietf-alarms specifies the status-change list as follows:
      * > The entry with latest timestamp in this list MUST correspond to the leafs 'is-cleared', 'perceived-severity', and 'alarm-text' for the alarm.
@@ -334,15 +334,27 @@ void updateStatusChangeList(const libyang::Context& ctx, libyang::DataNode& edit
     auto modYang = *ctx.getModuleImplemented("yang");
     auto time = yangTimeFormat(alarm.lastChanged);
 
-    edit.newPath2(alarmNodePath + "/status-change[time='" + time + "']", std::nullopt).createdNode->newMeta(modYang, "insert", "first");
-    edit.newPath(alarmNodePath + "/status-change[time='" + time + "']/perceived-severity", Severities[alarm.isCleared ? ClearedSeverity : alarm.lastSeverity]);
-    edit.newPath(alarmNodePath + "/status-change[time='" + time + "']/alarm-text", alarm.text);
+    auto node = *ctx.newPath2(alarmNodePath + "/status-change[time='" + time + "']", std::nullopt).createdNode;
+    node.newMeta(modYang, "insert", "first");
+    node.newPath(alarmNodePath + "/status-change[time='" + time + "']/perceived-severity", Severities[alarm.isCleared ? ClearedSeverity : alarm.lastSeverity]);
+    node.newPath(alarmNodePath + "/status-change[time='" + time + "']/alarm-text", alarm.text);
 
-    std::vector<std::string> discardPaths;
-    std::transform(removedStatusChanges.begin(), removedStatusChanges.end(), std::back_inserter(discardPaths), [&](const auto& removedStatusChange) {
-        return alarmNodePath + "/status-change[time='" + yangTimeFormat(removedStatusChange) + "']";
+    auto alarmNode = edit.findPath(alarmNodePath);
+    auto col = alarmNode->immediateChildren();
+    auto firstChange = std::find_if(col.begin(), col.end(), [](const auto& child) {
+            return child.schema().name() == "status-change" && child.schema().module().name() == "ietf-alarms";
     });
-    utils::removeFromOperationalDS(ctx, edit, discardPaths);
+    if (firstChange != col.end()) {
+        firstChange->insertBefore(node);
+    } else {
+        alarmNode->insertChild(node);
+    }
+
+    for (const auto& time: removedStatusChanges) {
+        auto xpath = alarmNodePath + "/status-change[time='" + yangTimeFormat(time) + "']";
+        log->trace("Processing alarm history removal from operational DS: {}", xpath);
+        edit.findPath(xpath)->unlink();
+    }
 }
 
 void Daemon::shrinkStatusChangesLists()
@@ -354,10 +366,6 @@ void Daemon::shrinkStatusChangesLists()
     }
 
     m_log->debug("Trimming status changes history because max-alarm-status-changes changed to {}", *m_maxAlarmStatusChanges);
-
-    auto alarmRoot = m_session.getData(rootPath);
-    assert(alarmRoot);
-    auto edit = m_session.getContext().newPath(rootPath, std::nullopt);
 
     std::vector<std::string> discardPaths;
 
@@ -374,8 +382,11 @@ void Daemon::shrinkStatusChangesLists()
         }
     }
 
-    utils::removeFromOperationalDS(m_session.getContext(), edit, discardPaths);
-    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+    // FIXME: how come that the comment from Daemon::reshelve about a potential deadlock doesn't apply here?
+    // The tests pass for me...
+    utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Operational);
+    utils::removeFromOperationalDS(*m_edit, discardPaths);
+    m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
     m_session.applyChanges();
 }
 
@@ -425,27 +436,27 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
     auto matchedShelf = shouldBeShelved(*m_shelvingRules, alarmKey);
     auto alarmNodePath = (matchedShelf ? shelvedAlarmListInstances : alarmListInstances) + keyXPath;
-    auto edit = m_session.getContext().newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
+    m_edit->newPath(alarmNodePath, std::nullopt, libyang::CreationOptions::Update);
     auto [it, wasInserted] = m_alarms.try_emplace(alarmKey);
     auto res = it->second.updateByRpc(!wasInserted, now, input, matchedShelf, m_notifyStatusChanges, m_notifySeverityThreshold, m_maxAlarmStatusChanges);
 
     if (res.changed) {
-        edit.newPath(alarmNodePath + "/is-cleared", it->second.isCleared ? "true" : "false");
-        edit.newPath(alarmNodePath + "/last-raised", yangTimeFormat(it->second.lastRaised));
-        edit.newPath(alarmNodePath + "/last-changed", yangTimeFormat(it->second.lastChanged));
-        edit.newPath(alarmNodePath + "/perceived-severity", Severities[it->second.lastSeverity]);
-        edit.newPath(alarmNodePath + "/alarm-text", it->second.text);
+        m_edit->newPath(alarmNodePath + "/is-cleared", it->second.isCleared ? "true" : "false", libyang::CreationOptions::Update);
+        m_edit->newPath(alarmNodePath + "/last-raised", yangTimeFormat(it->second.lastRaised), libyang::CreationOptions::Update);
+        m_edit->newPath(alarmNodePath + "/last-changed", yangTimeFormat(it->second.lastChanged), libyang::CreationOptions::Update);
+        m_edit->newPath(alarmNodePath + "/perceived-severity", Severities[it->second.lastSeverity], libyang::CreationOptions::Update);
+        m_edit->newPath(alarmNodePath + "/alarm-text", it->second.text, libyang::CreationOptions::Update);
         if (it->second.shelf) {
-            edit.newPath(alarmNodePath + "/shelf-name", *it->second.shelf);
+            m_edit->newPath(alarmNodePath + "/shelf-name", *it->second.shelf, libyang::CreationOptions::Update);
         } else {
-            edit.newPath(alarmNodePath + "/time-created", yangTimeFormat(it->second.created));
+            m_edit->newPath(alarmNodePath + "/time-created", yangTimeFormat(it->second.created), libyang::CreationOptions::Update);
         }
 
-        updateStatusChangeList(rpcSession.getContext(), edit, alarmNodePath, it->second, res.removedStatusChanges);
+        updateStatusChangeList(m_log, rpcSession.getContext(), *m_edit, alarmNodePath, it->second, res.removedStatusChanges);
 
-        m_log->debug("Updated alarm: {}", *edit.printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
-        updateStatistics(edit);
-        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        m_log->debug("Updated alarm: {}", *m_edit->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
+        updateStatistics();
+        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
         {
             WITH_TIME_MEASUREMENT{"submitAlarm/applyChanges"};
             m_session.applyChanges();
@@ -453,7 +464,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
         if (res.shouldNotify) {
             WITH_TIME_MEASUREMENT{"submitAlarm/sendNotification"};
-            m_session.sendNotification(createStatusChangeNotification(edit.findPath(alarmNodePath).value()), sysrepo::Wait::No);
+            m_session.sendNotification(createStatusChangeNotification(m_edit->findPath(alarmNodePath).value()), sysrepo::Wait::No);
         }
     }
     return sysrepo::ErrorCode::Ok;
@@ -463,16 +474,16 @@ libyang::DataNode Daemon::createStatusChangeNotification(const libyang::DataNode
 {
     static const std::string prefix = "/ietf-alarms:alarm-notification";
 
-    auto notification = m_session.getContext().newPath(prefix + "/resource", utils::childValue(alarmNode, "resource"));
-    notification.newPath(prefix + "/alarm-type-id", utils::childValue(alarmNode, "alarm-type-id"));
-    notification.newPath(prefix + "/time", utils::childValue(alarmNode, "last-changed"));
-    notification.newPath(prefix + "/alarm-text", utils::childValue(alarmNode, "alarm-text"));
+    auto notification = m_session.getContext().newPath(prefix + "/resource", utils::childValue(alarmNode, "resource"), libyang::CreationOptions::Update);
+    notification.newPath(prefix + "/alarm-type-id", utils::childValue(alarmNode, "alarm-type-id"), libyang::CreationOptions::Update);
+    notification.newPath(prefix + "/time", utils::childValue(alarmNode, "last-changed"), libyang::CreationOptions::Update);
+    notification.newPath(prefix + "/alarm-text", utils::childValue(alarmNode, "alarm-text"), libyang::CreationOptions::Update);
 
     if (auto qualifier = utils::childValue(alarmNode, "alarm-type-qualifier"); !qualifier.empty()) {
-        notification.newPath(prefix + "/alarm-type-qualifier", qualifier);
+        notification.newPath(prefix + "/alarm-type-qualifier", qualifier, libyang::CreationOptions::Update);
     }
 
-    notification.newPath(prefix + "/perceived-severity", utils::childValue(alarmNode, "is-cleared") == "true" ? "cleared" : utils::childValue(alarmNode, "perceived-severity"));
+    notification.newPath(prefix + "/perceived-severity", utils::childValue(alarmNode, "is-cleared") == "true" ? "cleared" : utils::childValue(alarmNode, "perceived-severity"), libyang::CreationOptions::Update);
 
     return notification;
 }
@@ -503,16 +514,15 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang
     }
 
     if (!toDelete.empty()) {
-        auto edit = m_session.getContext().newPath(alarmList);
         if (doingShelved) {
             m_shelfListLastChanged = now;
         } else {
             m_alarmListLastChanged = now;
         }
-        updateStatistics(edit);
-        utils::removeFromOperationalDS(m_session.getContext(), edit, toDelete);
+        updateStatistics();
+        utils::removeFromOperationalDS(*m_edit, toDelete);
         m_log->trace("purgeAlarms: removing entries in sysrepo");
-        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
         m_session.applyChanges();
     }
 
@@ -525,7 +535,6 @@ sysrepo::ErrorCode Daemon::compressAlarms(const std::string& rpcPath, const liby
     WITH_TIME_MEASUREMENT{};
 
     std::vector<std::string> discardPaths;
-    libyang::DataNode edit = m_session.getContext().newPath(rootPath);
 
     bool doingShelved = rpcPath == compressShelvedAlarmsRpcPrefix;
     CompressFilter filter(rpcInput);
@@ -546,9 +555,11 @@ sysrepo::ErrorCode Daemon::compressAlarms(const std::string& rpcPath, const liby
         }
     }
 
-    utils::removeFromOperationalDS(m_session.getContext(), edit, discardPaths);
-    m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
-    m_session.applyChanges();
+    if (compressedAlarmEntries) {
+        utils::removeFromOperationalDS(*m_edit, discardPaths);
+        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
+        m_session.applyChanges();
+    }
 
     output.newPath(rpcPath + "/compressed-alarms", std::to_string(compressedAlarmEntries), libyang::CreationOptions::Output);
     return sysrepo::ErrorCode::Ok;
@@ -560,7 +571,7 @@ namespace {
 void createCommonAlarmNodeProps(libyang::DataNode& edit, const libyang::DataNode& alarm, const std::string& prefix)
 {
     for (const auto& leafName : {"is-cleared", "last-raised", "last-changed", "perceived-severity", "alarm-text"}) {
-        edit.newPath(prefix + "/" + leafName, utils::childValue(alarm, leafName));
+        edit.newPath(prefix + "/" + leafName, utils::childValue(alarm, leafName), libyang::CreationOptions::Update);
     }
 
     for (const auto& statusChange : alarm.findXPath("status-change")) {
@@ -574,7 +585,7 @@ void createCommonAlarmNodeProps(libyang::DataNode& edit, const libyang::DataNode
 void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::string& shelfName)
 {
     const auto key = shelvedAlarmListInstances + alarmKey.xpathIndex();
-    edit.newPath(key + "/shelf-name", shelfName);
+    edit.newPath(key + "/shelf-name", shelfName, libyang::CreationOptions::Update);
     createCommonAlarmNodeProps(edit, alarm, key);
 }
 
@@ -582,7 +593,7 @@ void createShelvedAlarmNodeFromExistingNode(libyang::DataNode& edit, const libya
 void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::DataNode& alarm, const InstanceKey& alarmKey, const std::chrono::time_point<std::chrono::system_clock>& now)
 {
     const auto key = alarmListInstances + alarmKey.xpathIndex();
-    edit.newPath(key + "/time-created", yangTimeFormat(now));
+    edit.newPath(key + "/time-created", yangTimeFormat(now), libyang::CreationOptions::Update);
     createCommonAlarmNodeProps(edit, alarm, key);
 }
 }
@@ -601,7 +612,6 @@ void Daemon::reshelve(sysrepo::Session running)
     auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
 
-    auto edit = m_session.getContext().newPath(rootPath, std::nullopt);
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
     bool change = false;
@@ -612,7 +622,7 @@ void Daemon::reshelve(sysrepo::Session running)
     for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
         const auto alarmKey = InstanceKey::fromNode(node);
         if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
-            createShelvedAlarmNodeFromExistingNode(edit, node, alarmKey, *shelf);
+            createShelvedAlarmNodeFromExistingNode(*m_edit, node, alarmKey, *shelf);
             m_log->trace("Alarm {} shelved ({})", node.path(), *shelf);
             toErase.emplace_back(node.path());
             change = true;
@@ -626,14 +636,14 @@ void Daemon::reshelve(sysrepo::Session running)
         const auto alarmKey = InstanceKey::fromNode(node);
         if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
             if (*shelf != utils::childValue(node, "shelf-name")) {
-                edit.newPath(shelvedAlarmListInstances + alarmKey.xpathIndex() + "/shelf-name", *shelf);
+                m_edit->newPath(shelvedAlarmListInstances + alarmKey.xpathIndex() + "/shelf-name", *shelf, libyang::CreationOptions::Update);
                 m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
                 change = true;
                 m_alarms[alarmKey].shelf = shelf;
                 m_shelfListLastChanged = now;
             }
         } else {
-            createAlarmNodeFromExistingNode(edit, node, alarmKey, now);
+            createAlarmNodeFromExistingNode(*m_edit, node, alarmKey, now);
             m_log->trace("Alarm {} moved from shelf", node.path());
             toErase.emplace_back(node.path());
             change = true;
@@ -645,9 +655,9 @@ void Daemon::reshelve(sysrepo::Session running)
 
     if (change) {
         m_log->trace("reshelve: updating stats");
-        updateStatistics(edit);
-        utils::removeFromOperationalDS(m_session.getContext(), edit, toErase);
-        m_session.editBatch(edit, sysrepo::DefaultOperation::Merge);
+        updateStatistics();
+        utils::removeFromOperationalDS(*m_edit, toErase);
+        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
         m_session.applyChanges();
     }
 }
@@ -681,7 +691,7 @@ void Daemon::rebuildInventory(const libyang::DataNode& dataWithInventory)
     m_inventoryDirty = false;
 }
 
-void Daemon::updateStatistics(libyang::DataNode& edit)
+void Daemon::updateStatistics()
 {
     struct PerSeveritySummary {
         unsigned total;
@@ -720,14 +730,14 @@ void Daemon::updateStatistics(libyang::DataNode& edit)
 
     for (const auto& [severity, summ] : summary) {
         const auto prefix = alarmSummaryPrefix + "/alarm-summary[severity='"s + Severities[severity] + "']";
-        edit.newPath(prefix + "/total", std::to_string(summ.total));
-        edit.newPath(prefix + "/not-cleared", std::to_string(summ.total - summ.cleared));
-        edit.newPath(prefix + "/cleared", std::to_string(summ.cleared));
+        m_edit->newPath(prefix + "/total", std::to_string(summ.total), libyang::CreationOptions::Update);
+        m_edit->newPath(prefix + "/not-cleared", std::to_string(summ.total - summ.cleared), libyang::CreationOptions::Update);
+        m_edit->newPath(prefix + "/cleared", std::to_string(summ.cleared), libyang::CreationOptions::Update);
     }
 
-    edit.newPath(alarmList + "/number-of-alarms", std::to_string(totalList));
-    edit.newPath(alarmList + "/last-changed", yangTimeFormat(m_alarmListLastChanged));
-    edit.newPath(shelvedAlarmList + "/number-of-shelved-alarms", std::to_string(totalShelved));
-    edit.newPath(shelvedAlarmList + "/shelved-alarms-last-changed", yangTimeFormat(m_shelfListLastChanged));
+    m_edit->newPath(alarmList + "/number-of-alarms", std::to_string(totalList), libyang::CreationOptions::Update);
+    m_edit->newPath(alarmList + "/last-changed", yangTimeFormat(m_alarmListLastChanged), libyang::CreationOptions::Update);
+    m_edit->newPath(shelvedAlarmList + "/number-of-shelved-alarms", std::to_string(totalShelved), libyang::CreationOptions::Update);
+    m_edit->newPath(shelvedAlarmList + "/shelved-alarms-last-changed", yangTimeFormat(m_shelfListLastChanged), libyang::CreationOptions::Update);
 }
 }
