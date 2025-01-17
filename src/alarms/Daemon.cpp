@@ -162,12 +162,17 @@ Daemon::Daemon()
                         }
                     }
                 }
-                // TODO: The reshelve and shrinkStatusChanges could be done in a single sysrepo edit.
+                bool changed = false;
                 if (needsReshelve) {
-                    reshelve(session);
+                    changed |= reshelve(session);
                 }
                 if (needsStatusChangesShrink) {
-                    shrinkStatusChangesLists();
+                    changed |= shrinkStatusChangesLists();
+                }
+                if (changed) {
+                    utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Operational);
+                    m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
+                    m_session.applyChanges();
                 }
                 return sysrepo::ErrorCode::Ok;
             },
@@ -362,12 +367,13 @@ void updateStatusChangeList(libyang::DataNode& edit, const std::string& alarmNod
     }
 }
 
-void Daemon::shrinkStatusChangesLists()
+bool Daemon::shrinkStatusChangesLists()
 {
     WITH_TIME_MEASUREMENT{};
+    bool changed = false;
 
     if (!m_maxAlarmStatusChanges) {
-        return;
+        return false;
     }
 
     m_log->debug("Trimming status changes history because max-alarm-status-changes changed to {}", *m_maxAlarmStatusChanges);
@@ -380,15 +386,12 @@ void Daemon::shrinkStatusChangesLists()
                 const auto& prefix = alarm.shelf ? shelvedAlarmListInstances : alarmListInstances;
                 const auto xpath = statusChangeXPath(prefix + alarmKey.xpathIndex(), time);
                 m_edit->findPath(xpath)->unlink();
+                changed = true;
             }
         }
     }
 
-    // FIXME: how come that the comment from Daemon::reshelve about a potential deadlock doesn't apply here?
-    // The tests pass for me...
-    utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Operational);
-    m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-    m_session.applyChanges();
+    return changed;
 }
 
 sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyang::DataNode& input)
@@ -599,16 +602,9 @@ void createAlarmNodeFromExistingNode(libyang::DataNode& edit, const libyang::Dat
 }
 }
 
-void Daemon::reshelve(sysrepo::Session running)
+bool Daemon::reshelve(sysrepo::Session running)
 {
     WITH_TIME_MEASUREMENT{};
-    // FIXME: this function is potentially buggy. It is *meant* to be called from a context where
-    // `m_session` is switched to the `operational` DS, but at least during the initial `SR_EV_ENABLED`
-    // subscription/copying, the current DS is `running`. In that case, this function would try to insert
-    // `config: false` data into the `running` DS, which is not allowed. Unfortunately, switching to the
-    // `operational` DS (so as to retrieve proper data about alarms) when inside a `SR_EV_ENABLED` handler
-    // apparently results in a deadlock (been there, tried that, didn't work). That makes sense; that datastore
-    // has not yet been populated after all.
     assert(running.activeDatastore() == sysrepo::Datastore::Running);
     auto alarmRoot = m_session.getData(rootPath);
     assert(alarmRoot);
@@ -657,9 +653,9 @@ void Daemon::reshelve(sysrepo::Session running)
     if (change) {
         m_log->trace("reshelve: updating stats");
         updateStatistics();
-        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-        m_session.applyChanges();
     }
+
+    return change;
 }
 
 void Daemon::rebuildInventory(const libyang::DataNode& dataWithInventory)

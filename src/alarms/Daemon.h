@@ -44,8 +44,8 @@ private:
     sysrepo::ErrorCode compressAlarms(const std::string& rpcPath, const libyang::DataNode& rpcInput, libyang::DataNode output);
     libyang::DataNode createStatusChangeNotification(const libyang::DataNode& alarmNode);
     std::optional<std::string> inventoryValidationError(const InstanceKey& key, const int32_t severity);
-    void reshelve(sysrepo::Session running);
-    void shrinkStatusChangesLists();
+    bool reshelve(sysrepo::Session running);
+    bool shrinkStatusChangesLists();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
     void updateStatistics();
 };
