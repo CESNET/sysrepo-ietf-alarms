@@ -114,6 +114,7 @@ Daemon::Daemon()
                 WITH_TIME_MEASUREMENT{controlPrefix};
                 bool needsReshelve = false;
                 bool needsStatusChangesShrink = false;
+                std::unique_lock lck{m_mtx};
                 for (const auto& change : session.getChanges()) {
                     const auto xpath = change.node.path();
                     if (boost::algorithm::starts_with(xpath, ctrlShelving)) {
@@ -378,16 +379,12 @@ bool Daemon::shrinkStatusChangesLists()
 
     m_log->debug("Trimming status changes history because max-alarm-status-changes changed to {}", *m_maxAlarmStatusChanges);
 
-    {
-        std::unique_lock lck{m_mtx};
-
-        for (auto& [alarmKey, alarm] : m_alarms) {
-            for (const auto& time : alarm.shrinkStatusChanges(m_maxAlarmStatusChanges)) {
-                const auto& prefix = alarm.shelf ? shelvedAlarmListInstances : alarmListInstances;
-                const auto xpath = statusChangeXPath(prefix + alarmKey.xpathIndex(), time);
-                m_edit->findPath(xpath)->unlink();
-                changed = true;
-            }
+    for (auto& [alarmKey, alarm] : m_alarms) {
+        for (const auto& time : alarm.shrinkStatusChanges(m_maxAlarmStatusChanges)) {
+            const auto& prefix = alarm.shelf ? shelvedAlarmListInstances : alarmListInstances;
+            const auto xpath = statusChangeXPath(prefix + alarmKey.xpathIndex(), time);
+            m_edit->findPath(xpath)->unlink();
+            changed = true;
         }
     }
 
@@ -411,27 +408,23 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
         return sysrepo::ErrorCode::InvalidArgument;
     }
 
-    {
-        std::unique_lock lck{m_mtx};
-        if (m_inventoryDirty) {
-            WITH_TIME_MEASUREMENT{"submitAlarm/rebuildInventory"};
-            const auto alarmRoot = m_session.getData(rootPath);
-            assert(alarmRoot);
-            rebuildInventory(*alarmRoot);
-        }
-        if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
-            rpcSession.setNetconfError({.type = "application",
-                                        .tag = "data-missing",
-                                        .appTag = std::nullopt,
-                                        .path = std::nullopt,
-                                        .message = (inventoryError.value() + " -- see RFC8632 (sec. 4.1).").c_str(),
-                                        .infoElements = {}});
-            m_log->warn(inventoryError.value());
-            return sysrepo::ErrorCode::OperationFailed;
-        }
-    }
-
     std::unique_lock lck{m_mtx};
+    if (m_inventoryDirty) {
+        WITH_TIME_MEASUREMENT{"submitAlarm/rebuildInventory"};
+        const auto alarmRoot = m_session.getData(rootPath);
+        assert(alarmRoot);
+        rebuildInventory(*alarmRoot);
+    }
+    if (auto inventoryError = inventoryValidationError(alarmKey, severity)) {
+        rpcSession.setNetconfError({.type = "application",
+                                    .tag = "data-missing",
+                                    .appTag = std::nullopt,
+                                    .path = std::nullopt,
+                                    .message = (inventoryError.value() + " -- see RFC8632 (sec. 4.1).").c_str(),
+                                    .infoElements = {}});
+        m_log->warn(inventoryError.value());
+        return sysrepo::ErrorCode::OperationFailed;
+    }
 
     if (auto it = m_alarms.find(alarmKey); isClearedNow && ((it == m_alarms.end()) || ((it != m_alarms.end()) && it->second.isCleared))) {
         m_log->trace("No update for already-cleared alarm {}", keyXPath);
@@ -610,7 +603,6 @@ bool Daemon::reshelve(sysrepo::Session running)
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
     bool change = false;
-    std::unique_lock lck{m_mtx};
     m_shelvingRules = running.getData(ctrlShelving);
     assert(m_shelvingRules);
 
