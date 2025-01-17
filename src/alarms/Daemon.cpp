@@ -602,8 +602,6 @@ bool Daemon::reshelve(sysrepo::Session running)
 {
     WITH_TIME_MEASUREMENT{};
     assert(running.activeDatastore() == sysrepo::Datastore::Running);
-    auto alarmRoot = m_session.getData(rootPath);
-    assert(alarmRoot);
 
     auto now = std::chrono::system_clock::now();
     std::vector<std::string> toErase;
@@ -612,37 +610,34 @@ bool Daemon::reshelve(sysrepo::Session running)
     m_shelvingRules = running.getData(ctrlShelving);
     assert(m_shelvingRules);
 
-    for (const auto& node : alarmRoot->findXPath(alarmListInstances)) {
-        const auto alarmKey = InstanceKey::fromNode(node);
-        if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
-            createShelvedAlarmNodeFromExistingNode(*m_edit, node, alarmKey, *shelf);
-            m_log->trace("Alarm {} shelved ({})", node.path(), *shelf);
-            m_edit->findPath(node.path())->unlink();
+    for (const auto& [alarmKey, alarm] : m_alarms) {
+        const auto& shelf = shouldBeShelved(*m_shelvingRules, alarmKey);
+        const auto& pathShelved = shelvedAlarmListInstances + alarmKey.xpathIndex();
+        const auto& pathUnshelved = alarmListInstances + alarmKey.xpathIndex();
+        if (alarm.shelf && !shelf) {
             change = true;
-            m_alarms[alarmKey].shelf = shelf;
-            m_alarmListLastChanged = now;
-            m_shelfListLastChanged = now;
-        }
-    }
-
-    for (const auto& node : alarmRoot->findXPath(shelvedAlarmListInstances)) {
-        const auto alarmKey = InstanceKey::fromNode(node);
-        if (auto shelf = shouldBeShelved(*m_shelvingRules, alarmKey)) {
-            if (*shelf != utils::childValue(node, "shelf-name")) {
-                m_edit->newPath(shelvedAlarmListInstances + alarmKey.xpathIndex() + "/shelf-name", *shelf, libyang::CreationOptions::Update);
-                m_log->trace("Alarm {} moved between shelfs ({} -> {})", node.path(), utils::childValue(node, "shelf-name"), *shelf);
-                change = true;
-                m_alarms[alarmKey].shelf = shelf;
-                m_shelfListLastChanged = now;
-            }
-        } else {
-            createAlarmNodeFromExistingNode(*m_edit, node, alarmKey, now);
-            m_log->trace("Alarm {} moved from shelf", node.path());
-            m_edit->findPath(node.path())->unlink();
-            change = true;
+            auto node = *m_edit->findPath(pathShelved);
             m_alarms[alarmKey].shelf = std::nullopt;
             m_alarmListLastChanged = now;
             m_shelfListLastChanged = now;
+            createAlarmNodeFromExistingNode(*m_edit, node, alarmKey, now);
+            node.unlink();
+            m_log->trace("Alarm {} moved from shelf", alarmKey.xpathIndex());
+        } else if (!alarm.shelf && shelf) {
+            change = true;
+            auto node = *m_edit->findPath(pathUnshelved);
+            m_alarms[alarmKey].shelf = shelf;
+            m_alarmListLastChanged = now;
+            m_shelfListLastChanged = now;
+            createShelvedAlarmNodeFromExistingNode(*m_edit, node, alarmKey, *shelf);
+            node.unlink();
+            m_log->trace("Alarm {} shelved ({})", alarmKey.xpathIndex(), *shelf);
+        } else if (alarm.shelf && shelf && *alarm.shelf != *shelf) {
+            change = true;
+            m_alarms[alarmKey].shelf = shelf;
+            m_shelfListLastChanged = now;
+            m_edit->newPath(pathShelved + "/shelf-name", *shelf, libyang::CreationOptions::Update);
+            m_log->trace("Alarm {} moved between shelfs ({} -> {})", alarmKey.xpathIndex(), *alarm.shelf, *shelf);
         }
     }
 
