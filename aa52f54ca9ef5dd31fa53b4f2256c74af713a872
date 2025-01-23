@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bfcd3224_2e6e4eff",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 4
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-01-23T13:59:47Z",
+      "side": 1,
+      "message": "Took me a while before I realized that if this happened implciitly, you would not be able to control the locking. Nice one.",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 67,
+        "endChar": 3
+      },
+      "revId": "aa52f54ca9ef5dd31fa53b4f2256c74af713a872",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
