@@ -28,7 +28,7 @@ find_package(Boost 1.78 REQUIRED CONFIG)
 find_package(fmt "9.0.0" REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=4 sysrepo)
+pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=5 sysrepo)
 pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=3)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 

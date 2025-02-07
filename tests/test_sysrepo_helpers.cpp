@@ -89,7 +89,10 @@ std::map<std::string, std::string> rpcFromSysrepo(sysrepo::Session session, cons
     }
     auto output = session.sendRPC(inputNode, timeout);
     std::map<std::string, std::string> res;
-    for (const auto& node : output.childrenDfs()) {
+    if (!output) {
+        return res;
+    }
+    for (const auto& node : output->childrenDfs()) {
         const auto briefXPath = node.path().substr(rpcPath.size());
         // We ignore the thing that's exactly the xpath we're retrieving to avoid having {"": ""} entries.
         if (briefXPath.empty()) {
