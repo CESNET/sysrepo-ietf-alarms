@@ -18,6 +18,12 @@ This daemon takes care of the rest:
 - alarm [notifications](https://datatracker.ietf.org/doc/html/rfc8632#section-4.8)
 - alarm [history](https://datatracker.ietf.org/doc/html/rfc8632#section-3.5.1)
 
+The following optional features are currently not implemented (patches welcome):
+
+- alarm [profiles](https://datatracker.ietf.org/doc/html/rfc8632#section-4.6) and severity assignment
+- [relations(https://datatracker.ietf.org/doc/html/rfc8632#section-3.6), which includes root cause analysis, impacted resources and alarm correlation
+- [operator actions](https://datatracker.ietf.org/doc/html/rfc8632#section-3.5.2)
+
 ## Dependencies
 
 - [libyang-cpp](https://github.com/CESNET/libyang-cpp) - C++ bindings for *libyang*
