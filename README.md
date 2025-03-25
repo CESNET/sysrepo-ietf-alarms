@@ -16,7 +16,7 @@ This daemon takes care of the rest:
 - alarm [shelving](https://datatracker.ietf.org/doc/html/rfc8632#section-4.1.1)
 - alarm [summaries](https://datatracker.ietf.org/doc/html/rfc8632#section-4.3) and statistics
 - alarm [notifications](https://datatracker.ietf.org/doc/html/rfc8632#section-4.8)
-- in future, alarm [history](https://datatracker.ietf.org/doc/html/rfc8632#section-3.5.1)
+- alarm [history](https://datatracker.ietf.org/doc/html/rfc8632#section-3.5.1)
 
 ## Dependencies
 
