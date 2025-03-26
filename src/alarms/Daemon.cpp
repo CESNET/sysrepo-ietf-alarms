@@ -83,8 +83,7 @@ Daemon::Daemon()
         WITH_TIME_MEASUREMENT{"initializing stats"};
         m_edit = m_session.getContext().newPath(alarmList, std::nullopt, libyang::CreationOptions::Update);
         updateStatistics();
-        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-        m_session.applyChanges();
+        applyEdit();
     }
 
     m_alarmSub = m_session.onRPCAction(rpcPrefix, [&](sysrepo::Session session, auto, auto, const libyang::DataNode input, auto, auto, auto) {
@@ -172,8 +171,7 @@ Daemon::Daemon()
                 }
                 if (changed) {
                     utils::ScopedDatastoreSwitch sw(m_session, sysrepo::Datastore::Operational);
-                    m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-                    m_session.applyChanges();
+                    applyEdit();
                 }
                 return sysrepo::ErrorCode::Ok;
             },
@@ -453,11 +451,7 @@ sysrepo::ErrorCode Daemon::submitAlarm(sysrepo::Session rpcSession, const libyan
 
         m_log->debug("Updated alarm: {}", *m_edit->printStr(libyang::DataFormat::JSON, libyang::PrintFlags::Shrink));
         updateStatistics();
-        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-        {
-            WITH_TIME_MEASUREMENT{"submitAlarm/applyChanges"};
-            m_session.applyChanges();
-        }
+        applyEdit("submitAlarm");
 
         if (res.shouldNotify) {
             WITH_TIME_MEASUREMENT{"submitAlarm/sendNotification"};
@@ -519,8 +513,7 @@ sysrepo::ErrorCode Daemon::purgeAlarms(const std::string& rpcPath, const libyang
         }
         updateStatistics();
         m_log->trace("purgeAlarms: removing entries in sysrepo");
-        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-        m_session.applyChanges();
+        applyEdit();
     }
 
     output.newPath(rpcPath + "/purged-alarms", std::to_string(purgedAlarms), libyang::CreationOptions::Output);
@@ -554,8 +547,7 @@ sysrepo::ErrorCode Daemon::compressAlarms(const std::string& rpcPath, const liby
     }
 
     if (compressedAlarmEntries) {
-        m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
-        m_session.applyChanges();
+        applyEdit();
     }
 
     output.newPath(rpcPath + "/compressed-alarms", std::to_string(compressedAlarmEntries), libyang::CreationOptions::Output);
@@ -722,6 +714,19 @@ void Daemon::updateStatistics()
     m_edit->newPath(alarmList + "/last-changed", yangTimeFormat(m_alarmListLastChanged), libyang::CreationOptions::Update);
     m_edit->newPath(shelvedAlarmList + "/number-of-shelved-alarms", std::to_string(totalShelved), libyang::CreationOptions::Update);
     m_edit->newPath(shelvedAlarmList + "/shelved-alarms-last-changed", yangTimeFormat(m_shelfListLastChanged), libyang::CreationOptions::Update);
+}
+
+void Daemon::applyEdit(const std::optional<std::string>& benchmarkName)
+{
+    // It can happen that edit is no longer the first sibling, in that case Session::editBatch would ignore the previous siblings
+    m_edit = m_edit->firstSibling();
+
+    m_session.editBatch(*m_edit, sysrepo::DefaultOperation::Replace);
+
+    {
+        WITH_TIME_MEASUREMENT{benchmarkName.value_or("") + "/applyChanges"};
+        m_session.applyChanges();
+    }
 }
 
 std::string statusChangeXPath(const std::string& alarmNodePath, const TimePoint& time)

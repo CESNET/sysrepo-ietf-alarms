@@ -48,6 +48,7 @@ private:
     bool shrinkStatusChangesLists();
     void rebuildInventory(const libyang::DataNode& dataWithInventory);
     void updateStatistics();
+    void applyEdit(const std::optional<std::string>& benchmarkName = std::nullopt);
 };
 
 }
