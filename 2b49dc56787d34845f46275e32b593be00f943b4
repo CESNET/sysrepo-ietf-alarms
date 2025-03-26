@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a4658094_af05088f",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 544,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-03-26T13:35:13Z",
+      "side": 1,
+      "message": "this (and all other places) should use sysrepo::unlinkFromForest(), too, IMHOm ebcause unlinking the first/only child is \"special\"",
+      "revId": "2b49dc56787d34845f46275e32b593be00f943b4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
