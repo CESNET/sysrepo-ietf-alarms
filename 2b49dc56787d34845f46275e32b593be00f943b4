@@ -34,6 +34,24 @@
       "parentUuid": "a4658094_af05088f",
       "revId": "2b49dc56787d34845f46275e32b593be00f943b4",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b359e081_9e473174",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 544,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-03-31T11:07:28Z",
+      "side": 1,
+      "message": "Is unlinkFromForest() really necessary here (and in other places)? We are always doing this pattern m_edit-\u003efindXPath(something), where something is something deep into the tree. This never modifies siblings of m_edit, does it?",
+      "parentUuid": "f273d27a_8a01eaad",
+      "revId": "2b49dc56787d34845f46275e32b593be00f943b4",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
