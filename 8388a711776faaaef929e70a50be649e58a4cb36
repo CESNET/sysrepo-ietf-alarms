@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5edcb979_6de34c0c",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 2
+      },
+      "lineNbr": 727,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-04-04T16:54:44Z",
+      "side": 1,
+      "message": "I want to make sure that we can already use this function on the version of tooclahin in the ARM CI, just FYI, that\u0027s the reason for the rebase",
+      "range": {
+        "startLine": 727,
+        "startChar": 44,
+        "endLine": 727,
+        "endChar": 52
+      },
+      "revId": "8388a711776faaaef929e70a50be649e58a4cb36",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
