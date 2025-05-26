@@ -40,7 +40,7 @@ Options:
   -h --help                  Show this screen.
   --version                  Show version.
   --log-level=<N>            Log level for alarms [default: 3]
-  --sysrepo-log-level=<N>    Log level for the sysrepo library [default: 2]
+  --sysrepo-log-level=<N>    Log level for the sysrepo library [default: 3]
                              (0 -> critical, 1 -> error, 2 -> warning, 3 -> info,
                              4 -> debug, 5 -> trace)
 )";
