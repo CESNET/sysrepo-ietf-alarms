@@ -4,6 +4,7 @@
 #include <map>
 #include <span>
 #include <string>
+#include <sysrepo-cpp/Changes.hpp>
 #include "Daemon.h"
 #include "Filters.h"
 #include "Key.h"
