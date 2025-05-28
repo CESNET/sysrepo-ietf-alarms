@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <mutex>
-#include <sysrepo-cpp/Connection.hpp>
+#include <sysrepo-cpp/Subscription.hpp>
 #include <unordered_map>
 #include <unordered_set>
 #include "AlarmEntry.h"
