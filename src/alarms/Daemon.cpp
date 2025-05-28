@@ -181,13 +181,13 @@ Daemon::Daemon()
     }
 
     m_inventorySub = m_session.onModuleChange(
-        ietfAlarmsModule, [&](auto, auto, auto, auto, auto, auto) {
+        ietfAlarmsModule, [&](auto session, auto, auto, auto, auto, auto) {
             WITH_TIME_MEASUREMENT{alarmInventoryPrefix};
             {
                 std::unique_lock lck{m_mtx};
                 m_inventoryDirty = true;
             }
-            m_session.sendNotification(m_session.getContext().newPath("/ietf-alarms:alarm-inventory-changed", std::nullopt), sysrepo::Wait::No);
+            session.sendNotification(session.getContext().newPath("/ietf-alarms:alarm-inventory-changed", std::nullopt), sysrepo::Wait::No);
             return sysrepo::ErrorCode::Ok;
         },
         alarmInventoryPrefix,
