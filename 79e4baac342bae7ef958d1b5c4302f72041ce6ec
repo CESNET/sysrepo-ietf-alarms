@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b2ca3aee_e5683193",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-29T09:12:17Z",
+      "side": 1,
+      "message": "Would it? I have not seen such code in sysrepo-cpp",
+      "range": {
+        "startLine": 11,
+        "startChar": 39,
+        "endLine": 11,
+        "endChar": 47
+      },
+      "revId": "79e4baac342bae7ef958d1b5c4302f72041ce6ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
