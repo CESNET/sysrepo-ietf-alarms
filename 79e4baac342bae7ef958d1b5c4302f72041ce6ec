@@ -46,6 +46,30 @@
       },
       "revId": "79e4baac342bae7ef958d1b5c4302f72041ce6ec",
       "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9d9cb09b_0e651def",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2025-05-29T09:34:50Z",
+      "side": 1,
+      "message": "My point is that the new sysrepo-cpp can\u0027t yell deadlock. It only throws when the session is tried to be simultaneously accessed from multiple threads. That is what the code does.",
+      "parentUuid": "fd41ee85_a422a6ab",
+      "range": {
+        "startLine": 11,
+        "startChar": 39,
+        "endLine": 11,
+        "endChar": 47
+      },
+      "revId": "79e4baac342bae7ef958d1b5c4302f72041ce6ec",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
     }
   ]
 }
