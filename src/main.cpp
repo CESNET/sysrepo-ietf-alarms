@@ -4,7 +4,6 @@
 #include <spdlog/spdlog.h>
 #include "SYSREPO_IETF_ALARMS_VERSION.h"
 #include "alarms/Daemon.h"
-#include "utils/exceptions.h"
 #include "utils/journal.h"
 #include "utils/log-init.h"
 #include "utils/sysrepo.h"
@@ -58,18 +57,12 @@ int main(int argc, char* argv[])
 
     alarms::utils::initLogs(loggingSink);
     alarms::utils::initLogsSysrepo();
+    spdlog::get("main")->set_level(parseLogLevel("Main logger", args["--log-level"]));
+    spdlog::get("sysrepo")->set_level(parseLogLevel("Sysrepo logger", args["--sysrepo-log-level"]));
 
-    try {
-        spdlog::get("main")->set_level(parseLogLevel("Main logger", args["--log-level"]));
-        spdlog::get("sysrepo")->set_level(parseLogLevel("Sysrepo logger", args["--sysrepo-log-level"]));
+    auto daemon = std::make_unique<alarms::Daemon>();
+    spdlog::get("main")->info("Alarms daemon initialized");
 
-        auto daemon = std::make_unique<alarms::Daemon>();
-        spdlog::get("main")->info("Alarms daemon initialized");
-
-        alarms::utils::waitUntilSignaled();
-
-        return 0;
-    } catch (std::exception& e) {
-        alarms::utils::fatalException(spdlog::get("main"), e, "main");
-    }
+    alarms::utils::waitUntilSignaled();
+    return 0;
 }

@@ -47,8 +47,6 @@ set(YANG_SRCS
 add_library(alarms-utils STATIC
     src/utils/benchmark.cpp
     src/utils/benchmark.h
-    src/utils/exceptions.cpp
-    src/utils/exceptions.h
     src/utils/journal.cpp
     src/utils/journal.h
     src/utils/libyang.cpp
