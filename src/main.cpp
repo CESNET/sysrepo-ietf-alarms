@@ -58,8 +58,6 @@ int main(int argc, char* argv[])
 
     alarms::utils::initLogs(loggingSink);
     alarms::utils::initLogsSysrepo();
-    spdlog::get("main")->set_level(spdlog::level::info);
-    spdlog::get("sysrepo")->set_level(spdlog::level::warn);
 
     try {
         spdlog::get("main")->set_level(parseLogLevel("Main logger", args["--log-level"]));
