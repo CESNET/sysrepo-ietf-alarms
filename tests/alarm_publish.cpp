@@ -776,6 +776,38 @@ TEST_CASE("Basic alarm publishing and updating")
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "critical", "valid");
         CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-2-2", "", "another-resource", "cleared", "valid");
     }
+
+    SECTION("Alarm status changes are sorted from newest to oldest")
+    {
+        constexpr auto HISTORY_LENGTH = 32;
+        userSess->setItem("/ietf-alarms:alarms/control/max-alarm-status-changes", std::to_string(HISTORY_LENGTH));
+        userSess->applyChanges();
+
+        userSess->switchDatastore(sysrepo::Datastore::Operational);
+
+        CLIENT_INTRODUCE_ALARM(cli1Sess, "alarms-test:alarm-1", "ahoj", {}, {"warning"}, "Blabla");
+
+        for (int round = 0; round < 300; round++) {
+            if (round % 2 == 0) {
+                CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "ahoj", "edfa", "cleared", "status cleared");
+            } else {
+                CLIENT_ALARM_RPC(cli1Sess, "alarms-test:alarm-1", "ahoj", "edfa", "warning", "Status warning");
+            }
+
+            auto data = userSess->getData("/ietf-alarms:alarms");
+            REQUIRE(data);
+            auto changes = data->findXPath("/ietf-alarms:alarms/alarm-list/alarm[resource='edfa'][alarm-type-id='alarms-test:alarm-1'][alarm-type-qualifier='ahoj']/status-change");
+            CAPTURE(round);
+
+            REQUIRE(changes.size() == std::min(round, HISTORY_LENGTH));
+
+            std::vector<std::string> times;
+            std::transform(changes.begin(), changes.end(), std::back_inserter(times), [](const auto& statusChange) {
+                return statusChange.findPath("time")->asTerm().valueStr();
+            });
+            REQUIRE(std::is_sorted(times.begin(), times.end(), std::greater<>{}));
+        }
+    }
 }
 
 TEST_CASE("Netopeer2 clients can't publish alarms")

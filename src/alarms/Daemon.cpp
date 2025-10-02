@@ -359,7 +359,7 @@ void updateStatusChangeList(libyang::DataNode& edit, const std::string& alarmNod
 
     if (firstExistingChange) {
         // move to the correct position as the first node in that list
-        node.insertBefore(*firstExistingChange);
+        firstExistingChange->insertBefore(node);
     }
 
     for (const auto& time: removedStatusChanges) {
