@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "679d70e6_4b454909",
+        "filename": "src/alarms/Daemon.cpp",
+        "patchSetId": 1
+      },
+      "lineNbr": 362,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2025-10-03T07:53:32Z",
+      "side": 1,
+      "message": "Is this worth changing the libyang-cpp so that these functions are renamed to `insertBeforeMe` \u0026 `insertAfterMe`? This naming is, IMHO, rather misleading.",
+      "range": {
+        "startLine": 362,
+        "startChar": 29,
+        "endLine": 362,
+        "endChar": 41
+      },
+      "revId": "ae7efc4db20052e0d48d9afe1fca045c1ab7b444",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
