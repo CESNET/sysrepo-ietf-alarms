@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c7bcf536_270c0fec",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000070
+      },
+      "writtenOn": "2026-03-23T17:02:09Z",
+      "side": 1,
+      "message": "I think only one See-also is sufficient",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 18
+      },
+      "revId": "06fe334d4d01bfb4a33d93b14cb9e25e52212dfe",
+      "serverId": "e32f8df8-3db0-4f76-a6c6-fe9d6e69dd68"
+    }
+  ]
+}
