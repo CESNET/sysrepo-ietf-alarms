@@ -5,7 +5,6 @@ module sysrepo-ietf-alarms {
 
     import ietf-alarms {
         prefix al;
-        revision-date 2019-09-11;
     }
 
     revision 2022-02-17 {
