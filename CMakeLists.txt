@@ -28,8 +28,8 @@ find_package(Boost 1.78 REQUIRED CONFIG)
 find_package(fmt "9.0.0" REQUIRED)
 
 pkg_check_modules(DOCOPT REQUIRED IMPORTED_TARGET docopt)
-pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=7 sysrepo>=4.4.0)
-pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=7)
+pkg_check_modules(SYSREPO REQUIRED IMPORTED_TARGET sysrepo-cpp>=8 sysrepo)
+pkg_check_modules(LIBYANG REQUIRED IMPORTED_TARGET libyang-cpp>=9)
 pkg_check_modules(SYSTEMD REQUIRED IMPORTED_TARGET libsystemd)
 
 include(GNUInstallDirs)
